@@ -2,22 +2,20 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Masthead from './Masthead';
 import Atlas from './Atlas';
 import LocationEditor from './LocationEditor';
 import ThreadPicker from './ThreadPicker';
-import { echoOf, loadKept, type Kept } from '@/lib/memory';
-import { groupPlaces, locLine, placeKey, placeTitle, suggestionKey, usePlaces, type PlaceGroup } from '@/lib/places';
+import { echoOf, type Kept } from '@/lib/memory';
+import { useStore } from '@/lib/store';
+import MediaShelf from './MediaShelf';
+import ThreadNote from './ThreadNote';
+import { groupPlaces, locLine, placeKey, suggestionKey, usePlaces, type PlaceGroup } from '@/lib/places';
 
 export default function Places() {
-  const [memories, setMemories] = useState<Kept[] | null>(null);
-  useEffect(() => {
-    const sync = () => setMemories(loadKept());
-    sync();
-    window.addEventListener('storage', sync);
-    return () => window.removeEventListener('storage', sync);
-  }, []);
+  const [snap] = useStore();
+  const memories: Kept[] = snap.memories;
   const places = usePlaces();
   const params = useSearchParams();
   const router = useRouter();
@@ -268,6 +266,7 @@ function PlacePage({
               {memory.when ? <span>{memory.when}</span> : null}
               <span>{memory.feeling}</span>
             </p>
+            <MediaShelf owner={{ type: 'memory', id: memory.id }} compact />
             <p className="pl-acts">
               <button type="button" className="quiet" onClick={() => onEdit(memory.id)}>
                 Edit place
@@ -299,6 +298,7 @@ function PlacePage({
                   <span className="pl-tie-moment">“{mThere.moment}”</span>
                   {t.note && <span className="pl-tie-note">{t.note}</span>}
                 </span>
+                <ThreadNote note={t.note} label={mThere.place} onSave={(n) => places.updateThread(t.id, n)} />
                 <button type="button" className="untie" onClick={() => places.untie(t.id)}>
                   untie
                 </button>

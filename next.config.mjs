@@ -1,3 +1,7 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = { reactStrictMode: true };
-export default nextConfig;
+const config = {
+  reactStrictMode: true,
+  serverExternalPackages: ['@electric-sql/pglite', 'pg'],
+};
+
+export default config;

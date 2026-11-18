@@ -2,36 +2,20 @@
 
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
-import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Tree from './Tree';
 import Masthead from './Masthead';
 import { PREFILL_KEY } from '@/lib/archive';
 import { echoOf, extractMemories, type Kept } from '@/lib/memory';
-import { clearPlaces, locLine, placeKey as placeKeyOf, placeTitle, suggestionKey, usePlaces } from '@/lib/places';
+import { locLine, placeKey as placeKeyOf, placeTitle, suggestionKey, usePlaces } from '@/lib/places';
+import { api, useStore } from '@/lib/store';
 import LocationEditor from './LocationEditor';
 import ThreadPicker from './ThreadPicker';
+import MemoryEditor from './MemoryEditor';
+import MediaShelf from './MediaShelf';
+import ThreadNote from './ThreadNote';
 import Link from 'next/link';
 import type { CSSProperties } from 'react';
-
-const KEY = 'whatstayed:v1';
-
-function load(): UIMessage[] {
-  try {
-    const raw = localStorage.getItem(KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function save(messages: UIMessage[]) {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(messages));
-  } catch {
-    /* private mode or storage full: the garden still works for this visit */
-  }
-}
 
 function textOf(m?: UIMessage) {
   if (!m) return '';
@@ -42,28 +26,50 @@ function textOf(m?: UIMessage) {
     .trim();
 }
 
-export default function Garden() {
-  const [initial, setInitial] = useState<UIMessage[] | null>(null);
-  useEffect(() => setInitial(load()), []);
-  if (!initial) return <main className="garden" aria-busy="true" />;
-  return <Conversation initial={initial} />;
-}
-
-function Conversation({ initial }: { initial: UIMessage[] }) {
+export default function Garden({ initial }: { initial: UIMessage[] }) {
   const { messages, sendMessage, status, error, setMessages, clearError } = useChat({
     messages: initial,
     transport: new DefaultChatTransport({ api: '/api/remember' }),
   });
   const [draft, setDraft] = useState('');
-  const [selected, setSelected] = useState<number | null>(null);
+  const [snap, store] = useStore();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showLog, setShowLog] = useState(false);
   const [hint, setHint] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const busy = status === 'submitted' || status === 'streaming';
 
+  // The conversation is kept in the account, a moment after each reply settles.
+  const savedCount = useRef(initial.length);
+  const lastSaved = useRef(JSON.stringify(initial.map((m) => m.id)) + initial.length);
+  const saveConversation = useCallback(async (msgs: UIMessage[]) => {
+    const sig = JSON.stringify(msgs.map((m) => m.id)) + msgs.length;
+    if (sig === lastSaved.current) return;
+    try {
+      await api('/api/conversation', { method: 'PUT', json: { messages: msgs.slice(-400) } });
+      lastSaved.current = sig;
+      savedCount.current = msgs.length;
+    } catch (e) {
+      store.toast(e instanceof Error ? e.message : 'The conversation couldn’t be saved.', 'error');
+    }
+  }, [store]);
   useEffect(() => {
-    if (status === 'ready') save(messages);
-  }, [messages, status]);
+    if (status === 'ready' && messages.length !== savedCount.current) saveConversation(messages);
+  }, [messages, status, saveConversation]);
+
+  // The agent plants straight into the account; when it has, fetch the garden again.
+  const planted = useMemo(() => extractMemories(messages as never).map((m) => m.id), [messages]);
+  const handled = useRef(new Set(planted)); // planted before this visit: never re-fetched, even if since let go
+  useEffect(() => {
+    if (status !== 'ready') return;
+    const fresh = planted.filter((id) => !handled.current.has(id));
+    if (!fresh.length) return;
+    fresh.forEach((id) => handled.current.add(id));
+    store
+      .refresh()
+      .then(() => setSelectedId(fresh[fresh.length - 1]))
+      .catch(() => store.toast('The new memory was planted, but the garden couldn’t refresh. Reload to see it.', 'error'));
+  }, [planted, status, store]);
 
   // A page carried over from the Archives lands in the writing line, unsent.
   useEffect(() => {
@@ -83,15 +89,17 @@ function Conversation({ initial }: { initial: UIMessage[] }) {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape' || document.querySelector('.loc-veil')) return;
       setShowLog(false);
-      setSelected(null);
+      setSelectedId(null);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  const memories = useMemo<Kept[]>(() => extractMemories(messages as never), [messages]);
+  const memories: Kept[] = snap.memories;
   const places = usePlaces();
-  const [editing, setEditing] = useState<'place' | 'tie' | null>(null);
+  const [editing, setEditing] = useState<'place' | 'tie' | 'memory' | 'new' | null>(null);
+  const selected = selectedId ? memories.findIndex((m) => m.id === selectedId) : -1;
+  const setSelected = useCallback((i: number | null) => setSelectedId(i === null ? null : memories[i]?.id ?? null), [memories]);
 
   // the red thread on the tree: only connections the person made or approved
   const threads = useMemo(() => {
@@ -100,14 +108,6 @@ function Conversation({ initial }: { initial: UIMessage[] }) {
       .map((t) => [at.get(t.a), at.get(t.b)] as const)
       .filter((p): p is readonly [number, number] => p[0] !== undefined && p[1] !== undefined);
   }, [memories, places.store.threads]);
-
-  // When a new memory is planted, open it, so a place can be added if wanted.
-  const seen = useRef(memories.length);
-  useEffect(() => {
-    if (status !== 'ready') return;
-    if (memories.length > seen.current) setSelected(memories.length - 1);
-    seen.current = memories.length;
-  }, [memories.length, status]);
 
   const lastAssistant = [...messages].reverse().find((m) => m.role === 'assistant' && textOf(m));
   const lastUser = [...messages].reverse().find((m) => m.role === 'user');
@@ -127,21 +127,30 @@ function Conversation({ initial }: { initial: UIMessage[] }) {
     clearError();
     sendMessage({ text });
     setDraft('');
-    setSelected(null);
+    setSelectedId(null);
   }
 
-  function beginAgain() {
-    if (!window.confirm('Clear your tree, its places and threads, and begin again? Your Archives stay. This can’t be undone.')) return;
+  async function beginAgain() {
+    if (!window.confirm('Clear your tree, its places, threads and photographs, and begin again? Your Archives stay. This can’t be undone.')) return;
+    const ok = await store.clearGarden();
+    if (!ok) return;
     setMessages([]);
-    save([]);
-    clearPlaces();
-    seen.current = 0;
-    setSelected(null);
+    savedCount.current = 0;
+    lastSaved.current = '[]0';
+    handled.current = new Set();
+    setSelectedId(null);
     setShowLog(false);
     inputRef.current?.focus();
   }
 
-  const sel = selected !== null ? memories[selected] : null;
+  async function letGo() {
+    if (!sel) return;
+    if (!window.confirm('Let this memory go? Its place, threads, photographs and recordings go with it. This can’t be undone.')) return;
+    const ok = await store.deleteMemory(sel.id);
+    if (ok) setSelectedId(null);
+  }
+
+  const sel = selected >= 0 ? memories[selected] : null;
   const selLoc = sel ? places.store.locations[sel.id] : undefined;
   const selTies = sel
     ? places.store.threads
@@ -156,7 +165,7 @@ function Conversation({ initial }: { initial: UIMessage[] }) {
     : [];
   // The agent may suggest a connection; it only becomes a thread if the person approves it.
   const suggestion = useMemo(() => {
-    if (selected === null || !sel) return null;
+    if (selected < 0 || !sel) return null;
     const back = echoOf(memories, selected);
     if (back === null) return null;
     const other = memories[back];
@@ -170,20 +179,23 @@ function Conversation({ initial }: { initial: UIMessage[] }) {
     <main className="garden">
       <h1 className="sr">What Stayed, the garden</h1>
       <Masthead room="garden">
+        <button type="button" className="quiet" onClick={() => setEditing('new')}>
+          Plant by hand
+        </button>
         {messages.length > 0 && (
-          <>
-            <button type="button" className="quiet" onClick={() => setShowLog((v) => !v)} aria-expanded={showLog}>
-              {showLog ? 'Close' : 'Conversation'}
-            </button>
-            <button type="button" className="quiet" onClick={beginAgain}>
-              Begin again
-            </button>
-          </>
+          <button type="button" className="quiet" onClick={() => setShowLog((v) => !v)} aria-expanded={showLog}>
+            {showLog ? 'Close' : 'Conversation'}
+          </button>
+        )}
+        {(messages.length > 0 || memories.length > 0) && (
+          <button type="button" className="quiet" onClick={beginAgain}>
+            Begin again
+          </button>
         )}
       </Masthead>
 
       <section className="stage">
-        <Tree memories={memories} threads={threads} selected={selected} onSelect={setSelected} />
+        <Tree memories={memories} threads={threads} selected={selected >= 0 ? selected : null} onSelect={setSelected} />
         {memories.length > 0 && (
           <p className="fig" aria-hidden="true">
             Fig. {memories.length} · {memories.length === 1 ? 'one memory, kept' : `${memories.length} memories, kept`}
@@ -216,16 +228,25 @@ function Conversation({ initial }: { initial: UIMessage[] }) {
         )}
         {sel && (
           <aside className="card" aria-live="polite">
-            <button type="button" className="x" aria-label="Close" onClick={() => setSelected(null)}>
+            <button type="button" className="x" aria-label="Close" onClick={() => setSelectedId(null)}>
               Close
             </button>
-            <p className="card-no">No. {String((selected ?? 0) + 1).padStart(2, '0')}</p>
+            <p className="card-no">No. {String(selected + 1).padStart(2, '0')}</p>
             <p className="card-place">{selLoc ? placeTitle(selLoc) : sel.place}</p>
             <p className="card-moment">“{sel.moment}”</p>
             <p className="card-meta">
               {sel.when ? <span>{sel.when}</span> : null}
               <span>{sel.feeling}</span>
             </p>
+            <p className="card-links card-tend">
+              <button type="button" className="quiet" onClick={() => setEditing('memory')}>
+                Edit
+              </button>
+              <button type="button" className="quiet danger" onClick={letGo}>
+                Let it go
+              </button>
+            </p>
+            <MediaShelf key={sel.id} owner={{ type: 'memory', id: sel.id }} compact />
             <div className="card-where">
               {selLoc ? (
                 <>
@@ -251,6 +272,7 @@ function Conversation({ initial }: { initial: UIMessage[] }) {
               <p key={t.id} className="card-thread">
                 Tied to {name}
                 {t.note ? `: ${t.note}` : ''}{' '}
+                <ThreadNote note={t.note} label={name} onSave={(n) => places.updateThread(t.id, n)} />
                 <button type="button" className="untie" onClick={() => places.untie(t.id)} aria-label={`Untie from ${name}`}>
                   untie
                 </button>
@@ -342,7 +364,7 @@ function Conversation({ initial }: { initial: UIMessage[] }) {
             {hint}
           </p>
         ) : (
-          <p className="privacy">Your tree lives only in this browser.</p>
+          <p className="privacy">Kept in your account. Only you can see it.</p>
         )}
       </section>
 
@@ -380,6 +402,17 @@ function Conversation({ initial }: { initial: UIMessage[] }) {
           }
         />
       )}
+      {editing === 'new' && (
+        <MemoryEditor
+          onClose={() => setEditing(null)}
+          onSave={async (m) => {
+            const made = await store.createMemory(m);
+            if (made) setSelectedId(made.id);
+            return made;
+          }}
+        />
+      )}
+      {sel && editing === 'memory' && <MemoryEditor memory={sel} onClose={() => setEditing(null)} onSave={(m) => store.updateMemory(sel.id, m)} />}
       {sel && editing === 'tie' && (
         <ThreadPicker
           from={sel}
@@ -394,8 +427,8 @@ function Conversation({ initial }: { initial: UIMessage[] }) {
       )}
 
       <ul className="sr">
-        {memories.map((m, i) => (
-          <li key={i}>
+        {memories.map((m) => (
+          <li key={m.id}>
             {m.place}
             {m.when ? `, ${m.when}` : ''}: {m.moment} ({m.feeling})
           </li>

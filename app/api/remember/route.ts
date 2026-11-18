@@ -9,6 +9,9 @@ import {
 } from 'ai';
 import { memorySchema } from '@/lib/memory';
 import { mockModel } from '@/lib/mock-model';
+import { currentUser } from '@/lib/server/auth';
+import { listMemories, plantMemory as keep } from '@/lib/server/data';
+import { ConfigError } from '@/lib/server/db';
 
 export const maxDuration = 30;
 
@@ -38,14 +41,17 @@ Care:
 - If something painful comes up, slow down. Acknowledge it simply, do not probe, and let them choose whether to go on. Plant it as "heavy" only if they want to keep it.
 - If they want to talk about something unrelated, kindly bring it back to the places and moments that stayed with them.`;
 
-const plantMemory = tool({
-  description:
-    'Plant one memory on the tree as a blossom. Call this once the person has shared a specific moment from a place.',
-  inputSchema: memorySchema,
-  execute: async () => ({ planted: true }),
-});
-
-export type RememberTools = { plantMemory: typeof plantMemory };
+/** The tool writes straight to this person's garden, keyed by the call id so it is never planted twice. */
+const plantFor = (userId: string) =>
+  tool({
+    description:
+      'Plant one memory on the tree as a blossom. Call this once the person has shared a specific moment from a place.',
+    inputSchema: memorySchema,
+    execute: async (input, { toolCallId }) => {
+      await keep(userId, toolCallId, input, 'agent');
+      return { planted: true, id: toolCallId };
+    },
+  });
 
 function pickModel(): LanguageModel | null {
   if (process.env.WHATSTAYED_MOCK === '1') return mockModel();
@@ -54,6 +60,19 @@ function pickModel(): LanguageModel | null {
 }
 
 export async function POST(req: Request) {
+  let user;
+  try {
+    user = await currentUser();
+  } catch (e) {
+    if (e instanceof ConfigError) return Response.json({ error: e.message }, { status: 503 });
+    throw e;
+  }
+  if (!user) return Response.json({ error: 'Please sign in.' }, { status: 401 });
+  const origin = req.headers.get('origin');
+  if (origin && new URL(origin).host !== (req.headers.get('x-forwarded-host') || req.headers.get('host'))) {
+    return Response.json({ error: 'Not allowed.' }, { status: 403 });
+  }
+
   const model = pickModel();
   if (!model) {
     return Response.json({ error: 'The garden is resting.' }, { status: 503 });
@@ -76,11 +95,20 @@ export async function POST(req: Request) {
     }
   }
 
+  // The agent sees what is already planted (including memories added or edited by hand), so echoes stay honest.
+  const planted = await listMemories(user.id);
+  const known = planted.length
+    ? `\n\nAlready planted in this garden (place: moment):\n${planted
+        .slice(-30)
+        .map((m) => `- ${String(m.place)}: ${String(m.moment)}`)
+        .join('\n')}`
+    : '';
+
   const result = streamText({
     model,
-    system: SYSTEM,
+    system: SYSTEM + known,
     messages: convertToModelMessages(messages),
-    tools: { plantMemory },
+    tools: { plantMemory: plantFor(user.id) },
     stopWhen: stepCountIs(3),
     maxOutputTokens: 300,
   });

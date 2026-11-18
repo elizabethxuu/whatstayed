@@ -73,15 +73,5 @@ export function extractMemories(messages: { parts: PartLike[] }[]): Kept[] {
   return out;
 }
 
-export const CHAT_KEY = 'whatstayed:v1';
-
-/** Read memories straight from the saved conversation (for rooms other than the garden). */
-export function loadKept(): Kept[] {
-  try {
-    const raw = localStorage.getItem(CHAT_KEY);
-    const msgs = raw ? JSON.parse(raw) : [];
-    return Array.isArray(msgs) ? extractMemories(msgs) : [];
-  } catch {
-    return [];
-  }
-}
+/** Where an earlier version kept the conversation, in this browser only. Read once, to offer an import. */
+export const LEGACY_CHAT_KEY = 'whatstayed:v1';

@@ -3,37 +3,22 @@
 import { useRouter } from 'next/navigation';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Masthead from './Masthead';
-import { fmt, loadEntries, newId, PREFILL_KEY, saveEntries, sortEntries, type Entry } from '@/lib/archive';
+import { fmt, newId, PREFILL_KEY, sortEntries, type Entry } from '@/lib/archive';
+import { useStore } from '@/lib/store';
+import MediaShelf from './MediaShelf';
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'failed';
 
 export default function Archives() {
-  const [entries, setEntries] = useState<Entry[] | null>(null);
+  const [snap] = useStore();
+  const entries = snap.entries;
   const [openId, setOpenId] = useState<string | null>(null);
   const [query, setQuery] = useState('');
-
-  useEffect(() => setEntries(loadEntries()), []);
-
-  const commit = useCallback((next: Entry[]) => {
-    setEntries(next);
-    return saveEntries(next);
-  }, []);
-
-  if (!entries) return <main className="archives" aria-busy="true" />;
 
   const open = openId ? entries.find((e) => e.id === openId) ?? null : null;
 
   if (openId) {
-    return (
-      <Page
-        key={openId}
-        id={openId}
-        entry={open}
-        all={entries}
-        commit={commit}
-        onClose={() => setOpenId(null)}
-      />
-    );
+    return <Page key={openId} id={openId} entry={open} onClose={() => setOpenId(null)} />;
   }
 
   return <Collection entries={entries} query={query} setQuery={setQuery} onOpen={setOpenId} />;
@@ -146,67 +131,59 @@ function Collection({
 
 /* ---------- a single page ---------- */
 
-function Page({
-  id,
-  entry,
-  all,
-  commit,
-  onClose,
-}: {
-  id: string;
-  entry: Entry | null;
-  all: Entry[];
-  commit: (next: Entry[]) => boolean;
-  onClose: () => void;
-}) {
+function Page({ id, entry, onClose }: { id: string; entry: Entry | null; onClose: () => void }) {
   const router = useRouter();
+  const [snap, store] = useStore();
   const [body, setBody] = useState(entry?.body ?? '');
   const [state, setState] = useState<SaveState>(entry ? 'saved' : 'idle');
-  const created = useRef(entry?.createdAt ?? Date.now());
-  const latest = useRef({ body, all });
-  latest.current = { body, all };
+  const [created, setCreated] = useState(entry?.createdAt ?? Date.now());
+  const [dating, setDating] = useState(false);
+  const latest = useRef({ body, created, sent: entry?.body ?? '', sentCreated: entry?.createdAt ?? 0 });
+  latest.current.body = body;
+  latest.current.created = created;
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inflight = useRef<Promise<unknown>>(Promise.resolve());
   const area = useRef<HTMLTextAreaElement>(null);
 
+  /** Send the page to the account. Saves run one after another so an older one never lands last. */
   const persist = useCallback(() => {
-    const { body: b, all: list } = latest.current;
-    const exists = list.some((e) => e.id === id);
-    if (!b.trim()) {
-      // a blank page is not kept
-      if (exists) {
-        const next = list.filter((e) => e.id !== id);
-        latest.current = { body: b, all: next };
-        commit(next);
-      }
-      setState('idle');
-      return;
-    }
-    const now = Date.now();
-    const next = exists
-      ? list.map((e) => (e.id === id ? { ...e, body: b, updatedAt: e.body === b ? e.updatedAt : now } : e))
-      : [...list, { id, body: b, createdAt: created.current, updatedAt: now }];
-    latest.current = { body: b, all: next };
-    setState(commit(next) ? 'saved' : 'failed');
-  }, [commit, id]);
+    const cur = latest.current;
+    if (cur.body === cur.sent && cur.created === cur.sentCreated) return inflight.current;
+    const payload = { id, body: cur.body, createdAt: cur.created };
+    setState(cur.body.trim() ? 'saving' : 'idle');
+    inflight.current = inflight.current
+      .catch(() => {})
+      .then(() => store.saveEntry(payload))
+      .then(() => {
+        latest.current.sent = payload.body;
+        latest.current.sentCreated = payload.createdAt;
+        if (latest.current.body === payload.body) setState(payload.body.trim() ? 'saved' : 'idle');
+      })
+      .catch(() => setState('failed'));
+    return inflight.current;
+  }, [id, store]);
 
   // save a moment after typing pauses, and always on the way out
   useEffect(() => {
-    const flush = () => {
-      if (timer.current) {
-        clearTimeout(timer.current);
-        timer.current = null;
-        persist();
+    const flushBeacon = () => {
+      const cur = latest.current;
+      if (cur.body !== cur.sent || cur.created !== cur.sentCreated) {
+        if (store.beaconEntry({ id, body: cur.body, createdAt: cur.created })) {
+          latest.current.sent = cur.body;
+          latest.current.sentCreated = cur.created;
+        }
       }
     };
-    const onHide = () => document.visibilityState === 'hidden' && flush();
-    window.addEventListener('beforeunload', flush);
+    const onHide = () => document.visibilityState === 'hidden' && flushBeacon();
+    window.addEventListener('pagehide', flushBeacon);
     document.addEventListener('visibilitychange', onHide);
     return () => {
-      window.removeEventListener('beforeunload', flush);
+      window.removeEventListener('pagehide', flushBeacon);
       document.removeEventListener('visibilitychange', onHide);
-      flush();
+      if (timer.current) clearTimeout(timer.current);
+      persist();
     };
-  }, [persist]);
+  }, [persist, id, store]);
 
   useEffect(() => {
     const el = area.current;
@@ -217,20 +194,39 @@ function Page({
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') close();
+      if (e.key === 'Escape' && !document.querySelector('.loc-veil')) close();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   });
 
-  function onChange(v: string) {
-    setBody(v);
-    setState('saving');
+  function schedule() {
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => {
       timer.current = null;
       persist();
     }, 700);
+  }
+
+  function onChange(v: string) {
+    setBody(v);
+    setState('saving');
+    schedule();
+  }
+
+  function redate(v: string) {
+    if (!v) return;
+    const [y, m, d] = v.split('-').map(Number);
+    const old = new Date(created);
+    const next = new Date(y, m - 1, d, old.getHours(), old.getMinutes()).getTime();
+    if (Number.isNaN(next)) return;
+    setCreated(next);
+    latest.current.created = next;
+    setDating(false);
+    if (latest.current.body.trim()) {
+      setState('saving');
+      schedule();
+    }
   }
 
   function close() {
@@ -242,13 +238,15 @@ function Page({
     onClose();
   }
 
-  function remove() {
-    if (!window.confirm('Delete this page? It can’t be brought back.')) return;
+  async function remove() {
+    if (!window.confirm('Delete this page, with its photographs and recordings? It can’t be brought back.')) return;
     if (timer.current) clearTimeout(timer.current);
     timer.current = null;
-    latest.current = { body: '', all: latest.current.all };
-    commit(latest.current.all.filter((e) => e.id !== id));
-    onClose();
+    await inflight.current.catch(() => {});
+    latest.current.sent = latest.current.body; // nothing more to save
+    latest.current.sentCreated = latest.current.created;
+    const ok = await store.deleteEntry(id);
+    if (ok) onClose();
   }
 
   function toGarden() {
@@ -261,8 +259,12 @@ function Page({
     router.push('/');
   }
 
+  const dateValue = (() => {
+    const d = new Date(created);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  })();
   const words = body.trim() ? body.trim().split(/\s+/).length : 0;
-  const saved = all.find((e) => e.id === id);
+  const saved = snap.entries.find((e) => e.id === id);
 
   return (
     <main className="archives writing">
@@ -270,7 +272,16 @@ function Page({
         <button type="button" className="quiet back" onClick={close}>
           ← The Archives
         </button>
-        <span className="page-date">{fmt.day(created.current)}</span>
+        {dating ? (
+          <label className="page-date">
+            <span className="sr">The date of this page</span>
+            <input type="date" autoFocus defaultValue={dateValue} max="9999-12-31" onChange={(e) => redate(e.target.value)} onBlur={() => setDating(false)} />
+          </label>
+        ) : (
+          <button type="button" className="page-date quiet" onClick={() => setDating(true)} title="Change the date of this page">
+            {fmt.day(created)}
+          </button>
+        )}
         <span className={`saved s-${state}`} aria-live="polite">
           {state === 'saving' ? 'Saving' : state === 'saved' ? 'Saved' : state === 'failed' ? 'Couldn’t save' : ''}
         </span>
@@ -288,6 +299,14 @@ function Page({
         onChange={(e) => onChange(e.target.value)}
         spellCheck
       />
+
+      {saved ? (
+        <div className="page-media">
+          <MediaShelf owner={{ type: 'entry', id }} />
+        </div>
+      ) : (
+        <p className="page-media-wait">Write a few words and you can add photographs and voice notes to this page.</p>
+      )}
 
       <footer className="page-foot">
         <span className="page-meta">

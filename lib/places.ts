@@ -1,7 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
 import type { Kept } from './memory';
+import { useStore } from './store';
 
 /* ---------- what we keep ---------- */
 
@@ -34,83 +34,20 @@ export type PlacesStore = {
   dismissed: string[]; // suggestion keys the person declined
 };
 
-const KEY = 'whatstayed:places:v1';
-const EVT = 'whatstayed:places';
-const empty = (): PlacesStore => ({ v: 1, locations: {}, threads: [], dismissed: [] });
+/** Where an earlier version kept places, in this browser only. Read once, to offer an import. */
+export const LEGACY_PLACES_KEY = 'whatstayed:places:v1';
 
-export function loadPlaces(): PlacesStore {
-  try {
-    const raw = localStorage.getItem(KEY);
-    const p = raw ? JSON.parse(raw) : null;
-    if (!p || p.v !== 1) return empty();
-    return {
-      v: 1,
-      locations: p.locations && typeof p.locations === 'object' ? p.locations : {},
-      threads: Array.isArray(p.threads) ? p.threads : [],
-      dismissed: Array.isArray(p.dismissed) ? p.dismissed : [],
-    };
-  } catch {
-    return empty();
-  }
-}
-
-function savePlaces(s: PlacesStore) {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(s));
-  } catch {
-    /* storage unavailable */
-  }
-  window.dispatchEvent(new Event(EVT));
-}
-
-export function clearPlaces() {
-  savePlaces(empty());
-}
-
-/** Shared, live view of places and threads across the garden and the atlas. */
+/** Shared, live view of places and threads across the garden and the atlas, backed by the server. */
 export function usePlaces() {
-  const [store, setStore] = useState<PlacesStore>(empty);
-  useEffect(() => {
-    const sync = () => setStore(loadPlaces());
-    sync();
-    window.addEventListener(EVT, sync);
-    window.addEventListener('storage', sync);
-    return () => {
-      window.removeEventListener(EVT, sync);
-      window.removeEventListener('storage', sync);
-    };
-  }, []);
-
-  const update = useCallback((fn: (s: PlacesStore) => PlacesStore) => {
-    const next = fn(loadPlaces());
-    savePlaces(next);
-    setStore(next);
-  }, []);
-
+  const [snap, store] = useStore();
   return {
-    store,
-    setLocation: (memId: string, loc: Loc) =>
-      update((s) => ({ ...s, locations: { ...s.locations, [memId]: loc } })),
-    removeLocation: (memId: string) =>
-      update((s) => {
-        const locations = { ...s.locations };
-        delete locations[memId];
-        return { ...s, locations };
-      }),
-    tie: (a: string, b: string, origin: Thread['origin'], note?: string) =>
-      update((s) =>
-        s.threads.some((t) => (t.a === a && t.b === b) || (t.a === b && t.b === a))
-          ? s
-          : {
-              ...s,
-              threads: [
-                ...s.threads,
-                { id: `t${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, a, b, note: note?.trim() || undefined, origin, createdAt: Date.now() },
-              ],
-            },
-      ),
-    untie: (id: string) => update((s) => ({ ...s, threads: s.threads.filter((t) => t.id !== id) })),
-    dismiss: (key: string) => update((s) => ({ ...s, dismissed: [...new Set([...s.dismissed, key])] })),
+    store: { v: 1 as const, locations: snap.locations, threads: snap.threads, dismissed: snap.dismissed },
+    setLocation: store.setLocation,
+    removeLocation: store.removeLocation,
+    tie: store.tie,
+    updateThread: store.updateThread,
+    untie: store.untie,
+    dismiss: store.dismiss,
   };
 }
 

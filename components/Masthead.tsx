@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-/** The quiet top line shared by the Garden and the Archives. */
-export default function Masthead({ room, children }: { room: 'garden' | 'archives' | 'places'; children?: ReactNode }) {
+/** The quiet top line shared by every room. */
+export default function Masthead({ room, children }: { room: 'garden' | 'archives' | 'places' | 'account'; children?: ReactNode }) {
   return (
     <header className="top">
       <div className="brand">
@@ -24,6 +24,12 @@ export default function Masthead({ room, children }: { room: 'garden' | 'archive
           </Link>
         </nav>
         {children ? <div className="acts">{children}</div> : null}
+        <Link href="/account" className="quiet you-link" aria-current={room === 'account' ? 'page' : undefined} aria-label="Your account">
+          <svg viewBox="0 0 20 20" aria-hidden="true">
+            <circle cx="10" cy="7" r="3.2" />
+            <path d="M3.8 17c.9-3.3 3.3-5 6.2-5s5.3 1.7 6.2 5" />
+          </svg>
+        </Link>
       </div>
     </header>
   );

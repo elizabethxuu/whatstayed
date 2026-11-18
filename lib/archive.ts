@@ -1,4 +1,4 @@
-/** The Archives: free-form pages, kept only in this browser. */
+/** The Archives: free-form pages. */
 
 export type Entry = {
   id: string;
@@ -7,7 +7,8 @@ export type Entry = {
   updatedAt: number;
 };
 
-const KEY = 'whatstayed:archives:v1';
+/** Where an earlier version kept pages, in this browser only. Read once, to offer an import. */
+export const LEGACY_ARCHIVES_KEY = 'whatstayed:archives:v1';
 /** Hand-off from an archive page to the garden's writing line. Never sent automatically. */
 export const PREFILL_KEY = 'whatstayed:prefill';
 
@@ -16,29 +17,6 @@ export function newId() {
     return crypto.randomUUID();
   } catch {
     return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-  }
-}
-
-export function loadEntries(): Entry[] {
-  try {
-    const raw = localStorage.getItem(KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (e): e is Entry =>
-        e && typeof e.id === 'string' && typeof e.body === 'string' && typeof e.createdAt === 'number',
-    );
-  } catch {
-    return [];
-  }
-}
-
-export function saveEntries(entries: Entry[]): boolean {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(entries));
-    return true;
-  } catch {
-    return false;
   }
 }
 
