@@ -4,6 +4,8 @@ import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import Tree from './Tree';
+import Masthead from './Masthead';
+import { PREFILL_KEY } from '@/lib/archive';
 import { echoOf, type Memory } from '@/lib/memory';
 import type { CSSProperties } from 'react';
 
@@ -58,6 +60,20 @@ function Conversation({ initial }: { initial: UIMessage[] }) {
   useEffect(() => {
     if (status === 'ready') save(messages);
   }, [messages, status]);
+
+  // A page carried over from the Archives lands in the writing line, unsent.
+  useEffect(() => {
+    try {
+      const carried = sessionStorage.getItem(PREFILL_KEY);
+      if (carried) {
+        sessionStorage.removeItem(PREFILL_KEY);
+        setDraft(carried.slice(0, 1200));
+        requestAnimationFrame(() => inputRef.current?.focus());
+      }
+    } catch {
+      /* storage unavailable */
+    }
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -126,29 +142,19 @@ function Conversation({ initial }: { initial: UIMessage[] }) {
 
   return (
     <main className="garden">
-      <header className="top">
-        <div className="brand">
-          <h1 className="mark">What Stayed</h1>
-          <p className="sub">An archive of the places that stayed</p>
-        </div>
-        <div className="top-r">
-          {memories.length > 0 && (
-            <span className="count">
-              {memories.length} {memories.length === 1 ? 'blossom' : 'blossoms'}
-            </span>
-          )}
-          {messages.length > 0 && (
-            <>
-              <button type="button" className="quiet" onClick={() => setShowLog((v) => !v)} aria-expanded={showLog}>
-                {showLog ? 'Close' : 'Conversation'}
-              </button>
-              <button type="button" className="quiet" onClick={beginAgain}>
-                Begin again
-              </button>
-            </>
-          )}
-        </div>
-      </header>
+      <h1 className="sr">What Stayed, the garden</h1>
+      <Masthead room="garden">
+        {messages.length > 0 && (
+          <>
+            <button type="button" className="quiet" onClick={() => setShowLog((v) => !v)} aria-expanded={showLog}>
+              {showLog ? 'Close' : 'Conversation'}
+            </button>
+            <button type="button" className="quiet" onClick={beginAgain}>
+              Begin again
+            </button>
+          </>
+        )}
+      </Masthead>
 
       <section className="stage">
         <Tree memories={memories} selected={selected} onSelect={setSelected} />
