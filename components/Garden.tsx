@@ -6,7 +6,11 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import Tree from './Tree';
 import Masthead from './Masthead';
 import { PREFILL_KEY } from '@/lib/archive';
-import { echoOf, type Memory } from '@/lib/memory';
+import { echoOf, extractMemories, type Kept } from '@/lib/memory';
+import { clearPlaces, locLine, placeKey as placeKeyOf, placeTitle, suggestionKey, usePlaces } from '@/lib/places';
+import LocationEditor from './LocationEditor';
+import ThreadPicker from './ThreadPicker';
+import Link from 'next/link';
 import type { CSSProperties } from 'react';
 
 const KEY = 'whatstayed:v1';
@@ -77,7 +81,7 @@ function Conversation({ initial }: { initial: UIMessage[] }) {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return;
+      if (e.key !== 'Escape' || document.querySelector('.loc-veil')) return;
       setShowLog(false);
       setSelected(null);
     };
@@ -85,20 +89,25 @@ function Conversation({ initial }: { initial: UIMessage[] }) {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  const memories = useMemo<Memory[]>(
-    () =>
-      messages.flatMap((m) =>
-        m.parts
-          .filter(
-            (p) =>
-              p.type === 'tool-plantMemory' &&
-              'state' in p &&
-              (p.state === 'input-available' || p.state === 'output-available'),
-          )
-          .map((p) => (p as unknown as { input: Memory }).input),
-      ),
-    [messages],
-  );
+  const memories = useMemo<Kept[]>(() => extractMemories(messages as never), [messages]);
+  const places = usePlaces();
+  const [editing, setEditing] = useState<'place' | 'tie' | null>(null);
+
+  // the red thread on the tree: only connections the person made or approved
+  const threads = useMemo(() => {
+    const at = new Map(memories.map((m, i) => [m.id, i]));
+    return places.store.threads
+      .map((t) => [at.get(t.a), at.get(t.b)] as const)
+      .filter((p): p is readonly [number, number] => p[0] !== undefined && p[1] !== undefined);
+  }, [memories, places.store.threads]);
+
+  // When a new memory is planted, open it, so a place can be added if wanted.
+  const seen = useRef(memories.length);
+  useEffect(() => {
+    if (status !== 'ready') return;
+    if (memories.length > seen.current) setSelected(memories.length - 1);
+    seen.current = memories.length;
+  }, [memories.length, status]);
 
   const lastAssistant = [...messages].reverse().find((m) => m.role === 'assistant' && textOf(m));
   const lastUser = [...messages].reverse().find((m) => m.role === 'user');
@@ -122,23 +131,40 @@ function Conversation({ initial }: { initial: UIMessage[] }) {
   }
 
   function beginAgain() {
-    if (!window.confirm('Clear your tree and begin again? This can’t be undone.')) return;
+    if (!window.confirm('Clear your tree, its places and threads, and begin again? Your Archives stay. This can’t be undone.')) return;
     setMessages([]);
     save([]);
+    clearPlaces();
+    seen.current = 0;
     setSelected(null);
     setShowLog(false);
     inputRef.current?.focus();
   }
 
   const sel = selected !== null ? memories[selected] : null;
-  const selThread = useMemo(() => {
-    if (selected === null) return null;
+  const selLoc = sel ? places.store.locations[sel.id] : undefined;
+  const selTies = sel
+    ? places.store.threads
+        .filter((t) => t.a === sel.id || t.b === sel.id)
+        .map((t) => {
+          const other = memories.find((m) => m.id === (t.a === sel.id ? t.b : t.a));
+          if (!other) return null;
+          const ol = places.store.locations[other.id];
+          return { t, name: ol ? placeTitle(ol) : other.place };
+        })
+        .filter((x): x is { t: (typeof places.store.threads)[number]; name: string } => x !== null)
+    : [];
+  // The agent may suggest a connection; it only becomes a thread if the person approves it.
+  const suggestion = useMemo(() => {
+    if (selected === null || !sel) return null;
     const back = echoOf(memories, selected);
-    if (back !== null) return { place: memories[back].place, because: memories[selected].because };
-    for (let k = selected + 1; k < memories.length; k++)
-      if (echoOf(memories, k) === selected) return { place: memories[k].place, because: memories[k].because };
-    return null;
-  }, [memories, selected]);
+    if (back === null) return null;
+    const other = memories[back];
+    const key = suggestionKey(sel.id, other.id);
+    const tied = places.store.threads.some((t) => suggestionKey(t.a, t.b) === key);
+    if (tied || places.store.dismissed.includes(key)) return null;
+    return { other, key, because: sel.because };
+  }, [memories, selected, sel, places.store]);
 
   return (
     <main className="garden">
@@ -157,7 +183,7 @@ function Conversation({ initial }: { initial: UIMessage[] }) {
       </Masthead>
 
       <section className="stage">
-        <Tree memories={memories} selected={selected} onSelect={setSelected} />
+        <Tree memories={memories} threads={threads} selected={selected} onSelect={setSelected} />
         {memories.length > 0 && (
           <p className="fig" aria-hidden="true">
             Fig. {memories.length} · {memories.length === 1 ? 'one memory, kept' : `${memories.length} memories, kept`}
@@ -194,17 +220,60 @@ function Conversation({ initial }: { initial: UIMessage[] }) {
               Close
             </button>
             <p className="card-no">No. {String((selected ?? 0) + 1).padStart(2, '0')}</p>
-            <p className="card-place">{sel.place}</p>
+            <p className="card-place">{selLoc ? placeTitle(selLoc) : sel.place}</p>
             <p className="card-moment">“{sel.moment}”</p>
             <p className="card-meta">
               {sel.when ? <span>{sel.when}</span> : null}
               <span>{sel.feeling}</span>
             </p>
-            {selThread && (
-              <p className="card-thread">
-                Tied to {selThread.place}
-                {selThread.because ? `: ${selThread.because}` : ''}
+            <div className="card-where">
+              {selLoc ? (
+                <>
+                  <p className="card-loc">{locLine(selLoc)}</p>
+                  <p className="card-links">
+                    <button type="button" className="quiet" onClick={() => setEditing('place')}>
+                      Edit place
+                    </button>
+                    {selLoc.lat !== undefined && (
+                      <Link className="quiet" href={`/places?p=${encodeURIComponent(placeKeyOf(selLoc))}`}>
+                        See on the map
+                      </Link>
+                    )}
+                  </p>
+                </>
+              ) : (
+                <button type="button" className="quiet" onClick={() => setEditing('place')}>
+                  Add a place
+                </button>
+              )}
+            </div>
+            {selTies.map(({ t, name }) => (
+              <p key={t.id} className="card-thread">
+                Tied to {name}
+                {t.note ? `: ${t.note}` : ''}{' '}
+                <button type="button" className="untie" onClick={() => places.untie(t.id)} aria-label={`Untie from ${name}`}>
+                  untie
+                </button>
               </p>
+            ))}
+            {suggestion && (
+              <div className="card-suggest">
+                <p>
+                  This might connect to {suggestion.other.place}
+                  {suggestion.because ? `: ${suggestion.because}` : ''}. Tie them?
+                </p>
+                <button type="button" className="quiet" onClick={() => places.tie(sel.id, suggestion.other.id, 'suggested', suggestion.because)}>
+                  Tie them
+                </button>
+                <button type="button" className="quiet" onClick={() => places.dismiss(suggestion.key)}>
+                  Not really
+                </button>
+              </div>
+            )}
+            {memories.length > 1 && (
+              <button type="button" className="quiet card-tie" onClick={() => setEditing('tie')}>
+                Tie a red thread…
+              </button>
             )}
           </aside>
         )}
@@ -290,6 +359,38 @@ function Conversation({ initial }: { initial: UIMessage[] }) {
             );
           })}
         </aside>
+      )}
+
+      {sel && editing === 'place' && (
+        <LocationEditor
+          memory={sel}
+          current={selLoc}
+          onClose={() => setEditing(null)}
+          onSave={(loc) => {
+            places.setLocation(sel.id, loc);
+            setEditing(null);
+          }}
+          onRemove={
+            selLoc
+              ? () => {
+                  places.removeLocation(sel.id);
+                  setEditing(null);
+                }
+              : undefined
+          }
+        />
+      )}
+      {sel && editing === 'tie' && (
+        <ThreadPicker
+          from={sel}
+          others={memories.filter((m) => m.id !== sel.id)}
+          locations={places.store.locations}
+          onClose={() => setEditing(null)}
+          onTie={(other, note) => {
+            places.tie(sel.id, other, 'you', note);
+            setEditing(null);
+          }}
+        />
       )}
 
       <ul className="sr">

@@ -53,3 +53,35 @@ export function echoOf(memories: Memory[], i: number): number | null {
 }
 
 export type Memory = z.infer<typeof memorySchema>;
+
+/** A planted memory with the stable id of the moment it was planted. */
+export type Kept = Memory & { id: string };
+
+type PartLike = { type: string; state?: string; input?: unknown; toolCallId?: string };
+
+/** Every memory planted in a conversation, in order. */
+export function extractMemories(messages: { parts: PartLike[] }[]): Kept[] {
+  const out: Kept[] = [];
+  for (const m of messages) {
+    for (const p of m.parts) {
+      if (p.type !== 'tool-plantMemory') continue;
+      if (p.state !== 'input-available' && p.state !== 'output-available') continue;
+      if (!p.input || typeof p.input !== 'object') continue;
+      out.push({ ...(p.input as Memory), id: p.toolCallId || `m${out.length}` });
+    }
+  }
+  return out;
+}
+
+export const CHAT_KEY = 'whatstayed:v1';
+
+/** Read memories straight from the saved conversation (for rooms other than the garden). */
+export function loadKept(): Kept[] {
+  try {
+    const raw = localStorage.getItem(CHAT_KEY);
+    const msgs = raw ? JSON.parse(raw) : [];
+    return Array.isArray(msgs) ? extractMemories(msgs) : [];
+  } catch {
+    return [];
+  }
+}

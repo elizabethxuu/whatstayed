@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 /** The quiet top line shared by the Garden and the Archives. */
-export default function Masthead({ room, children }: { room: 'garden' | 'archives'; children?: ReactNode }) {
+export default function Masthead({ room, children }: { room: 'garden' | 'archives' | 'places'; children?: ReactNode }) {
   return (
     <header className="top">
       <div className="brand">
@@ -18,6 +18,9 @@ export default function Masthead({ room, children }: { room: 'garden' | 'archive
           </Link>
           <Link href="/archives" className="quiet" aria-current={room === 'archives' ? 'page' : undefined}>
             The Archives
+          </Link>
+          <Link href="/places" className="quiet" aria-current={room === 'places' ? 'page' : undefined}>
+            Places
           </Link>
         </nav>
         {children ? <div className="acts">{children}</div> : null}

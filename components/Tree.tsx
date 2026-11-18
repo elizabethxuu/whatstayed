@@ -2,10 +2,11 @@
 
 import { CSSProperties, memo, useEffect, useMemo, useRef } from 'react';
 import { growTree, VIEW, type Limb as LimbT } from '@/lib/tree';
-import { echoOf, type Memory } from '@/lib/memory';
+import type { Memory } from '@/lib/memory';
 
 type Props = {
   memories: Memory[];
+  threads: readonly (readonly [number, number])[];
   selected: number | null;
   onSelect: (i: number | null) => void;
 };
@@ -28,7 +29,7 @@ function branchColor(depth: number) {
 /** how much each limb sways, in degrees: trunk still, twigs freer */
 const SWAY = [0, 0.22, 0.4, 0.62, 0.9, 1.25, 1.6, 1.9];
 
-function Tree({ memories, selected, onSelect }: Props) {
+function Tree({ memories, threads, selected, onSelect }: Props) {
   const { root, tips } = useMemo(() => growTree(), []);
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -51,16 +52,7 @@ function Tree({ memories, selected, onSelect }: Props) {
     return m;
   }, [memories, tips]);
 
-  const threads = useMemo(
-    () =>
-      memories
-        .map((_, i) => {
-          const j = echoOf(memories, i);
-          return j === null ? null : ([j, i] as const);
-        })
-        .filter((x): x is readonly [number, number] => x !== null),
-    [memories],
-  );
+
 
   // Keep each red thread tied to its two blossoms while the branches move.
   useEffect(() => {
