@@ -163,3 +163,24 @@ button { font: inherit; color: inherit; }
   .branches path { stroke-dashoffset: 0; }
   .drift { display: none; }
 }
+
+/* The tree opening */
+.halo { transform-box: fill-box; transform-origin: 50% 70%; animation: halo 3.4s .2s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes halo { from { opacity: 0; scale: .55; } to { opacity: 1; scale: 1; } }
+.ground { transform-box: fill-box; transform-origin: 50% 50%; animation: ground 1.4s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes ground { from { opacity: 0; scale: .3 1; } to { opacity: 1; scale: 1 1; } }
+.branches path { animation-name: draw; animation-timing-function: cubic-bezier(.45,.05,.25,1); animation-fill-mode: both; }
+.buds circle { opacity: 0; animation: bud .7s cubic-bezier(.2,.9,.3,1.4) both; transform-box: fill-box; transform-origin: center; }
+@keyframes bud { from { opacity: 0; scale: 0; } to { opacity: .22; scale: 1; } }
+.sway { transform-box: view-box; transform-origin: 50% 95%; animation: breeze 9s 3.2s ease-in-out infinite; }
+@keyframes breeze { 0%, 100% { rotate: 0deg; } 30% { rotate: .45deg; } 70% { rotate: -.35deg; } }
+@media (prefers-reduced-motion: reduce) {
+  .halo, .ground, .buds circle { animation: none; opacity: 1; }
+  .buds circle { opacity: .22; }
+  .sway { animation: none; }
+}
+
+/* required field */
+.say button:not(.ready):not(:disabled) { opacity: .45; }
+.say:has(textarea[aria-invalid="true"]) { border-bottom-color: var(--red); }
+.hint { margin: 0; font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--red); animation: fade .4s ease both; }

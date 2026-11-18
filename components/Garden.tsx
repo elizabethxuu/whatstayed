@@ -50,6 +50,7 @@ function Conversation({ initial }: { initial: UIMessage[] }) {
   const [draft, setDraft] = useState('');
   const [selected, setSelected] = useState<number | null>(null);
   const [showLog, setShowLog] = useState(false);
+  const [hint, setHint] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const busy = status === 'submitted' || status === 'streaming';
 
@@ -90,7 +91,13 @@ function Conversation({ initial }: { initial: UIMessage[] }) {
   function submit(e?: FormEvent) {
     e?.preventDefault();
     const text = draft.trim();
-    if (!text || busy) return;
+    if (busy) return;
+    if (text.length < 2) {
+      setHint(text ? 'Say a little more, even a few words.' : 'Write a few words first: a place, a moment.');
+      inputRef.current?.focus();
+      return;
+    }
+    setHint('');
     clearError();
     sendMessage({ text });
     setDraft('');
@@ -180,7 +187,7 @@ function Conversation({ initial }: { initial: UIMessage[] }) {
           </div>
         )}
 
-        <form className="say" onSubmit={submit}>
+        <form className="say" onSubmit={submit} noValidate>
           <label htmlFor="say" className="sr">
             Tell the garden a memory
           </label>
@@ -191,7 +198,15 @@ function Conversation({ initial }: { initial: UIMessage[] }) {
             maxLength={1200}
             value={draft}
             placeholder={messages.length === 0 ? 'The night market in Taipei, the steam…' : 'Say a little more…'}
-            onChange={(e) => setDraft(e.target.value)}
+            required
+            minLength={2}
+            aria-required="true"
+            aria-invalid={hint ? true : undefined}
+            aria-describedby={hint ? 'say-hint' : undefined}
+            onChange={(e) => {
+              setDraft(e.target.value);
+              if (hint) setHint('');
+            }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -199,13 +214,19 @@ function Conversation({ initial }: { initial: UIMessage[] }) {
               }
             }}
           />
-          <button type="submit" disabled={!draft.trim() || busy} aria-label="Send">
+          <button type="submit" disabled={busy} aria-label="Send" className={draft.trim() ? 'ready' : ''}>
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M5 12h13M13 6l6 6-6 6" />
             </svg>
           </button>
         </form>
-        <p className="privacy">Your tree lives only in this browser.</p>
+        {hint ? (
+          <p className="hint" id="say-hint" role="alert">
+            {hint}
+          </p>
+        ) : (
+          <p className="privacy">Your tree lives only in this browser.</p>
+        )}
       </section>
 
       {showLog && (
