@@ -44,7 +44,17 @@ export function mockModel() {
       } else if (userTurns % 2 === 0) {
         const place = (said.match(/\b(?:in|at|on)\s+([A-Z][\w'’-]+(?:\s+[A-Z][\w'’-]+)?)/) || [])[1] || 'Somewhere';
         const weights = ['light', 'tender', 'heavy'] as const;
+        // On the third planting, echo the first, to exercise the red thread.
+        let echoes: string | undefined;
+        if (userTurns === 6) {
+          for (const m of p) {
+            if (m.role !== 'assistant') continue;
+            const call = (m.content as { type: string; input?: { place?: string } }[]).find((c) => c.type === 'tool-call');
+            if (call?.input?.place) { echoes = call.input.place; break; }
+          }
+        }
         const input = {
+          ...(echoes ? { echoes, because: 'both with family' } : {}),
           place,
           moment: said.length > 110 ? said.slice(0, 107) + '…' : said,
           feeling: ['free', 'held', 'homesick'][userTurns % 3],

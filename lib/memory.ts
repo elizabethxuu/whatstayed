@@ -29,6 +29,27 @@ export const memorySchema = z.object({
     .describe(
       'light = joyful or easy. tender = warm, bittersweet, close to the heart. heavy = grief, loss, or something that still aches.',
     ),
+  echoes: z
+    .string()
+    .max(60)
+    .optional()
+    .describe(
+      'Only if this memory is meaningfully connected to one planted earlier: the same person, a place they returned to, or a link they drew themselves. Give the earlier memory\'s place exactly as it was planted. Omit otherwise; most memories have no echo.',
+    ),
+  because: z
+    .string()
+    .max(60)
+    .optional()
+    .describe('With echoes only: a few words on what connects them, in their words. "Both with my mother".'),
 });
+
+/** Find the earlier memory a memory echoes, if any. */
+export function echoOf(memories: Memory[], i: number): number | null {
+  const want = memories[i]?.echoes?.trim().toLowerCase();
+  if (!want) return null;
+  for (let j = i - 1; j >= 0; j--) if (memories[j].place.trim().toLowerCase() === want) return j;
+  for (let j = i - 1; j >= 0; j--) if (memories[j].moment.toLowerCase().includes(want)) return j;
+  return null;
+}
 
 export type Memory = z.infer<typeof memorySchema>;

@@ -1,186 +1,223 @@
 :root {
-  --ivory: #f7f6f2;
-  --porcelain: #fbfaf7;
-  --mist: #e6e9e8;
-  --ink: #2b2826;
-  --ink-soft: #6f6a66;
-  --branch: #4a4440;
-  --red: #a74e49;
-  --serif: 'Cormorant Garamond', 'Iowan Old Style', Georgia, serif;
+  --ivory: #f8f7f3;
+  --mist: #f1f0ec;
+  --branch: #77736e;
+  --twig: #b7b2aa;
+  --ink: #33312f;
+  --ink-soft: #78736d;
+  --ink-faint: #a8a39c;
+  --blush: #efd6d8;
+  --rose: #b98790;
+  --cherry: #8f3a48;
+  --thread: #9e2f3c;
+  --serif: 'Cormorant Garamond', 'Iowan Old Style', 'Palatino', Georgia, serif;
   --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; }
+html, body { margin: 0; min-height: 100%; }
 body {
-  background: radial-gradient(120% 90% at 50% 38%, var(--porcelain) 0%, var(--ivory) 55%, var(--mist) 100%);
+  background:
+    radial-gradient(90% 70% at 50% 34%, #fbfaf7 0%, transparent 70%),
+    linear-gradient(180deg, var(--ivory) 0%, var(--ivory) 55%, var(--mist) 100%);
   background-attachment: fixed;
   color: var(--ink);
   font-family: var(--sans);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 button { font: inherit; color: inherit; }
-
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 .garden {
   min-height: 100dvh;
   display: grid;
   grid-template-rows: auto 1fr auto;
-  max-width: 1180px;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 22px clamp(16px, 4vw, 40px) 26px;
+  padding: clamp(20px, 3.4vw, 40px) clamp(18px, 4.5vw, 56px) clamp(20px, 3vw, 34px);
   position: relative;
 }
 
-/* top */
-.top { position: relative; z-index: 6; display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
-.mark { margin: 0; font-family: var(--serif); font-weight: 400; font-style: italic; font-size: 22px; letter-spacing: .01em; }
-.top-r { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; justify-content: flex-end; }
-.count, .quiet, .privacy {
-  font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-soft);
+/* masthead */
+.top { position: relative; z-index: 6; display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
+.mark { margin: 0; font-family: var(--serif); font-weight: 400; font-style: italic; font-size: clamp(24px, 2.4vw, 30px); letter-spacing: -.005em; line-height: 1; }
+.sub { margin: 9px 0 0; font-size: 10px; letter-spacing: .24em; text-transform: uppercase; color: var(--ink-faint); }
+.top-r { display: flex; align-items: baseline; gap: 26px; flex-wrap: wrap; justify-content: flex-end; padding-top: 6px; }
+.count, .quiet, .privacy, .fig, .card-no, .card-place, .card-meta, .x {
+  font-family: var(--sans); font-size: 10px; letter-spacing: .22em; text-transform: uppercase; color: var(--ink-soft);
 }
-.quiet { background: none; border: 0; padding: 4px 0; cursor: pointer; border-bottom: 1px solid transparent; transition: border-color .3s, color .3s; }
-.quiet:hover, .quiet:focus-visible { color: var(--ink); border-bottom-color: currentColor; outline: none; }
+.quiet { background: none; border: 0; padding: 3px 0; cursor: pointer; background-image: linear-gradient(currentColor, currentColor); background-size: 0 1px; background-repeat: no-repeat; background-position: 0 100%; transition: background-size .45s cubic-bezier(.2,.8,.2,1), color .3s; }
+.quiet:hover, .quiet:focus-visible { color: var(--ink); background-size: 100% 1px; outline: none; }
 
-/* tree */
-.stage { position: relative; display: grid; place-items: center; min-height: 0; }
-.tree { width: 100%; max-height: 64vh; overflow: visible; }
-.branches path {
-  fill: none; stroke: var(--branch); stroke-linecap: round;
+/* the tree */
+.stage { position: relative; display: grid; place-items: center; min-height: 0; padding: 10px 0; }
+.tree { width: min(100%, 980px); max-height: clamp(280px, calc(100dvh - 420px), 620px); overflow: visible; }
+.br {
+  fill: none; stroke-linecap: round;
   stroke-dasharray: 1; stroke-dashoffset: 1;
-  animation: draw 1.2s cubic-bezier(.3,.6,.3,1) forwards;
+  animation: draw .8s cubic-bezier(.45,.05,.25,1) both;
 }
 @keyframes draw { to { stroke-dashoffset: 0; } }
-.buds circle { fill: var(--branch); opacity: .22; }
 
-.blossom { cursor: pointer; outline: none; }
-.blossom .bloom { transform-box: fill-box; animation: bloom 1.1s cubic-bezier(.2,.9,.25,1.15) both; }
-@keyframes bloom { from { opacity: 0; scale: .1; } to { opacity: 1; scale: 1; } }
-.blossom .hit { fill: transparent; }
-.blossom .heart { fill: #e48aa0; }
-.blossom .anther { fill: #c98a4a; }
-.blossom.w-heavy .heart { fill: var(--red); }
-.blossom .thread {
-  stroke: var(--red); stroke-width: .9; opacity: .75;
-  stroke-dasharray: 80; stroke-dashoffset: 80;
-  animation: thread 1.6s .6s ease forwards, sway 6s 2.2s ease-in-out infinite;
-  transform-origin: 0 0;
+.limb { transform-box: view-box; animation: breeze 8s ease-in-out infinite; will-change: rotate; }
+@keyframes breeze {
+  0%, 100% { rotate: calc(var(--a) * -0.6); }
+  38% { rotate: var(--a); }
+  64% { rotate: calc(var(--a) * 0.15); }
+  82% { rotate: calc(var(--a) * -1); }
 }
-@keyframes thread { to { stroke-dashoffset: 0; } }
-@keyframes sway { 0%,100% { rotate: -2deg; } 50% { rotate: 3deg; } }
-.blossom:hover .bloom, .blossom:focus-visible .bloom { filter: drop-shadow(0 0 6px rgba(231, 160, 178, .55)); }
-.sel-ring { fill: none; stroke: var(--ink); stroke-width: .6; opacity: .45; stroke-dasharray: 2 3; }
-.blossom:focus-visible .sel-ring, .blossom:focus-visible .hit { stroke: var(--ink); stroke-width: .6; }
 
-/* falling petals */
+.bud { fill: var(--twig); opacity: 0; transform-box: fill-box; transform-origin: center; animation: bud .7s cubic-bezier(.2,.9,.3,1.4) both; }
+@keyframes bud { from { opacity: 0; scale: 0; } to { opacity: .55; scale: 1; } }
+
+.halo { transform-box: fill-box; transform-origin: 50% 70%; animation: halo 3.2s .15s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes halo { from { opacity: 0; scale: .55; } to { opacity: 1; scale: 1; } }
+.ground { transform-box: fill-box; transform-origin: 50% 50%; animation: ground 1.3s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes ground { from { opacity: 0; scale: .3 1; } to { opacity: 1; scale: 1 1; } }
+
+/* blossoms: they unfold, petal by petal */
+.blossom { cursor: pointer; outline: none; }
+.blossom .hit { fill: transparent; }
+.petal {
+  transform-box: fill-box; transform-origin: 50% 100%;
+  opacity: 0;
+  animation:
+    unfold 1.6s cubic-bezier(.22,.8,.25,1) calc(var(--wait) + var(--k) * .09s) both,
+    breathe var(--d) ease-in-out calc(var(--wait) + 1.8s) infinite;
+  filter: drop-shadow(0 .6px .6px rgba(120, 70, 80, .12));
+}
+@keyframes unfold {
+  0% { opacity: 0; scale: .12 .3; rotate: -38deg; }
+  35% { opacity: .9; }
+  100% { opacity: .96; scale: 1 1; rotate: 0deg; }
+}
+@keyframes breathe { 0%, 100% { rotate: 0deg; } 50% { rotate: 2.4deg; } }
+.heart { fill: #d9a3ab; opacity: 0; animation: appear .8s ease calc(var(--wait) + .6s) both; }
+.blossom.w-tender .heart { fill: #b06c79; }
+.blossom.w-heavy .heart { fill: var(--cherry); }
+.stamen { opacity: 0; animation: appear .9s ease calc(var(--wait) + .8s + var(--k) * .05s) both; }
+.stamen line { stroke: #c9a27a; stroke-width: .7; stroke-linecap: round; }
+.stamen circle { fill: #b98455; }
+@keyframes appear { to { opacity: 1; } }
+.blossom:hover .petal, .blossom:focus-visible .petal { filter: drop-shadow(0 0 5px rgba(210, 150, 160, .5)); }
+.sel-ring { fill: none; stroke: var(--ink); stroke-width: .5; opacity: .5; stroke-dasharray: 1.5 3.5; }
+.blossom:focus-visible .hit { stroke: var(--ink); stroke-width: .6; stroke-dasharray: 2 2; }
+
+/* the red thread: the only strong red, only between connected memories */
+.thread { fill: none; stroke: var(--thread); stroke-width: 1.1; stroke-linecap: round; opacity: .85; stroke-dasharray: 1400; stroke-dashoffset: 1400; animation: tie 2.4s 1s cubic-bezier(.45,.05,.25,1) forwards; }
+@keyframes tie { to { stroke-dashoffset: 0; } }
+
+/* falling petals: sparse, slow, never in the way */
 .drift { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.drift span {
+  position: absolute; width: calc(10px * var(--s)); height: calc(8px * var(--s));
+  opacity: 0; animation: fall linear infinite both;
+}
 .drift i {
-  position: absolute; top: -12px; width: 9px; height: 7px; border-radius: 70% 0 70% 0;
-  background: linear-gradient(135deg, #fff, #f4cdd7);
-  opacity: 0; animation: fall linear infinite;
+  display: block; width: 100%; height: 100%;
+  border-radius: 80% 10% 80% 10%;
+  background: linear-gradient(140deg, #fffaf8, #ecc9cf 70%, #dcaab3);
+  animation: flutter ease-in-out infinite alternate;
 }
 @keyframes fall {
-  0% { transform: translate(0, 0) rotate(0); opacity: 0; }
-  10% { opacity: .85; }
-  100% { transform: translate(60px, 70vh) rotate(320deg); opacity: 0; }
+  0% { transform: translate(0, 0); opacity: 0; }
+  8% { opacity: var(--o); }
+  85% { opacity: calc(var(--o) * .8); }
+  100% { transform: translate(var(--dx), 62vh); opacity: 0; }
+}
+@keyframes flutter {
+  from { transform: rotate(-30deg) rotateX(0deg) translateX(-8px); }
+  to { transform: rotate(160deg) rotateX(55deg) translateX(10px); }
 }
 
-/* memory card */
+/* figure caption, set in the margin */
+.fig { position: absolute; left: 0; bottom: 12%; writing-mode: vertical-rl; rotate: 180deg; color: var(--ink-faint); letter-spacing: .28em; animation: appear 1.2s 2.4s both; opacity: 0; }
+
+/* memory note: no box, just type in the margin */
 .card {
-  position: absolute; right: 0; top: 8%; width: min(300px, 86vw);
-  background: rgba(251, 250, 247, .88); border: 1px solid rgba(43, 40, 38, .08);
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  padding: 22px 24px 20px; box-shadow: 0 30px 60px -40px rgba(43, 40, 38, .35);
-  animation: rise .5s cubic-bezier(.2,.8,.2,1);
+  position: absolute; right: 0; top: 10%; width: min(290px, 82vw);
+  padding: 4px 0 0 22px; border-left: 1px solid rgba(51, 49, 47, .16);
+  background: linear-gradient(90deg, rgba(248, 247, 243, .92), rgba(248, 247, 243, .6));
+  animation: rise .6s cubic-bezier(.2,.8,.2,1);
 }
-@keyframes rise { from { opacity: 0; transform: translateY(8px); } }
-.card .x { position: absolute; top: 8px; right: 12px; background: none; border: 0; font-size: 20px; color: var(--ink-soft); cursor: pointer; }
-.card-place { margin: 0 0 10px; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-soft); }
-.card-moment { margin: 0 0 14px; font-family: var(--serif); font-style: italic; font-size: 22px; line-height: 1.3; }
-.card-meta { margin: 0; font-size: 12px; color: var(--ink-soft); }
-.card-meta .heavy { color: var(--red); }
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } }
+.card .x { position: absolute; top: -26px; right: 0; background: none; border: 0; cursor: pointer; color: var(--ink-faint); padding: 2px 0; }
+.card .x:hover, .card .x:focus-visible { color: var(--ink); outline: none; }
+.card-no { margin: 0 0 18px; color: var(--ink-faint); }
+.card-place { margin: 0 0 10px; color: var(--ink); }
+.card-moment { margin: 0 0 16px; font-family: var(--serif); font-style: italic; font-size: 23px; line-height: 1.32; color: var(--ink); text-wrap: pretty; }
+.card-meta { margin: 0; display: flex; gap: 16px; color: var(--ink-soft); }
+.card-thread { margin: 14px 0 0; font-family: var(--serif); font-style: italic; font-size: 15px; color: var(--thread); }
 
 /* conversation */
-.talk { display: grid; justify-items: center; gap: 14px; text-align: center; padding-top: 8px; }
-.voice { min-height: 96px; display: grid; align-content: end; gap: 10px; max-width: 640px; }
-.you { margin: 0; font-family: var(--serif); font-style: italic; font-size: 17px; color: var(--ink-soft); opacity: .8; }
-.voice-line { margin: 0; font-family: var(--serif); font-size: clamp(24px, 3vw, 31px); line-height: 1.25; animation: fade .8s ease both; }
-.voice-line.rest { font-size: 20px; color: var(--ink-soft); }
-.voice-sub { margin: 0; font-size: 14px; color: var(--ink-soft); }
+.talk { display: grid; justify-items: center; gap: 16px; text-align: center; padding-top: 4px; }
+.voice { min-height: 92px; display: grid; align-content: end; gap: 12px; max-width: 34ch; }
+.you { margin: 0; font-family: var(--serif); font-style: italic; font-size: 17px; line-height: 1.45; color: var(--ink-faint); }
+.voice-line { margin: 0; font-family: var(--serif); font-weight: 400; font-size: clamp(25px, 2.7vw, 32px); line-height: 1.24; letter-spacing: -.005em; text-wrap: balance; animation: fade 1s ease both; }
+.voice-line.rest { font-size: 20px; font-style: italic; color: var(--ink-soft); }
+.voice-sub { margin: 0; font-size: 13px; line-height: 1.6; color: var(--ink-soft); letter-spacing: .01em; }
 @keyframes fade { from { opacity: 0; transform: translateY(4px); } }
-.listening { display: flex; gap: 7px; justify-content: center; margin: 12px 0; }
-.listening i { width: 5px; height: 5px; border-radius: 50%; background: var(--ink-soft); animation: breathe 1.4s ease-in-out infinite; }
-.listening i:nth-child(2) { animation-delay: .2s; }
-.listening i:nth-child(3) { animation-delay: .4s; }
-@keyframes breathe { 0%,100% { opacity: .2; } 50% { opacity: .8; } }
+.listening { display: flex; gap: 8px; justify-content: center; margin: 14px 0; }
+.listening i { width: 4px; height: 4px; border-radius: 50%; background: var(--ink-soft); animation: breathe-dot 1.6s ease-in-out infinite; }
+.listening i:nth-child(2) { animation-delay: .25s; }
+.listening i:nth-child(3) { animation-delay: .5s; }
+@keyframes breathe-dot { 0%, 100% { opacity: .15; } 50% { opacity: .7; } }
 
 .say {
-  display: flex; align-items: flex-end; gap: 10px; width: min(620px, 100%);
-  border-bottom: 1px solid rgba(43, 40, 38, .22); padding: 6px 2px;
-  transition: border-color .3s;
+  display: flex; align-items: flex-end; gap: 12px; width: min(560px, 100%);
+  border-bottom: 1px solid rgba(51, 49, 47, .2); padding: 4px 0 6px;
+  transition: border-color .4s;
 }
 .say:focus-within { border-bottom-color: var(--ink); }
 .say textarea {
   flex: 1; resize: none; border: 0; background: transparent; outline: none;
-  font-family: var(--serif); font-size: 20px; line-height: 1.4; color: var(--ink);
+  font-family: var(--serif); font-size: 20px; line-height: 1.45; color: var(--ink);
   max-height: 140px; field-sizing: content;
 }
-.say textarea::placeholder { color: #a7a29c; font-style: italic; }
-.say button { flex: none; width: 38px; height: 38px; border-radius: 50%; border: 1px solid rgba(43, 40, 38, .25); background: transparent; cursor: pointer; display: grid; place-items: center; transition: background .3s, border-color .3s, opacity .3s; }
-.say button svg { width: 18px; height: 18px; fill: none; stroke: var(--ink); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+.say textarea::placeholder { color: var(--ink-faint); font-style: italic; }
+.say button { flex: none; width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(51, 49, 47, .2); background: transparent; cursor: pointer; display: grid; place-items: center; transition: background .35s, border-color .35s, opacity .35s; }
+.say button svg { width: 16px; height: 16px; fill: none; stroke: var(--ink); stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; transition: stroke .35s; }
+.say button.ready { border-color: var(--ink); }
 .say button:not(:disabled):hover { background: var(--ink); }
-.say button:not(:disabled):hover svg { stroke: var(--porcelain); }
-.say button:disabled { opacity: .35; cursor: default; }
-.say button:focus-visible, .quiet:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
-.privacy { margin: 0; letter-spacing: .12em; font-size: 10px; opacity: .8; }
-
-/* transcript */
-.log {
-  position: fixed; top: 0; right: 0; bottom: 0; width: min(380px, 92vw); overflow-y: auto;
-  background: rgba(251, 250, 247, .96); border-left: 1px solid rgba(43, 40, 38, .08);
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  padding: 72px 28px 40px; z-index: 5; animation: slide .45s cubic-bezier(.2,.8,.2,1);
-}
-@keyframes slide { from { transform: translateX(30px); opacity: 0; } }
-.log-line p { margin: 0 0 6px; line-height: 1.5; }
-.log-line { margin-bottom: 18px; }
-.log-line.assistant p { font-family: var(--serif); font-size: 19px; }
-.log-line.user p { font-size: 14px; color: var(--ink-soft); }
-.log-planted { font-size: 11px !important; letter-spacing: .14em; text-transform: uppercase; color: #c47c8e !important; }
-
-@media (max-width: 640px) {
-  .garden { padding-top: 16px; }
-  .top-r { gap: 12px; }
-  .tree { max-height: 52vh; }
-  .card { top: auto; bottom: 4px; right: 50%; transform: translateX(50%); }
-  @keyframes rise { from { opacity: 0; } }
-  .voice { min-height: 80px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
-  .branches path { stroke-dashoffset: 0; }
-  .drift { display: none; }
-}
-
-/* The tree opening */
-.halo { transform-box: fill-box; transform-origin: 50% 70%; animation: halo 3.4s .2s cubic-bezier(.2,.7,.2,1) both; }
-@keyframes halo { from { opacity: 0; scale: .55; } to { opacity: 1; scale: 1; } }
-.ground { transform-box: fill-box; transform-origin: 50% 50%; animation: ground 1.4s cubic-bezier(.2,.7,.2,1) both; }
-@keyframes ground { from { opacity: 0; scale: .3 1; } to { opacity: 1; scale: 1 1; } }
-.branches path { animation-name: draw; animation-timing-function: cubic-bezier(.45,.05,.25,1); animation-fill-mode: both; }
-.buds circle { opacity: 0; animation: bud .7s cubic-bezier(.2,.9,.3,1.4) both; transform-box: fill-box; transform-origin: center; }
-@keyframes bud { from { opacity: 0; scale: 0; } to { opacity: .22; scale: 1; } }
-.sway { transform-box: view-box; transform-origin: 50% 95%; animation: breeze 9s 3.2s ease-in-out infinite; }
-@keyframes breeze { 0%, 100% { rotate: 0deg; } 30% { rotate: .45deg; } 70% { rotate: -.35deg; } }
-@media (prefers-reduced-motion: reduce) {
-  .halo, .ground, .buds circle { animation: none; opacity: 1; }
-  .buds circle { opacity: .22; }
-  .sway { animation: none; }
-}
-
-/* required field */
+.say button:not(:disabled):hover svg { stroke: var(--ivory); }
 .say button:not(.ready):not(:disabled) { opacity: .45; }
-.say:has(textarea[aria-invalid="true"]) { border-bottom-color: var(--red); }
-.hint { margin: 0; font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--red); animation: fade .4s ease both; }
+.say button:disabled { opacity: .3; cursor: default; }
+.say button:focus-visible, .quiet:focus-visible { outline: 1.5px solid var(--ink); outline-offset: 4px; }
+.say:has(textarea[aria-invalid='true']) { border-bottom-color: var(--rose); }
+.hint { margin: 0; font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--cherry); animation: fade .4s ease both; }
+.privacy { margin: 0; font-size: 9.5px; color: var(--ink-faint); }
+
+/* transcript, set like a printed page */
+.log {
+  position: fixed; top: 0; right: 0; bottom: 0; width: min(400px, 92vw); overflow-y: auto;
+  background: rgba(248, 247, 243, .97); border-left: 1px solid rgba(51, 49, 47, .1);
+  padding: 96px 34px 48px; z-index: 5; animation: slide .5s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes slide { from { transform: translateX(24px); opacity: 0; } }
+.log-line { margin-bottom: 22px; }
+.log-line p { margin: 0 0 6px; line-height: 1.55; }
+.log-line.assistant p { font-family: var(--serif); font-size: 19px; }
+.log-line.user p { font-family: var(--serif); font-style: italic; font-size: 17px; color: var(--ink-soft); }
+.log-planted { font-family: var(--sans) !important; font-style: normal !important; font-size: 9.5px !important; letter-spacing: .22em; text-transform: uppercase; color: var(--rose) !important; }
+
+@media (max-width: 760px) {
+  .top-r { gap: 14px; }
+  .sub { display: none; }
+  .tree { max-height: 50vh; }
+  .fig { display: none; }
+  .card { position: fixed; left: 18px; right: 18px; top: auto; bottom: 18px; width: auto; z-index: 7; padding: 22px 20px 20px 22px; background: rgba(248, 247, 243, .97); border-left: 1px solid rgba(51, 49, 47, .2); box-shadow: 0 -20px 40px -30px rgba(51, 49, 47, .25); }
+  .card .x { top: 14px; right: 16px; }
+  .voice { min-height: 84px; }
+  .voice-line { font-size: 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .limb, .drift, .petal, .halo, .ground { animation: none !important; }
+  .drift { display: none; }
+  .br { animation: none; stroke-dashoffset: 0; }
+  .bud { animation: none; opacity: .55; }
+  .petal { opacity: .96; }
+  .heart, .stamen, .fig { animation: none; opacity: 1; }
+  .thread { animation: none; stroke-dashoffset: 0; }
+}

@@ -4,7 +4,8 @@ import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import Tree from './Tree';
-import type { Memory } from '@/lib/memory';
+import { echoOf, type Memory } from '@/lib/memory';
+import type { CSSProperties } from 'react';
 
 const KEY = 'whatstayed:v1';
 
@@ -114,11 +115,22 @@ function Conversation({ initial }: { initial: UIMessage[] }) {
   }
 
   const sel = selected !== null ? memories[selected] : null;
+  const selThread = useMemo(() => {
+    if (selected === null) return null;
+    const back = echoOf(memories, selected);
+    if (back !== null) return { place: memories[back].place, because: memories[selected].because };
+    for (let k = selected + 1; k < memories.length; k++)
+      if (echoOf(memories, k) === selected) return { place: memories[k].place, because: memories[k].because };
+    return null;
+  }, [memories, selected]);
 
   return (
     <main className="garden">
       <header className="top">
-        <h1 className="mark">What Stayed</h1>
+        <div className="brand">
+          <h1 className="mark">What Stayed</h1>
+          <p className="sub">An archive of the places that stayed</p>
+        </div>
         <div className="top-r">
           {memories.length > 0 && (
             <span className="count">
@@ -128,7 +140,7 @@ function Conversation({ initial }: { initial: UIMessage[] }) {
           {messages.length > 0 && (
             <>
               <button type="button" className="quiet" onClick={() => setShowLog((v) => !v)} aria-expanded={showLog}>
-                {showLog ? 'Close the conversation' : 'Read the conversation'}
+                {showLog ? 'Close' : 'Conversation'}
               </button>
               <button type="button" className="quiet" onClick={beginAgain}>
                 Begin again
@@ -141,23 +153,53 @@ function Conversation({ initial }: { initial: UIMessage[] }) {
       <section className="stage">
         <Tree memories={memories} selected={selected} onSelect={setSelected} />
         {memories.length > 0 && (
+          <p className="fig" aria-hidden="true">
+            Fig. {memories.length} · {memories.length === 1 ? 'one memory, kept' : `${memories.length} memories, kept`}
+          </p>
+        )}
+        {memories.length > 0 && (
           <div className="drift" aria-hidden="true">
-            {Array.from({ length: Math.min(8, memories.length + 2) }).map((_, i) => (
-              <i key={i} style={{ left: `${12 + ((i * 37) % 76)}%`, animationDelay: `${i * 2.3}s`, animationDuration: `${14 + (i % 4) * 3}s` }} />
-            ))}
+            {Array.from({ length: Math.min(6, memories.length + 2) }).map((_, i) => {
+              const h = (n: number) => ((Math.sin((i + 1) * n * 7.13) * 9301.7) % 1 + 1) % 1;
+              return (
+                <span
+                  key={i}
+                  style={
+                    {
+                      left: `${30 + h(1) * 40}%`,
+                      top: `${16 + h(2) * 22}%`,
+                      '--s': (0.65 + h(3) * 0.7).toFixed(2),
+                      '--o': (0.45 + h(4) * 0.4).toFixed(2),
+                      '--dx': `${(h(5) - 0.3) * 160}px`,
+                      animationDuration: `${(19 + h(6) * 12).toFixed(1)}s`,
+                      animationDelay: `${(3 + i * 6.5 + h(7) * 3).toFixed(1)}s`,
+                    } as CSSProperties
+                  }
+                >
+                  <i style={{ animationDuration: `${(3.5 + h(8) * 2.5).toFixed(1)}s` }} />
+                </span>
+              );
+            })}
           </div>
         )}
         {sel && (
           <aside className="card" aria-live="polite">
             <button type="button" className="x" aria-label="Close" onClick={() => setSelected(null)}>
-              ×
+              Close
             </button>
+            <p className="card-no">No. {String((selected ?? 0) + 1).padStart(2, '0')}</p>
             <p className="card-place">{sel.place}</p>
-            <p className="card-moment">{sel.moment}</p>
+            <p className="card-moment">“{sel.moment}”</p>
             <p className="card-meta">
-              {sel.when ? `${sel.when} · ` : ''}
-              <span className={sel.weight === 'heavy' ? 'heavy' : ''}>{sel.feeling}</span>
+              {sel.when ? <span>{sel.when}</span> : null}
+              <span>{sel.feeling}</span>
             </p>
+            {selThread && (
+              <p className="card-thread">
+                Tied to {selThread.place}
+                {selThread.because ? `: ${selThread.because}` : ''}
+              </p>
+            )}
           </aside>
         )}
       </section>
