@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import Masthead from './Masthead';
 import { useStore, type Letter } from '@/lib/store';
+import { confirmSheet } from '@/lib/confirm';
 
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const inYears = (n: number) => {
@@ -112,11 +113,11 @@ export default function Letters() {
                   <button
                     type="button"
                     className="quiet"
-                    onClick={() => window.confirm('Open this letter early?') && store.openLetter(l.id)}
+                    onClick={async () => (await confirmSheet({ title: 'Open this letter early?', body: 'It was sealed until its day. Once open, it stays open.', yes: 'Open it now' })) && store.openLetter(l.id)}
                   >
                     Open early
                   </button>
-                  <button type="button" className="quiet danger" onClick={() => window.confirm('Delete this letter without opening it? This can’t be undone.') && store.deleteLetter(l.id)}>
+                  <button type="button" className="quiet danger" onClick={async () => (await confirmSheet({ title: 'Delete this letter without opening it?', body: 'This can’t be undone.', yes: 'Delete letter', danger: true })) && store.deleteLetter(l.id)}>
                     Throw away
                   </button>
                 </span>
@@ -152,7 +153,7 @@ function Arrived({ l }: { l: Letter }) {
         </button>
       )}
       <p className="card-links">
-        <button type="button" className="quiet danger" onClick={() => window.confirm('Delete this letter? This can’t be undone.') && store.deleteLetter(l.id)}>
+        <button type="button" className="quiet danger" onClick={async () => (await confirmSheet({ title: 'Delete this letter?', body: 'This can’t be undone.', yes: 'Delete letter', danger: true })) && store.deleteLetter(l.id)}>
           Throw away
         </button>
       </p>

@@ -1,18 +1,6 @@
-import type { Metadata } from 'next';
-import Account from '@/components/Account';
-import App from '@/components/App';
-import Unconfigured from '@/components/Unconfigured';
-import { gate } from '@/lib/server/gate';
+import { redirect } from 'next/navigation';
 
-export const metadata: Metadata = { title: 'Your account · What Stayed' };
-export const dynamic = 'force-dynamic';
-
-export default async function Page() {
-  const g = await gate();
-  if (!g.ok) return <Unconfigured reason={g.reason} />;
-  return (
-    <App initial={g.snapshot} email={g.user.email}>
-      <Account email={g.user.email} />
-    </App>
-  );
+/** The account page became You. */
+export default function Page() {
+  redirect('/you');
 }

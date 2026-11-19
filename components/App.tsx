@@ -3,17 +3,24 @@
 import { useEffect, type ReactNode } from 'react';
 import { StoreProvider, useToasts, type Snapshot } from '@/lib/store';
 import ImportOffer from './ImportOffer';
+import Appearance from './Appearance';
+import AppShell from './AppShell';
+import { ConfirmHost } from '@/lib/confirm';
+import { setUnsentScope } from '@/lib/unsent';
 
 /** Wraps every signed-in room: the person's data, quiet notices, and a one-time offer to bring in old browser data. */
 export default function App({ initial, email, children }: { initial: Snapshot; email: string; children: ReactNode }) {
+  setUnsentScope(email);
   // so "today" (letters, revisits) is the person's own day, not the server's
   useEffect(() => {
     document.cookie = `ws_tz=${new Date().getTimezoneOffset()}; path=/; max-age=31536000; samesite=lax`;
   }, []);
   return (
     <StoreProvider initial={initial}>
-      {children}
+      <Appearance value={initial.profile?.appearance} />
+      <AppShell>{children}</AppShell>
       <ImportOffer email={email} />
+      <ConfirmHost />
       <Toasts />
     </StoreProvider>
   );

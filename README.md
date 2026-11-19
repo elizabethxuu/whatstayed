@@ -31,6 +31,9 @@ Checks: `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, then `
 
 1. In the Vercel project, open **Storage → Create Database → Neon** (free plan) and connect it to this project. That adds `DATABASE_URL` for you.
 2. Under **Settings → Environment Variables**, make sure `ANTHROPIC_API_KEY` is set.
-3. Redeploy.
+3. Optional, for password reset emails: add `RESEND_API_KEY` and `RESET_FROM_EMAIL` (a Resend account with a verified sending domain).
+4. Redeploy.
+
+**On a phone:** open the site in Safari, tap Share → **Add to Home Screen**. It opens full screen with its own icon. (It's an installable web app, not an App Store app.)
 
 Without a database, the app says plainly that it isn't connected rather than pretending to save anything. Without an API key, everything works except the agent's replies; you can still plant memories by hand.

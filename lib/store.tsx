@@ -6,14 +6,15 @@
  * One store per page render (React context), so nothing is ever shared between people.
  */
 import { createContext, useContext, useState, useSyncExternalStore, type ReactNode } from 'react';
-import type { MemoryExtra, TalkSummary } from './draft';
+import type { HandDraft, MemoryExtra, StoredDraft, TalkSummary } from './draft';
+import type { Profile } from './profile';
 import type { Memory, Kept } from './memory';
-export type MemoryInput = Memory & { date?: string; title?: string; narrative?: string; extra?: MemoryExtra };
+export type MemoryInput = Memory & { date?: string; title?: string; narrative?: string; tags?: string[]; extra?: MemoryExtra };
 import type { Loc, Thread } from './places';
 import type { Entry } from './archive';
 
 export type Stored = Kept & { origin: 'agent' | 'you'; createdAt: number; updatedAt: number; date?: string; extra?: MemoryExtra };
-export type Page = Entry & { location?: Loc };
+export type Page = Entry & { location?: Loc; meta?: { favorite?: boolean; draft?: boolean; prompt?: string } };
 export type Person = { id: string; name: string; relation?: string; description?: string; notes?: string; createdAt: number; updatedAt: number };
 export type PersonInput = { name: string; relation?: string; description?: string; notes?: string };
 export type LinkKind = 'memory-person' | 'entry-person' | 'entry-memory';
@@ -27,7 +28,7 @@ export type MilestoneInput = { title: string; onDate: string; note?: string };
 
 export type Media = {
   id: string;
-  ownerType: 'memory' | 'entry' | 'person';
+  ownerType: 'memory' | 'entry' | 'person' | 'profile';
   ownerId: string;
   kind: 'photo' | 'voice';
   mime: string;
@@ -50,6 +51,8 @@ export type Snapshot = {
   dismissed: string[];
   media: Media[];
   talks: TalkSummary[];
+  profile: Profile;
+  handDrafts: StoredDraft[];
 };
 
 export type ReviewItem = {
@@ -231,7 +234,7 @@ function createStore(initial: Snapshot) {
       }),
 
     /* archives */
-    saveEntry: async (e: { id: string; body: string; createdAt: number }) => {
+    saveEntry: async (e: { id: string; body: string; createdAt: number; meta?: { favorite?: boolean; draft?: boolean; prompt?: string } }) => {
       // no toast: the page shows its own quiet save state
       const { entry } = await api<{ entry: Page | null }>(`/api/entries/${encodeURIComponent(e.id)}`, { method: 'PUT', json: e });
       set((s) => ({
@@ -399,6 +402,48 @@ function createStore(initial: Snapshot) {
         set((s) => ({ ...s, milestones: without(s.milestones, id) }));
         return true;
       }, 'Removed.'),
+
+    /* you */
+    saveProfile: (patch: Profile, quiet = false) =>
+      attempt(async () => {
+        const { profile } = await api<{ profile: Profile }>('/api/profile', { method: 'PUT', json: patch });
+        set((s) => ({ ...s, profile }));
+        return profile;
+      }, quiet ? undefined : 'Saved.'),
+    clearProfile: () =>
+      attempt(async () => {
+        const { profile } = await api<{ profile: Profile }>('/api/profile', { method: 'DELETE' });
+        set((s) => ({ ...s, profile, media: s.media.filter((m) => m.ownerType !== 'profile') }));
+        return true;
+      }, 'Your personal details were deleted. Your memories are untouched.'),
+    changePassword: (current: string, next: string) =>
+      attempt(async () => {
+        await api('/api/auth/password', { method: 'PUT', json: { current, next } });
+        return true;
+      }, 'Password changed. Other devices have been signed out.'),
+
+    /* pages: favourites and drafts */
+    setEntryMeta: (id: string, meta: { favorite?: boolean; draft?: boolean }) =>
+      attempt(async () => {
+        set((s) => ({ ...s, entries: s.entries.map((e) => (e.id === id ? { ...e, meta: { ...e.meta, ...meta } } : e)) }));
+        await api(`/api/entries/${encodeURIComponent(id)}/meta`, { method: 'PATCH', json: meta });
+        return true;
+      }),
+
+    /* memories being added by hand */
+    saveHandDraft: (id: string | null, data: HandDraft) =>
+      attempt(async () => {
+        const r = await api<{ id: string }>(id ? `/api/drafts/${encodeURIComponent(id)}` : '/api/drafts', { method: id ? 'PUT' : 'POST', json: data });
+        const { drafts } = await api<{ drafts: StoredDraft[] }>('/api/drafts');
+        set((s) => ({ ...s, handDrafts: drafts }));
+        return r.id;
+      }),
+    deleteHandDraft: (id: string) =>
+      attempt(async () => {
+        await api(`/api/drafts/${encodeURIComponent(id)}`, { method: 'DELETE' });
+        set((s) => ({ ...s, handDrafts: s.handDrafts.filter((d) => d.id !== id) }));
+        return true;
+      }),
 
     /* conversations */
     newTalk: (mode: 'free' | 'trip') =>

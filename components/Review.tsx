@@ -6,6 +6,7 @@ import type { StoredDraft, TalkSummary } from '@/lib/draft';
 import { locLine, searchPlaces, type Loc } from '@/lib/places';
 import { useStore, type ReviewItem } from '@/lib/store';
 import MediaShelf from './MediaShelf';
+import { confirmSheet } from '@/lib/confirm';
 
 type Edit = ReviewItem & { keep: boolean; suggestions: { to: string; label: string; reason: string; accepted: boolean }[]; locState: 'finding' | 'found' | 'none' | 'set' };
 
@@ -160,7 +161,7 @@ export default function Review({
   }
 
   async function discardAll() {
-    if (!window.confirm('Discard every draft from this conversation? The conversation itself stays.')) return;
+    if (!(await confirmSheet({ title: 'Discard every draft?', body: 'The conversation itself stays.', yes: 'Discard drafts', danger: true }))) return;
     const ok = await store.discardDrafts(talk.id);
     if (ok) onClose();
   }

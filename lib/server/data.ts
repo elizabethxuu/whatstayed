@@ -19,6 +19,7 @@ export const memoryInput = memorySchema.extend({
   date: isoDate.optional().nullable(),
   title: z.string().trim().max(80).optional().nullable(),
   narrative: z.string().trim().max(2000).optional().nullable(),
+  tags: z.array(z.string().trim().min(1).max(30)).max(12).optional().nullable(),
 });
 
 export const locInput = z.object({
@@ -37,6 +38,9 @@ export const entryInput = z.object({
   id: z.string().min(4).max(64).regex(/^[\w-]+$/),
   body: z.string().max(100_000),
   createdAt: z.number().optional(),
+  meta: z
+    .object({ favorite: z.boolean().optional(), draft: z.boolean().optional(), prompt: z.string().max(200).optional() })
+    .optional(),
 });
 
 export const threadInput = z.object({
@@ -61,6 +65,12 @@ export async function listMemories(user: string) {
   );
 }
 
+/** Title, narrative and tags live together in `extra`; null when there are none. */
+function extraJson(m: { title?: string | null; narrative?: string | null; tags?: string[] | null }) {
+  if (!m.title && !m.narrative && !m.tags?.length) return null;
+  return JSON.stringify({ title: m.title || undefined, narrative: m.narrative || undefined, tags: m.tags?.length ? m.tags : undefined });
+}
+
 export async function plantMemory(user: string, memId: string, m: z.infer<typeof memoryInput> | Omit<z.infer<typeof memoryInput>, 'date'>, origin: 'agent' | 'you') {
   const q = await db();
   await q(
@@ -69,7 +79,7 @@ export async function plantMemory(user: string, memId: string, m: z.infer<typeof
     [
       user, memId, m.place, m.when || null, m.moment, m.feeling ?? '', m.weight, m.echoes || null, m.because || null, origin,
       ('date' in m && m.date) || null,
-      'title' in m && (m.title || m.narrative) ? JSON.stringify({ title: m.title || undefined, narrative: m.narrative || undefined }) : null,
+      extraJson(m as { title?: string | null; narrative?: string | null; tags?: string[] | null }),
     ],
   );
   return memId;
@@ -83,11 +93,11 @@ export async function updateMemory(user: string, memId: string, m: z.infer<typeo
   const q = await db();
   const rows = await q(
     `update memories set place=$3, when_text=$4, moment=$5, feeling=$6, weight=$7, happened_on=$8,
-       extra = case when $9::text is null and $10::text is null then extra
-                    else coalesce(extra, '{}'::jsonb) || jsonb_strip_nulls(jsonb_build_object('title', $9::text, 'narrative', $10::text)) end,
+       extra = case when $9::text is null and $10::text is null and $11::jsonb is null then extra
+                    else coalesce(extra, '{}'::jsonb) || jsonb_strip_nulls(jsonb_build_object('title', $9::text, 'narrative', $10::text, 'tags', $11::jsonb)) end,
        updated_at=now()
      where user_id=$1 and id=$2 returning id`,
-    [user, memId, m.place, m.when || null, m.moment, m.feeling, m.weight, m.date || null, m.title ?? null, m.narrative ?? null],
+    [user, memId, m.place, m.when || null, m.moment, m.feeling, m.weight, m.date || null, m.title ?? null, m.narrative ?? null, m.tags ? JSON.stringify(m.tags) : null],
   );
   if (!rows.length) throw new HttpError(404, 'That memory isn’t here any more.');
 }
@@ -163,15 +173,25 @@ export async function saveEntry(user: string, e: z.infer<typeof entryInput>) {
   }
   const created = e.createdAt ? new Date(e.createdAt) : new Date();
   const rows = await q(
-    `insert into entries (user_id, id, body, created_at, updated_at) values ($1,$2,$3,$4, now())
+    `insert into entries (user_id, id, body, created_at, updated_at, meta) values ($1,$2,$3,$4, now(), $5::jsonb)
      on conflict (user_id, id) do update set
        body = excluded.body,
        created_at = excluded.created_at,
+       meta = coalesce(entries.meta, '{}'::jsonb) || coalesce(excluded.meta, '{}'::jsonb),
        updated_at = case when entries.body = excluded.body and entries.created_at = excluded.created_at then entries.updated_at else now() end
-     returning id, body, ${ms('created_at')} as "createdAt", ${ms('updated_at')} as "updatedAt"`,
-    [user, e.id, e.body, created],
+     returning id, body, meta, ${ms('created_at')} as "createdAt", ${ms('updated_at')} as "updatedAt"`,
+    [user, e.id, e.body, created, e.meta ? JSON.stringify(e.meta) : null],
   );
-  return rows[0];
+  const r = rows[0];
+  if (typeof r.meta === 'string') r.meta = JSON.parse(r.meta);
+  if (r.meta === null) delete r.meta;
+  return r;
+}
+
+export async function setEntryMeta(user: string, eid: string, meta: { favorite?: boolean; draft?: boolean }) {
+  await ownEntry(user, eid);
+  const q = await db();
+  await q(`update entries set meta = coalesce(meta, '{}'::jsonb) || $3::jsonb where user_id=$1 and id=$2`, [user, eid, JSON.stringify(meta)]);
 }
 
 export async function deleteEntry(user: string, eid: string) {
@@ -198,7 +218,7 @@ const MIMES = {
 
 export async function addMedia(
   user: string,
-  owner: { type: 'memory' | 'entry' | 'person'; id: string },
+  owner: { type: 'memory' | 'entry' | 'person' | 'profile'; id: string },
   kind: 'photo' | 'voice',
   file: { mime: string; bytes: Buffer; durationMs?: number },
 ) {
@@ -208,7 +228,9 @@ export async function addMedia(
   if (file.bytes.length > LIMITS[kind]) throw new HttpError(413, 'That file is too large (4 MB at most).');
   if (owner.type === 'memory') await ownMemory(user, owner.id);
   else if (owner.type === 'entry') await ownEntry(user, owner.id);
-  else await ownPerson(user, owner.id);
+  else if (owner.type === 'profile') {
+    if (owner.id !== user) throw new HttpError(404, 'Not found.');
+  } else await ownPerson(user, owner.id);
   const q = await db();
   const rows = await q(
     `insert into media (user_id, owner_type, owner_id, kind, mime, size, duration_ms, bytes)
@@ -238,7 +260,7 @@ export async function state(user: string, tz?: string) {
   const q = await db();
   const [memories, entries, locs, threads, dismissed, media] = await Promise.all([
     listMemories(user),
-    q(`select id, body, location, ${ms('created_at')} as "createdAt", ${ms('updated_at')} as "updatedAt" from entries where user_id=$1 order by created_at desc`, [user]),
+    q(`select id, body, location, meta, ${ms('created_at')} as "createdAt", ${ms('updated_at')} as "updatedAt" from entries where user_id=$1 order by created_at desc`, [user]),
     q<{ memory_id: string; data: unknown }>('select memory_id, data from locations where user_id=$1', [user]),
     q(`select id, a, b, note, origin, ${ms('created_at')} as "createdAt" from threads where user_id=$1 order by created_at`, [user]),
     q<{ key: string }>('select key from dismissed where user_id=$1', [user]),
@@ -246,16 +268,21 @@ export async function state(user: string, tz?: string) {
        from media where user_id=$1 order by created_at`, [user]),
   ]);
   const life = await lifeState(user, tz);
-  const { listTalks } = await import('./talk');
+  const { listTalks, listDrafts } = await import('./talk');
+  const { getProfile } = await import('./profile');
   return {
     ...life,
     talks: await listTalks(user),
+    profile: await getProfile(user),
+    handDrafts: await listDrafts(user, 'by-hand'),
     memories,
     entries: entries.map((e) => {
       const loc = typeof e.location === 'string' ? JSON.parse(e.location) : e.location;
-      const { location: _l, ...rest } = e;
+      const meta = typeof e.meta === 'string' ? JSON.parse(e.meta) : e.meta;
+      const { location: _l, meta: _m, ...rest } = e;
       void _l;
-      return loc ? { ...rest, location: loc } : rest;
+      void _m;
+      return { ...rest, ...(loc ? { location: loc } : {}), ...(meta ? { meta } : {}) };
     }),
     locations: Object.fromEntries(locs.map((l) => [l.memory_id, typeof l.data === 'string' ? JSON.parse(l.data) : l.data])),
     threads: threads.map((t) => Object.fromEntries(Object.entries(t).filter(([, v]) => v !== null))),

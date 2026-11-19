@@ -10,6 +10,8 @@ import LocationEditor from './LocationEditor';
 import ThreadNote from './ThreadNote';
 import { CollectionPicker, ItemPicker, Names, PeoplePicker, pageTitle } from './Pickers';
 import MediaShelf from './MediaShelf';
+import { confirmSheet } from '@/lib/confirm';
+import { clearUnsent, dropUnsent, keepUnsent } from '@/lib/unsent';
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'failed';
 
@@ -18,14 +20,17 @@ export default function Archives() {
   const entries = snap.entries;
   const [openId, setOpenId] = useState<string | null>(null);
   const [query, setQuery] = useState('');
+  const [initialFilter, setInitialFilter] = useState<Has>('');
 
-  // /archives?e=<id> opens that page directly (from the garden, a person, the timeline or search)
+  // /archives?e=<id> opens that page; ?new=1 opens a fresh one; ?f=reflections|favorites|drafts filters
   useEffect(() => {
-    const e = new URLSearchParams(window.location.search).get('e');
-    if (e) {
-      setOpenId(e);
-      window.history.replaceState(null, '', '/archives');
-    }
+    const sp = new URLSearchParams(window.location.search);
+    const e = sp.get('e');
+    const f = sp.get('f');
+    if (e) setOpenId(e);
+    else if (sp.get('new') === '1') setOpenId(newId());
+    if (f === 'reflections' || f === 'favorites' || f === 'drafts') setInitialFilter(f);
+    if (e || f || sp.get('new')) window.history.replaceState(null, '', '/archives');
   }, []);
 
   const open = openId ? entries.find((e) => e.id === openId) ?? null : null;
@@ -34,8 +39,10 @@ export default function Archives() {
     return <Page key={openId} id={openId} entry={open} onClose={() => setOpenId(null)} />;
   }
 
-  return <Collection entries={entries} query={query} setQuery={setQuery} onOpen={setOpenId} />;
+  return <Collection key={initialFilter} entries={entries} query={query} setQuery={setQuery} onOpen={setOpenId} initialFilter={initialFilter} />;
 }
+
+type Has = '' | 'photo' | 'voice' | 'place' | 'memory' | 'favorites' | 'drafts' | 'reflections';
 
 /* ---------- the collection ---------- */
 
@@ -63,15 +70,17 @@ function Collection({
   query,
   setQuery,
   onOpen,
+  initialFilter,
 }: {
   entries: Stored[];
   query: string;
   setQuery: (q: string) => void;
   onOpen: (id: string) => void;
+  initialFilter: Has;
 }) {
-  const [snap] = useStore();
+  const [snap, store] = useStore();
   const [who, setWho] = useState('');
-  const [has, setHas] = useState<'' | 'photo' | 'voice' | 'place' | 'memory'>('');
+  const [has, setHas] = useState<Has>(initialFilter);
   const q = query.trim();
   const shown = useMemo(() => {
     const withPerson = who ? new Set(snap.links.filter((l) => l.kind === 'entry-person' && l.b === who).map((l) => l.a)) : null;
@@ -83,7 +92,12 @@ function Collection({
         (!q || e.body.toLowerCase().includes(q.toLowerCase()) || (e.location && locLine(e.location).toLowerCase().includes(q.toLowerCase()))) &&
         (!withPerson || withPerson.has(e.id)) &&
         (!filt || filt.has(e.id)) &&
-        (has !== 'place' || !!e.location),
+        (has !== 'place' || !!e.location) &&
+        (has !== 'favorites' || !!e.meta?.favorite) &&
+        (has !== 'drafts' || !!e.meta?.draft) &&
+        (has !== 'reflections' || !!e.meta?.prompt) &&
+        // drafts stay out of the main list unless asked for
+        (has === 'drafts' || has === 'favorites' || !e.meta?.draft || !!q),
     );
   }, [entries, q, who, has, snap.links, snap.media]);
   const filtering = !!(q || who || has);
@@ -125,6 +139,9 @@ function Collection({
             <span className="sr">Pages with</span>
             <select value={has} onChange={(e) => setHas(e.target.value as typeof has)}>
               <option value="">Every page</option>
+              <option value="favorites">Favourites</option>
+              <option value="drafts">Drafts</option>
+              <option value="reflections">Reflections</option>
               <option value="photo">With photographs</option>
               <option value="voice">With voice notes</option>
               <option value="place">With a place</option>
@@ -158,9 +175,22 @@ function Collection({
             <h2 className="month-label">{m.label}</h2>
             <ol>
               {m.items.map((e) => (
-                <li key={e.id}>
+                <li key={e.id} className="leaf-row">
+                  <button
+                    type="button"
+                    className={`fav${e.meta?.favorite ? ' on' : ''}`}
+                    aria-pressed={!!e.meta?.favorite}
+                    aria-label={e.meta?.favorite ? 'Remove from favourites' : 'Add to favourites'}
+                    onClick={() => store.setEntryMeta(e.id, { favorite: !e.meta?.favorite })}
+                  >
+                    <svg viewBox="0 0 20 20" aria-hidden="true">
+                      <path d="M10 3.2l2 4.3 4.7.5-3.5 3.2 1 4.6L10 13.5l-4.2 2.3 1-4.6L3.3 8l4.7-.5z" />
+                    </svg>
+                  </button>
                   <button type="button" className="leaf" onClick={() => onOpen(e.id)}>
                     <span className="leaf-date">
+                      {e.meta?.draft ? <em className="unsure">draft</em> : null}
+                      {e.meta?.prompt ? <em className="leaf-prompt">{e.meta.prompt}</em> : null}
                       {fmt.short(e.createdAt)} <i>·</i> {fmt.time(e.createdAt)}
                       {e.updatedAt - e.createdAt > 60_000 ? <em> · revised</em> : null}
                       {e.location ? <em> · {placeTitle(e.location)}</em> : null}
@@ -208,11 +238,18 @@ function Page({ id, entry, onClose }: { id: string; entry: Stored | null; onClos
       .then(() => {
         latest.current.sent = payload.body;
         latest.current.sentCreated = payload.createdAt;
+        clearUnsent(id, payload.body);
         if (latest.current.body === payload.body) setState(payload.body.trim() ? 'saved' : 'idle');
       })
       .catch(() => setState('failed'));
     return inflight.current;
   }, [id, store]);
+
+  // a safety copy in this browser until the account has these words
+  useEffect(() => {
+    if (!body.trim()) dropUnsent(id);
+    else if (body !== latest.current.sent) keepUnsent(id, body, created);
+  }, [id, body, created]);
 
   // save a moment after typing pauses, and always on the way out
   useEffect(() => {
@@ -290,10 +327,11 @@ function Page({ id, entry, onClose }: { id: string; entry: Stored | null; onClos
   }
 
   async function remove() {
-    if (!window.confirm('Delete this page and its photos and recordings? This can’t be undone.')) return;
+    if (!(await confirmSheet({ title: 'Delete this page?', body: 'Its photographs and recordings are deleted too. This can’t be undone.', yes: 'Delete page', danger: true }))) return;
     if (timer.current) clearTimeout(timer.current);
     timer.current = null;
     await inflight.current.catch(() => {});
+    dropUnsent(id);
     latest.current.sent = latest.current.body; // nothing more to save
     latest.current.sentCreated = latest.current.created;
     const ok = await store.deleteEntry(id);
@@ -333,11 +371,24 @@ function Page({ id, entry, onClose }: { id: string; entry: Stored | null; onClos
             {fmt.day(created)}
           </button>
         )}
+        {saved && (
+          <span className="page-flags">
+            <button type="button" className={`fav${saved.meta?.favorite ? ' on' : ''}`} aria-pressed={!!saved.meta?.favorite} aria-label="Favourite" onClick={() => store.setEntryMeta(id, { favorite: !saved.meta?.favorite })}>
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M10 3.2l2 4.3 4.7.5-3.5 3.2 1 4.6L10 13.5l-4.2 2.3 1-4.6L3.3 8l4.7-.5z" />
+              </svg>
+            </button>
+            <button type="button" className="quiet" aria-pressed={!!saved.meta?.draft} onClick={() => store.setEntryMeta(id, { draft: !saved.meta?.draft })}>
+              {saved.meta?.draft ? 'Draft · finish' : 'Keep as draft'}
+            </button>
+          </span>
+        )}
         <span className={`saved s-${state}`} aria-live="polite">
           {state === 'saving' ? 'Saving' : state === 'saved' ? 'Saved' : state === 'failed' ? 'Couldn’t save' : ''}
         </span>
       </header>
 
+      {saved?.meta?.prompt && <p className="page-prompt">{saved.meta.prompt}</p>}
       <label htmlFor="page" className="sr">
         Write freely
       </label>

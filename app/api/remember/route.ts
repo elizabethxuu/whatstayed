@@ -7,6 +7,7 @@ import { listMemories } from '@/lib/server/data';
 import { db } from '@/lib/server/db';
 import { ConfigError } from '@/lib/server/db';
 import { allow, listDrafts, nameTrip, ownTalk, upsertDraft } from '@/lib/server/talk';
+import { getProfile } from '@/lib/server/profile';
 
 export const maxDuration = 30;
 
@@ -105,14 +106,18 @@ export async function POST(req: Request) {
   // What the agent may refer to: today's date, the garden, the people, and this conversation's drafts.
   const uid = user.id;
   const q = await db();
-  const [planted, people, drafts] = await Promise.all([
+  const [planted, people, drafts, prof] = await Promise.all([
     listMemories(uid),
     q<{ name: string }>('select name from people where user_id=$1 order by lower(name) limit 80', [uid]),
     listDrafts(uid, talkId),
+    getProfile(uid),
   ]);
   const today = new Date().toISOString().slice(0, 10);
   const ctx = [
     `\n\nToday is ${today}.`,
+    prof.name ? `Their name is ${prof.name}. Use it rarely, if at all.` : '',
+    prof.intention ? `What they told us they most want to preserve: "${prof.intention}". Let it guide which details you ask about; don't quote it back.` : '',
+    prof.home ? `They consider home to be: ${prof.home}.` : '',
     planted.length
       ? `Already in their garden (id | place | when | moment):\n${planted
           .slice(-40)

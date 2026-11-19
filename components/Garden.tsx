@@ -7,6 +7,8 @@ import type { StoredDraft, TalkSummary } from '@/lib/draft';
 import { useDictation } from '@/lib/dictation';
 import Review from './Review';
 import Conversations from './Conversations';
+import AddMemory from './AddMemory';
+import { confirmSheet } from '@/lib/confirm';
 import Tree from './Tree';
 import Masthead from './Masthead';
 import { PREFILL_KEY } from '@/lib/archive';
@@ -102,6 +104,15 @@ export default function Garden({ open }: { open: Open }) {
     (text) => setDraft(text.slice(0, 2000)),
     (msg) => store.toast(msg, 'error'),
   );
+
+  // /?trip=1 starts a conversation about a trip (from Today)
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('trip') === '1') {
+      window.history.replaceState(null, '', '/');
+      startTalk('trip');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // /?m=<id> opens that memory (from People, the Timeline, search or a collection)
   useEffect(() => {
@@ -233,7 +244,15 @@ export default function Garden({ open }: { open: Open }) {
   }
 
   async function beginAgain() {
-    if (!window.confirm('Clear the whole garden: every memory, its places, threads and photos, and every conversation? The Archives aren’t affected. This can’t be undone.')) return;
+    if (
+      !(await confirmSheet({
+        title: 'Clear the whole garden?',
+        body: 'Every memory, its places, threads and photographs, and every conversation. The Archives aren’t affected. This can’t be undone.',
+        yes: 'Clear the garden',
+        danger: true,
+      }))
+    )
+      return;
     const ok = await store.clearGarden();
     if (!ok) return;
     window.location.assign('/');
@@ -241,7 +260,15 @@ export default function Garden({ open }: { open: Open }) {
 
   async function letGo() {
     if (!sel) return;
-    if (!window.confirm('Delete this memory? Its place, threads, photos and recordings are deleted too. This can’t be undone.')) return;
+    if (
+      !(await confirmSheet({
+        title: 'Delete this memory?',
+        body: 'Its place, threads, photographs and recordings are deleted too. This can’t be undone.',
+        yes: 'Delete memory',
+        danger: true,
+      }))
+    )
+      return;
     const ok = await store.deleteMemory(sel.id);
     if (ok) setSelectedId(null);
   }
@@ -353,6 +380,9 @@ export default function Garden({ open }: { open: Open }) {
               </button>
             </p>
             <p className="card-links card-tend">
+              <Link className="quiet strong" href={`/memory/${encodeURIComponent(sel.id)}`}>
+                Open
+              </Link>
               <button type="button" className="quiet" onClick={() => setEditing('memory')}>
                 Edit
               </button>
@@ -643,12 +673,12 @@ export default function Garden({ open }: { open: Open }) {
         />
       )}
       {editing === 'new' && (
-        <MemoryEditor
+        <AddMemory
           onClose={() => setEditing(null)}
-          onSave={async (m) => {
-            const made = await store.createMemory(m);
-            if (made) setSelectedId(made.id);
-            return made;
+          onPlanted={(id) => {
+            setEditing(null);
+            store.toast('Planted. A new blossom is opening.');
+            setSelectedId(id);
           }}
         />
       )}

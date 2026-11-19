@@ -3,9 +3,10 @@ import type { ReactNode } from 'react';
 import RoomsScroll from './RoomsScroll';
 import TabBar from './TabBar';
 
-export type Room = 'garden' | 'archives' | 'places' | 'people' | 'timeline' | 'collections' | 'letters' | 'search' | 'account';
+export type Room = 'today' | 'garden' | 'archives' | 'places' | 'people' | 'timeline' | 'collections' | 'letters' | 'search' | 'you';
 
 const ROOMS: [Room, string, string][] = [
+  ['today', '/today', 'Today'],
   ['garden', '/', 'The Garden'],
   ['archives', '/archives', 'The Archives'],
   ['places', '/places', 'Places'],
@@ -20,7 +21,7 @@ export default function Masthead({ room, children }: { room: Room; children?: Re
   return (
     <header className="top">
       <div className="brand">
-        <Link href="/" className="mark-link">
+        <Link href="/today" className="mark-link">
           <span className="mark">What Stayed</span>
         </Link>
         <p className="sub">An archive of places and memories</p>
@@ -42,7 +43,7 @@ export default function Masthead({ room, children }: { room: Room; children?: Re
               <path d="M12.6 12.6l4.4 4.4" />
             </svg>
           </Link>
-          <Link href="/account" className="quiet you-link" aria-current={room === 'account' ? 'page' : undefined} aria-label="Your account">
+          <Link href="/you" className="quiet you-link" aria-current={room === 'you' ? 'page' : undefined} aria-label="You: profile and settings">
             <svg viewBox="0 0 20 20" aria-hidden="true">
               <circle cx="10" cy="7" r="3.2" />
               <path d="M3.8 17c.9-3.3 3.3-5 6.2-5s5.3 1.7 6.2 5" />

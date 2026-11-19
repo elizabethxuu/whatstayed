@@ -63,3 +63,30 @@ test('a draft needs a title, a moment and a place; dates must be real periods', 
   assert.equal(draftSchema.safeParse({ ...base, date: '2025-10' }).success, true);
   assert.equal(draftSchema.parse(base).weight, 'light');
 });
+
+import { greeting, profileSchema, promptFor, PROMPTS } from '../lib/profile.ts';
+
+test('the daily reflection is one question per day, and another can be asked for', () => {
+  const d = new Date(2026, 10, 19, 9);
+  assert.equal(promptFor(d), promptFor(new Date(2026, 10, 19, 22)), 'the same all day');
+  assert.notEqual(promptFor(d), promptFor(new Date(2026, 10, 20, 9)), 'a new one tomorrow');
+  assert.notEqual(promptFor(d, 1), promptFor(d));
+  assert.equal(promptFor(d, PROMPTS.length), promptFor(d), 'wraps round');
+  assert.equal(promptFor(d, -1), promptFor(d, PROMPTS.length - 1), 'and backwards');
+});
+
+test('the greeting follows the hour', () => {
+  assert.equal(greeting(new Date(2026, 0, 1, 8)), 'Good morning');
+  assert.equal(greeting(new Date(2026, 0, 1, 14)), 'Good afternoon');
+  assert.equal(greeting(new Date(2026, 0, 1, 21)), 'Good evening');
+});
+
+test('the profile accepts only what it knows', () => {
+  assert.ok(profileSchema.safeParse({ name: 'Liz', remember: ['places'], start: 'past', appearance: 'dark', birthday: '' }).success);
+  assert.ok(!profileSchema.safeParse({ appearance: 'neon' }).success);
+  assert.ok(!profileSchema.safeParse({ remember: ['secrets'] }).success);
+  assert.ok(!profileSchema.safeParse({ birthday: 'May 2' }).success);
+  const p = profileSchema.parse({ name: '  Liz  ', admin: true } as unknown as object);
+  assert.equal(p.name, 'Liz');
+  assert.ok(!('admin' in p), 'unknown keys are dropped');
+});

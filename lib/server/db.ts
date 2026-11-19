@@ -182,7 +182,19 @@ insert into talks (user_id, id, title, messages, created_at, updated_at)
   select user_id, 'talk-first', 'Earlier conversation', messages, updated_at, updated_at from conversations
   where jsonb_array_length(messages) > 0
   on conflict do nothing;
-update conversations set messages = '[]'::jsonb where jsonb_array_length(messages) > 0
+update conversations set messages = '[]'::jsonb where jsonb_array_length(messages) > 0;
+create table if not exists profiles (
+  user_id uuid primary key references users(id) on delete cascade,
+  data jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+alter table entries add column if not exists meta jsonb;
+create table if not exists resets (
+  token_hash text primary key,
+  user_id uuid not null references users(id) on delete cascade,
+  expires_at timestamptz not null,
+  used boolean not null default false
+)
 `;
 
 type G = typeof globalThis & { __wsdb?: Promise<Query> };

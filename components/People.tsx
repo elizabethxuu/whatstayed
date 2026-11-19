@@ -9,6 +9,7 @@ import { ItemPicker, Sheet, pageTitle } from './Pickers';
 import { firstPhoto, mediaUrl, memoriesOfPerson, pagesOfPerson, useStore, type Person, type PersonInput } from '@/lib/store';
 import { placeTitle } from '@/lib/places';
 import { fmt } from '@/lib/archive';
+import { confirmSheet } from '@/lib/confirm';
 
 export default function People() {
   const [snap, store] = useStore();
@@ -16,7 +17,7 @@ export default function People() {
   const router = useRouter();
   const pid = params.get('p');
   const person = pid ? snap.people.find((p) => p.id === pid) : undefined;
-  const [adding, setAdding] = useState(false);
+  const [adding, setAdding] = useState(() => params.get('new') === '1');
 
   if (pid && person) return <PersonPage key={person.id} person={person} onGone={() => router.push('/people')} />;
 
@@ -151,7 +152,7 @@ function PersonPage({ person, onGone }: { person: Person; onGone: () => void }) 
   }
 
   async function remove() {
-    if (!window.confirm(`Remove ${person.name}? Their photographs go too. The memories and pages you shared stay where they are.`)) return;
+    if (!(await confirmSheet({ title: `Remove ${person.name}?`, body: 'Their photographs go too. The memories and pages you shared stay where they are.', yes: 'Remove', danger: true }))) return;
     if (await store.deletePerson(person.id)) onGone();
   }
 

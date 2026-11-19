@@ -35,7 +35,7 @@ await p.click('.leaf >> text=bread knife');await p.waitForTimeout(400);await p.k
 s=await store();const ed=s.find(e=>e.body.includes('Revised.'));ok('edit saved, createdAt kept, updatedAt moved',!!ed&&ed.updatedAt>ed.createdAt);
 await p.reload();await p.waitForTimeout(800);ok('edit persists after refresh',/Revised\./.test(await p.textContent('.pages')));
 // delete
-await p.click('.leaf >> text=pencil');await p.waitForTimeout(300);p.once('dialog',d=>d.accept());await p.click('text=Delete this page');await p.waitForTimeout(500);
+await p.click('.leaf >> text=pencil');await p.waitForTimeout(300);await p.click('text=Delete this page');await p.click('.confirm-yes');await p.waitForTimeout(500);
 ok('delete removes entry',(await store()).length===1&&(await p.$$('.leaf')).length===1);
 await p.reload();await p.waitForTimeout(800);ok('delete persists after refresh',(await p.$$('.leaf')).length===1);
 // keep as memory (prefill, never auto-send)

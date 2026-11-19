@@ -52,11 +52,11 @@ const fakeSpeech = () => {
 
   // 1. open What Stayed (a fresh account), with one memory already in Edinburgh
   await p.goto(B + '/welcome');
-  await p.click('text=Begin a garden');
+  await p.click('text=Begin your story'); await p.click('text=Skip for now');
   await p.fill('input[type=email]', 'talker@example.com');
   await p.fill('input[type=password]', 'garden-talk-1');
   await p.click('button[type=submit]');
-  await p.waitForURL(B + '/');
+  await p.click('text=Enter your garden'); await p.waitForURL(/\/today/); await p.goto(B + '/');
   ok('1. opens on an inviting, empty garden', await p.isVisible('text=Add a memory'));
   await p.evaluate(() =>
     fetch('/api/memories', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ place: 'Edinburgh', moment: 'Fireworks over the castle at Hogmanay', feeling: 'bright', weight: 'light' }) }),
@@ -175,8 +175,8 @@ const fakeSpeech = () => {
   await p.goto(B + '/?c=' + talk.id);
   await p.click('.review-go');
   await p.waitForSelector('.review');
-  p.once('dialog', (d) => d.accept());
   await p.click('.rv-foot >> text=Discard the draft');
+  await p.click('.confirm-yes');
   await p.waitForTimeout(1000);
   ok('the remaining draft can be discarded', (await p.$$('.bud-draft')).length === 0 && !(await p.isVisible('.review-go')));
 
@@ -216,8 +216,8 @@ const fakeSpeech = () => {
   await p.waitForSelector('.you');
   ok('history: resuming shows where it left off', /That’s all/.test(await p.textContent('.you')));
   await p.click('text=Conversations');
-  p.once('dialog', (d) => d.accept());
   await p.click(`.talks-list li:has-text("Edinburgh, October") .untie`);
+  await p.click('.confirm-yes');
   await p.waitForTimeout(1500);
   s = await state();
   ok('history: deleting a conversation keeps its saved memories', s.talks.length === 1 && s.memories.length === 4);
@@ -225,11 +225,11 @@ const fakeSpeech = () => {
   // 13 (sign-in). sign out, sign back in: conversation history intact
   await p.goto(B + '/account');
   await p.click('text=Sign out');
-  await p.waitForURL('**/welcome');
+  await p.waitForURL(/\/welcome/);
   await p.fill('input[type=email]', 'talker@example.com');
   await p.fill('input[type=password]', 'garden-talk-1');
   await p.click('button[type=submit]');
-  await p.waitForURL(B + '/');
+  await p.waitForURL(/\/today/); await p.goto(B + '/');
   await p.waitForSelector('.you');
   const v13 = await p.textContent('.voice');
   ok('13. after signing in again, the latest conversation is open', /peaches|swimming/.test(v13), v13 + ' | ' + p.url());
@@ -240,11 +240,11 @@ const fakeSpeech = () => {
   await routes(c2);
   const q = await c2.newPage();
   await q.goto(B + '/welcome');
-  await q.click('text=Begin a garden');
+  await q.click('text=Begin your story'); await q.click('text=Skip for now');
   await q.fill('input[type=email]', 'stranger@example.com');
   await q.fill('input[type=password]', 'stranger-garden-1');
   await q.click('button[type=submit]');
-  await q.waitForURL(B + '/');
+  await q.click('text=Enter your garden'); await q.waitForURL(/\/today/); await q.goto(B + '/');
   const mine = (await state()).talks[0].id;
   const iso = await q.evaluate(async (id) => {
     const a = (await fetch('/api/talks/' + id)).status;
@@ -283,11 +283,11 @@ const fakeSpeech = () => {
   await routes(m);
   const mp = await m.newPage();
   await mp.goto(B + '/welcome');
-  await mp.click('text=Begin a garden');
+  await mp.click('text=Begin your story'); await mp.click('text=Skip for now');
   await mp.fill('input[type=email]', 'phone@example.com');
   await mp.fill('input[type=password]', 'phone-garden-1');
   await mp.click('button[type=submit]');
-  await mp.waitForURL(B + '/');
+  await mp.click('text=Enter your garden'); await mp.waitForURL(/\/today/); await mp.goto(B + '/');
   await mp.click('text=Tell it about a trip');
   await mp.waitForURL(/\?c=/);
   await mp.fill('#say', 'I went to Paris in June 2024. We spent the morning walking along the Seine, and then ate crêpes in the rain.');

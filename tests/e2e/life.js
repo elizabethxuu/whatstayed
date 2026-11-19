@@ -34,21 +34,24 @@ const PW = 'quiet-garden-27';
   fs.writeFileSync(PHOTO, Buffer.from(jpg, 'base64'));
 
   // sign up
-  await p.click('text=Begin a garden');
+  await p.click('text=Begin your story'); await p.click('text=Skip for now');
   await p.fill('input[type=email]', 'liz2@example.com');
   await p.fill('input[type=password]', PW);
   await p.click('button[type=submit]');
-  await p.waitForURL(B + '/');
+  await p.click('text=Enter your garden'); await p.waitForURL(/\/today/); await p.goto(B + '/');
   await p.screenshot({ path: OUT + '/masthead.png' });
 
   // two memories by hand, one dated three years ago today
   const plant = async (moment, place, feeling, date) => {
     await p.click('text=Plant by hand');
-    await p.fill('.mem-ed textarea', moment);
-    await p.fill('#place', place);
-    await p.fill('#feeling', feeling);
-    if (date) await p.fill('.mem-ed input[type=date]', date);
-    await p.click('.mem-ed button[type=submit]');
+    await p.fill('.add textarea >> nth=0', moment);
+    await p.click('.add button:has-text("Continue")');
+    await p.fill('.add label:has-text("Where") input', place);
+    if (date) await p.fill('.add input[type=date]', date);
+    await p.click('.add button:has-text("Continue")');
+    await p.fill('.add label:has-text("Mood") input', feeling);
+    await p.click('.add button:has-text("Plant it now")');
+    await p.waitForSelector('.add', { state: 'detached' });
     await p.waitForTimeout(700);
   };
   await plant('She braided my hair on the last morning', 'Jiangmen', 'held', threeYearsAgo);
@@ -267,8 +270,8 @@ const PW = 'quiet-garden-27';
   await p2.click('text=in 10 years');
   await p2.click('text=Seal it');
   await p2.waitForSelector('.envelope');
-  p2.once('dialog', (d) => d.accept());
   await p2.click('.envelope >> text=Open early');
+  await p2.click('.confirm-yes');
   await p2.waitForTimeout(600);
   ok('a letter can be opened early, on purpose', /Open me in ten years/.test(await p2.textContent('main')));
   await p2.close();
@@ -296,8 +299,8 @@ const PW = 'quiet-garden-27';
   await p.goto(B + '/people');
   await p.click('.face:has-text("Leia")');
   await p.waitForSelector('.person h1');
-  p.once('dialog', (d) => d.accept());
   await p.click('.person-head >> text=Remove');
+  await p.click('.confirm-yes');
   await p.waitForURL('**/people');
   const s2 = await st();
   ok('person removed; their memory stays, link gone', s2.people.length === 1 && s2.memories.length === 2 && !s2.links.some((l) => l.b && !s2.people.some((pp) => pp.id === l.b) && l.kind !== 'entry-memory'));
@@ -331,11 +334,11 @@ const PW = 'quiet-garden-27';
 
   // 15/16 sign out and back in
   await p.click('text=Sign out');
-  await p.waitForURL('**/welcome');
+  await p.waitForURL(/\/welcome/);
   await p.fill('input[type=email]', 'liz2@example.com');
   await p.fill('input[type=password]', PW);
   await p.click('button[type=submit]');
-  await p.waitForURL(B + '/');
+  await p.waitForURL(/\/today/); await p.goto(B + '/');
   const s3 = await st();
   ok('after signing back in, everything is intact', s3.memories.length === 2 && s3.people.length === 1 && s3.collections.length === 1 && s3.collectionItems.length === 2 && s3.letters.length === 2 && s3.milestones.length === 1 && s3.entries[0].location?.city === 'Jiangmen');
 

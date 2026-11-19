@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { useStore } from '@/lib/store';
+import { confirmSheet } from '@/lib/confirm';
 
 const day = (t: number) => new Date(t).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
 
@@ -26,7 +27,7 @@ export default function Conversations({
   }, [onClose]);
 
   async function remove(id: string, title: string) {
-    if (!window.confirm(`Delete “${title || 'this conversation'}”? Its words and any unsaved drafts are deleted. Memories you saved from it stay in the garden.`)) return;
+    if (!(await confirmSheet({ title: `Delete “${title || 'this conversation'}”?`, body: 'Its words and any unsaved drafts are deleted. Memories you saved from it stay in the garden.', yes: 'Delete conversation', danger: true }))) return;
     const ok = await store.deleteTalk(id);
     if (ok && id === current) window.location.assign('/');
   }

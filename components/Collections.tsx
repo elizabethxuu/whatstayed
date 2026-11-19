@@ -8,6 +8,7 @@ import { ItemPicker, Sheet, pageTitle } from './Pickers';
 import { firstPhoto, itemsOf, mediaUrl, useStore, type Collection, type CollectionInput, type Media, type Snapshot } from '@/lib/store';
 import { placeTitle } from '@/lib/places';
 import { fmt } from '@/lib/archive';
+import { confirmSheet } from '@/lib/confirm';
 
 /** The cover: the one chosen, else the first photograph inside, else nothing but its name. */
 export function coverOf(snap: Snapshot, c: Collection): Media | undefined {
@@ -153,7 +154,7 @@ function CollectionPage({ c, onGone }: { c: Collection; onGone: () => void }) {
   );
 
   async function remove() {
-    if (!window.confirm(`Remove the collection “${c.name}”? The memories and pages in it stay.`)) return;
+    if (!(await confirmSheet({ title: `Remove the collection “${c.name}”?`, body: 'The memories and pages in it stay.', yes: 'Remove collection', danger: true }))) return;
     if (await store.deleteCollection(c.id)) onGone();
   }
 

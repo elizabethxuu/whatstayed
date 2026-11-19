@@ -97,5 +97,24 @@ export type MemoryExtra = {
   unsure?: string[];
   precision?: 'year' | 'month' | 'day';
   trip?: { talkId: string; title: string };
+  tags?: string[];
   from?: 'conversation';
 };
+
+/** A memory being added by hand, saved part-way so it can be finished later. */
+export const handDraftSchema = z.object({
+  step: z.number().int().min(0).max(6).optional(),
+  title: z.string().max(80).optional(),
+  moment: z.string().max(600).optional(),
+  narrative: z.string().max(2000).optional(),
+  place: z.string().max(80).optional(),
+  location: z.record(z.unknown()).nullable().optional(),
+  when: z.string().max(60).optional(),
+  date: z.string().regex(/^(\d{4}-\d{2}-\d{2})?$/).optional(),
+  people: z.array(z.object({ name: z.string().min(1).max(80), personId: z.string().max(80).optional() })).max(12).optional(),
+  feeling: z.string().max(40).optional(),
+  tags: z.array(z.string().min(1).max(30)).max(12).optional(),
+  related: z.array(z.string().max(80)).max(6).optional(),
+  weight: z.enum(['light', 'tender', 'heavy']).optional(),
+});
+export type HandDraft = z.infer<typeof handDraftSchema>;

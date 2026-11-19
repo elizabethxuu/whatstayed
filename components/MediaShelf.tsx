@@ -3,6 +3,7 @@
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { mediaFor, mediaUrl, useStore, type Media } from '@/lib/store';
 import { clock, pickRecorderType, preparePhoto } from '@/lib/media';
+import { confirmSheet } from '@/lib/confirm';
 
 const MAX_MS = 5 * 60 * 1000;
 
@@ -45,7 +46,7 @@ export default function MediaShelf({ owner, compact = false }: { owner: Owner; c
   }
 
   async function remove(m: Media) {
-    if (!window.confirm(m.kind === 'photo' ? 'Remove this photograph?' : 'Delete this recording? This can’t be undone.')) return;
+    if (!(await confirmSheet(m.kind === 'photo' ? { title: 'Remove this photograph?', yes: 'Remove', danger: true } : { title: 'Delete this recording?', body: 'This can’t be undone.', yes: 'Delete recording', danger: true }))) return;
     setView(null);
     await store.deleteMedia(m.id);
   }

@@ -260,3 +260,25 @@ export async function allow(key: string, limit: number, windowSec: number, count
   if (Math.random() < 0.05) await q('delete from rate_hits where key=$1 and bucket < $2', [key, bucket - 2]);
   return r[0].count <= limit;
 }
+
+/* ---------- memories being added by hand: drafts kept under the reserved conversation id "by-hand" ---------- */
+
+export async function saveHandDraft(user: string, id: string | null, data: unknown) {
+  const { handDraftSchema } = await import('../draft');
+  const d = handDraftSchema.parse(data);
+  const q = await db();
+  const did = id ?? nid('h');
+  const r = await q(
+    `insert into drafts (user_id, id, talk_id, data) values ($1,$2,'by-hand',$3::jsonb)
+     on conflict (user_id, id) do update set data = excluded.data, updated_at = now()
+     where drafts.talk_id = 'by-hand' and drafts.status = 'draft' returning id`,
+    [user, did, JSON.stringify(d)],
+  );
+  if (!r.length) throw new HttpError(404, 'That draft isn’t here any more.');
+  return did;
+}
+
+export async function deleteHandDraft(user: string, id: string) {
+  const q = await db();
+  await q(`delete from drafts where user_id=$1 and id=$2 and talk_id='by-hand'`, [user, id]);
+}

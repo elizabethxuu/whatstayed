@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { locateOnce, locLine, reversePlace, searchPlaces, type Loc } from '@/lib/places';
+import { useStore } from '@/lib/store';
 
 type Props = {
   memory: { moment: string; place: string };
@@ -14,6 +15,8 @@ type Props = {
 type Fields = { name: string; neighborhood: string; city: string; country: string };
 
 export default function LocationEditor({ memory, current, onSave, onRemove, onClose }: Props) {
+  const [snap] = useStore();
+  const offerHere = snap.profile?.locationAsk !== 'never';
   const [f, setF] = useState<Fields>({
     name: current?.name && current.name !== current.city ? current.name : '',
     neighborhood: current?.neighborhood || '',
@@ -158,7 +161,7 @@ export default function LocationEditor({ memory, current, onSave, onRemove, onCl
           )}
         </div>
 
-        {!ask ? (
+        {!offerHere ? null : !ask ? (
           <button type="button" className="quiet loc-here" onClick={() => setAsk(true)}>
             Use where I am now
           </button>

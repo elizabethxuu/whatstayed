@@ -265,3 +265,64 @@ For your own use, neither blocks launch.
   - Bug found and fixed: opening an older conversation from the list could save its words into the one you came from.
 - **Not tested here:** the real Claude model (tests use a scripted stand-in with the same tools), real speech recognition, and the deployed site.
 
+
+## The app (November 19)
+
+What Stayed now opens like an app rather than a website: a nine-screen welcome, a personal Today, five tabs on a phone, a step-by-step way to add a memory, a page for each memory, a You room, dark mode, and installation on the home screen.
+
+### What was built
+
+- **Welcome (onboarding).** Nine screens, one question each: what stayed with you; what you'd like to remember; about you (name, birthday, home, time zone guessed from the device); how you remember; past or today; what you'd most like to preserve (shown on Today only if you choose); reminders; create an account; "Every life leaves something behind." Every screen can be skipped. Answers survive a reload before the account exists, then are saved to the account. A browser that has signed in before opens on **Sign in** instead. Apple sign-in isn't offered: it needs an Apple Developer account and keys that aren't configured.
+- **Today.** Greeting with the person's name and the date, their intention, the tree, "What would you like to remember today?", a daily reflection (one question at a time, saved privately to the Archives, optionally tied to a memory), unfinished drafts and conversations, revisits, recently added and recently revisited memories.
+- **Personalisation that does something.** The onboarding answers choose Today's first steps (start from the past → tell it about a trip; places → add a place; writing → write a page and the reflection comes first; people → add a person; photographs; chapters → the Timeline). The intention and home are given to the conversation agent as context. The evening reflection toggle brings the question forward after 6 pm; the weekly review shows the week's memories on Sundays; "a year ago" controls revisits.
+- **Adding a memory.** A sheet in five steps (the memory; when and where; who was there and the mood; photographs; tags and red threads). It can be saved as a draft at any step, and closing asks whether to keep it. Drafts wait on Today.
+- **A page for each memory** (`/memory/<id>`): photographs, place, title, moment, story, when, where, who, mood, tags, trip, connections, photos and voice notes, edit and delete.
+- **Archives:** favourites, drafts, and reflections (with their question) as filters; a star on each page.
+- **You:** photo, profile and onboarding answers (editable), real counts, appearance (automatic/light/dark), daily reflection and reminders, notification permission, location ("offer it" / "never offer"), export, change password, sign out, delete personal info, delete the account. The old /account address leads here.
+- **Password.** Change it (needs the current one; other devices are signed out). Reset by email link (single use, one hour, rate limited).
+- **App behaviour.** Bottom tab bar with haptics, pull to refresh, sheets instead of browser confirm boxes everywhere, keyboard-aware sheets, an offline banner, an offline page when opened without a connection, dark mode without a flash, safe areas on notched phones, reduced motion respected.
+- **Installable.** Manifest, icons (including maskable), Apple touch icon, launch screens for eight iPhone sizes, a service worker that caches only the app's own files (never your memories, pages or photographs).
+- **A safety copy while writing.** A page being written is also kept in this browser, per account, until the account confirms it. While testing, a page typed seconds before leaving was sometimes lost when the service worker was active (the browser dropped the last-moment save). The copy is now sent on the next visit, so those words aren't lost.
+- **Fixed along the way:** title, story and tags were dropped from memories added by hand without a title.
+
+### What needs a service or account that isn't set up
+
+| Feature | Status | What it needs |
+|---|---|---|
+| Password reset email | Built; switched off until configured. Says so honestly. | A Resend account and verified domain: `RESEND_API_KEY`, `RESET_FROM_EMAIL` |
+| Notifications while the app is closed | Not built. Reminders appear in Today; device permission is asked only when you tap the button. | A Web Push service (VAPID keys) and a scheduled job; on iPhone, iOS 16.4+ with the app on the home screen |
+| Sign in with Apple | Not offered | Apple Developer account ($99/yr), a Services ID and keys |
+| App Store app | Not built | See below |
+
+### Capacitor (an App Store version)
+
+The app could be wrapped with Capacitor, which puts the same web app inside a native iOS shell. It would need:
+
+- a Mac with Xcode;
+- an Apple Developer account ($99 a year);
+- app review;
+- either bundling the site or pointing the shell at the live URL.
+
+Apple tends to reject apps that are only a website in a frame, so it would also need native touches: push notifications, a native photo picker, and probably Sign in with Apple (required once any other sign-in is offered).
+
+Recommendation: use the home-screen web app first. It already opens full screen with its own icon and launch screen. Revisit Capacitor if push notifications or App Store presence become important.
+
+### Checks run
+
+- Typecheck, lint and production build: clean.
+- Unit tests: 10 of 10.
+- End-to-end suites, run in Chromium on a fresh database with the scripted agent:
+
+| Suite | Checks passed |
+|---|---|
+| accounts | 60/60 |
+| life | 60/60 |
+| garden | 10/10 |
+| archives | 23/23 |
+| places | 36/36 |
+| white | 25/25 |
+| conversation | 52/52 |
+| app (new) | 67/67 |
+
+- Screens were checked by eye on a phone (iPhone 13 size) and on desktop, in light and dark.
+- These checks ran locally, not against the deployed site.

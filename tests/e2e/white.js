@@ -54,7 +54,7 @@ async function whiteness(page) {
   ok('blossoms are white; only the meaningful one carries the red', (await p.$$('.blossom.w-heavy')).length === 1 && (await p.$$eval('.blossom .petal', (ps) => ps.every((x) => /url\(#p(White|Mist|Meaning)\)/.test(x.getAttribute('fill'))))));
 
   // how white is each room?
-  for (const [u, name] of [['/', 'garden'], ['/archives', 'archives'], ['/places', 'places'], ['/people', 'people'], ['/timeline', 'timeline'], ['/collections', 'collections'], ['/letters', 'letters'], ['/account', 'account']]) {
+  for (const [u, name] of [['/', 'garden'], ['/archives', 'archives'], ['/places', 'places'], ['/people', 'people'], ['/timeline', 'timeline'], ['/collections', 'collections'], ['/letters', 'letters'], ['/you', 'you'], ['/today', 'today']]) {
     await p.goto(B + u);
     await p.waitForTimeout(u === '/' ? 3500 : 1400);
     const w = await whiteness(p);
@@ -97,15 +97,13 @@ async function whiteness(page) {
   const input = await q.$eval('#say', (e) => e.getBoundingClientRect().bottom);
   const barTop = await q.$eval('.tabbar', (e) => e.getBoundingClientRect().top);
   ok('phone: the garden’s input is above the bar, not under it', input <= barTop, `${input} vs ${barTop}`);
-  await q.click('.tabbar button:has-text("More")');
-  ok('phone: More opens the other rooms', await q.isVisible('.tab-sheet >> text=Timeline'));
-  await q.keyboard.press('Escape');
-  ok('phone: Escape closes it', !(await q.isVisible('.tab-sheet')));
-  await q.click('.tabbar button:has-text("More")');
-  await q.click('.tab-sheet >> text=Timeline');
+  await q.click('.tabbar a[href="/you"]');
+  await q.waitForURL('**/you');
+  ok('phone: You holds the other rooms', await q.isVisible('.you-explore >> text=Timeline'));
+  await q.click('.you-explore >> text=Timeline');
   await q.waitForURL('**/timeline');
   await q.waitForTimeout(800);
-  ok('phone: More is marked while in one of its rooms', (await q.getAttribute('.tabbar button', 'aria-current')) === 'page');
+  ok('phone: You is marked while in one of its rooms', (await q.getAttribute('.tabbar a[href="/you"]', 'aria-current')) === 'page');
   await q.click('.tabbar a[href="/places"]');
   await q.waitForURL('**/places');
   ok('phone: tabs navigate', (await q.getAttribute('.tabbar a[href="/places"]', 'aria-current')) === 'page');

@@ -7,6 +7,7 @@ import { Names, Sheet, pageTitle } from './Pickers';
 import { mediaFor, mediaUrl, peopleOf, useStore, type Media, type Milestone, type Person } from '@/lib/store';
 import { placeTitle } from '@/lib/places';
 import { revisits, type Revisit } from '@/lib/revisit';
+import { confirmSheet } from '@/lib/confirm';
 
 type Cat = 'memory' | 'entry' | 'milestone' | 'letter';
 type Item = {
@@ -260,7 +261,7 @@ export default function Timeline() {
                               <button
                                 type="button"
                                 className="quiet danger"
-                                onClick={() => window.confirm(`Remove “${i.milestone!.title}”?`) && store.deleteMilestone(i.milestone!.id)}
+                                onClick={async () => (await confirmSheet({ title: `Remove “${i.milestone!.title}”?`, yes: 'Remove', danger: true })) && store.deleteMilestone(i.milestone!.id)}
                               >
                                 Remove
                               </button>
