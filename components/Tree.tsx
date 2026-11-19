@@ -348,11 +348,8 @@ function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors,
           <stop offset="1" stopColor="#f8f7f2" stopOpacity="0" />
         </radialGradient>
         <linearGradient id="prismRing" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#ffd6e0" />
-          <stop offset=".3" stopColor="#ffb3c7" />
-          <stop offset=".55" stopColor="#ffc2d1" />
-          <stop offset=".8" stopColor="#ffe0e8" />
-          <stop offset="1" stopColor="#fde2e4" />
+          <stop offset="0" stopColor="#e3ebff" />
+          <stop offset="1" stopColor="#e3ebff" />
         </linearGradient>
         <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="28" />

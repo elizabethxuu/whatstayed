@@ -1992,3 +1992,93 @@ html::after { background: linear-gradient(250deg, #ffc2d1, #fde2e8 40%, #ff8fab 
   body::before { opacity: .4; height: 48vh; }
   html::after { opacity: .3; }
 }
+
+/* ================= COBALT: navy and cobalt, flat, almost no gradient =================
+   Overrides the rose layer. Solid navy and cobalt for anything you press; one quiet pale-blue wash
+   behind the page; frosted icon tiles stay. The tree stays pearl-white with its red heart. */
+:root {
+  --navy: #142a5c;
+  --cobalt: #1f4fbf;
+  --cobalt-soft: #e8eefc;
+  --cherry-red: #1f4fbf;
+  --cherry-deep: #142a5c;
+  --rose-1: #eef3ff; --rose-2: #d6e1fb; --rose-3: #9fb6ef; --rose-4: #1f4fbf;
+  --prism: #dfe8ff;
+  --bloom: #142a5c;            /* flat navy */
+  --bloom-soft: #eef3ff;
+  --violet: #1f4fbf; --peri-ink: #1f4fbf; --peri-flower: #1f4fbf;
+  --pane: rgb(255 255 255 / .74);
+  --pane-edge: rgb(255 255 255 / .95);
+  --pane-shadow: 0 1px 0 rgb(255 255 255 / 1) inset, 0 0 0 1px rgb(20 42 92 / .05), 0 24px 60px -40px rgb(20 42 92 / .3), 0 4px 14px -8px rgb(20 42 92 / .08);
+  --glass-tile: rgb(255 255 255 / .78);
+  --porcelain: #fdfdfe; --ivory: #fafbfd; --mist: #f5f7fb;
+}
+:root[data-theme='dark'] {
+  --navy: #c9d7ff; --cobalt: #8fb0ff; --cobalt-soft: #1d2740;
+  --cherry-red: #8fb0ff; --cherry-deep: #c9d7ff;
+  --bloom: #8fb0ff; --violet: #8fb0ff; --peri-ink: #8fb0ff; --peri-flower: #8fb0ff;
+  --pane: rgb(30 36 52 / .7); --glass-tile: rgb(255 255 255 / .08);
+  --pane-shadow: 0 1px 0 rgb(255 255 255 / .06) inset, 0 24px 60px -30px rgb(0 0 0 / .6);
+  --porcelain: #151a26; --ivory: #121621; --mist: #0e121b;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --navy: #c9d7ff; --cobalt: #8fb0ff; --cobalt-soft: #1d2740;
+    --cherry-red: #8fb0ff; --cherry-deep: #c9d7ff;
+    --bloom: #8fb0ff; --violet: #8fb0ff; --peri-ink: #8fb0ff; --peri-flower: #8fb0ff;
+    --pane: rgb(30 36 52 / .7); --glass-tile: rgb(255 255 255 / .08);
+    --pane-shadow: 0 1px 0 rgb(255 255 255 / .06) inset, 0 24px 60px -30px rgb(0 0 0 / .6);
+    --porcelain: #151a26; --ivory: #121621; --mist: #0e121b;
+  }
+}
+
+/* the air: plain light, one quiet pale-blue wash; no colour bands */
+html { background: var(--ivory); background-image: none; }
+body::before { background: radial-gradient(closest-side, #dbe5ff, transparent); opacity: .5; filter: blur(40px); }
+html::after { display: none; }
+.card::before, .you-block::before, .today-reflect::before, .agent-action::before, .rd::before, .today-step::before, .welcome-card::before { display: none; }
+.add, .confirm-sheet, .review, .loc-ed { background: var(--porcelain); }
+
+/* anything you press: flat navy; the one you're on: cobalt */
+.welcome-go, .confirm-yes, .agent-yes, .ob-choice[aria-pressed='true'], .ob-choice[aria-checked='true'], .agent-mode[aria-checked='true'], .say button.ready, .say button:not(:disabled):hover, .ob-toggle input:checked + i {
+  background: var(--navy); color: #fff; box-shadow: 0 10px 22px -16px rgb(20 42 92 / .7);
+}
+.welcome-go:hover, .welcome-go:focus-visible { background: var(--cobalt); outline: 2px solid #c9d7fb; }
+:root[data-theme='dark'] .welcome-go, :root[data-theme='dark'] .confirm-yes, :root[data-theme='dark'] .agent-yes, :root[data-theme='dark'] .ob-choice[aria-pressed='true'], :root[data-theme='dark'] .agent-mode[aria-checked='true'] { color: #0e121b; }
+.confirm-yes.danger, .agent-yes.danger { background: var(--red); }
+.confirm-no { background: var(--cobalt-soft); color: var(--navy); }
+.ob-progress { background: var(--cobalt-soft); }
+.ob-progress i { background: var(--cobalt); }
+.add-dots li.on button { background: var(--cobalt); border-color: var(--cobalt); }
+.add-dots li.done button { background: #c9d7fb; border-color: #c9d7fb; }
+.chip { background: rgb(255 255 255 / .7); border-color: rgb(20 42 92 / .12); }
+.mem-tags .chip { background: var(--cobalt-soft); border-color: rgb(31 79 191 / .2); color: var(--cobalt); }
+.seg button[aria-checked='true'] { color: var(--navy); }
+.say:focus-within { border-bottom-color: var(--cobalt); }
+.agent-prompt:hover { border-color: #c9d7fb; }
+.rooms a[aria-current='page'] { color: var(--navy); text-decoration-color: var(--cobalt); }
+.agent-label { background: none; color: var(--cobalt); filter: none; -webkit-background-clip: border-box; background-clip: border-box; animation: fade .6s ease both; }
+.sheet-veil { background: rgb(20 42 92 / .12); }
+::selection { background: #c9d7fb; }
+.blossom.is-lit .petal { filter: drop-shadow(0 0 5px rgb(201 215 251 / 1)) drop-shadow(0 0 2px rgb(31 79 191 / .45)); }
+.rd-place::after, .rd-person::after, .rd-drafts::after, .rd-words::after { background: var(--cobalt); }
+.rd-connect::after { background: var(--thread); }
+.mark .flower { filter: drop-shadow(0 2px 5px rgb(20 42 92 / .2)); }
+.fig { color: rgb(20 42 92 / .45); }
+.today-mem-img { background: var(--cobalt-soft); }
+.motes circle { filter: drop-shadow(0 0 3px rgb(201 215 251 / 1)); }
+
+/* frosted icon tiles, in navy */
+.you-link { background: var(--glass-tile); color: var(--navy); box-shadow: 0 1px 0 #fff inset, 0 10px 22px -16px rgb(20 42 92 / .45); }
+.you-link:hover, .you-link:focus-visible { color: var(--cobalt); box-shadow: 0 1px 0 #fff inset, 0 14px 26px -16px rgb(20 42 92 / .5); }
+.you-link[aria-current='page'] { background: var(--cobalt); color: #fff; }
+.tab { color: rgb(20 42 92 / .55); }
+.tab svg { background: var(--glass-tile); box-shadow: 0 1px 0 #fff inset, 0 8px 18px -14px rgb(20 42 92 / .45); }
+.tab[aria-current='page'] { color: var(--cobalt); }
+.tab[aria-current='page'] svg { background: var(--cobalt); color: #fff; box-shadow: 0 10px 20px -12px rgb(31 79 191 / .7); }
+:root[data-theme='dark'] .tab[aria-current='page'] svg, :root[data-theme='dark'] .you-link[aria-current='page'] { color: #0e121b; }
+.you-photo { color: var(--navy); }
+.agent-found-place, .today-about a, .ai-mark, .ai-note, .log-tool, .fav.on, .quiet.strong { color: var(--cobalt); }
+.quiet.strong { text-decoration-color: rgb(31 79 191 / .4); }
+.today-date, .today-k, .today-block h2, .you-block h2, .mem-section h2, .agent-k, .mem-place, .card-place, .month-label { color: var(--navy); }
+.you-count { color: var(--navy); }

@@ -494,3 +494,15 @@ At Liz's direction, the colours are now red and pink, and the icons are frosted 
 - The "how white is each screen" test was updated to the new direction: screens stay light and airy (at least 75% near-white; they measure about 81%), and the tree must still be white.
 
 **Checks:** all nine browser suites and 14 unit tests pass.
+
+## Design update: Cobalt (November 19)
+
+At Liz's direction: navy and cobalt, with much less gradient.
+
+- **Flat colours:** anything you press is flat navy; the tab or icon you're on is flat cobalt. No colour blends on buttons, choices, switches or labels.
+- **Background:** the page is plain light with a single quiet pale-blue wash. The rainbow and rose glows, and the coloured hairlines on panels, are gone.
+- **Icons and panels:** frosted white glass, with each icon on its own frosted tile.
+- **The blossom mark, app icon and launch screens** are cobalt.
+- **The tree** stays pearl-white with its red heart, on a pale-blue halo.
+
+**Checks:** all nine browser suites and 14 unit tests pass.
