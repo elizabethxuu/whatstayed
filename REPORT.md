@@ -480,3 +480,17 @@ Every name, place and phrase in a question comes from their data; questions only
 It stays white: only the one red heart of a marked memory carries colour. Reduced motion holds everything still.
 
 **Checks:** unit tests 14/14, including five for tailored questions (no stock references, anniversaries first, stable per day and different per person, answered questions move back, an empty garden still gets a question). All nine browser suites pass.
+
+## Design update: Rose Glass (November 19)
+
+At Liz's direction, the colours are now red and pink, and the icons are frosted glass:
+
+- **Glow and glass:** the background glow runs blush to cherry (top left, with a rose echo lower right). The glass panes carry a faint rose tint and a pink hairline along the top edge.
+- **Buttons, chosen options, switches and the active mode:** a cherry-red gradient pill. Labels and links are cherry red.
+- **Icons:** each tab-bar and header icon sits on its own small tile of frosted glass. The current tab's tile fills with cherry red.
+- **The blossom mark, app icon and launch screens** are now cherry pink with a deep red outline.
+- **The tree** stays pearl-white with its red heart; its halo is now blush.
+- **Dark mode** uses the same palette in deeper tones.
+- The "how white is each screen" test was updated to the new direction: screens stay light and airy (at least 75% near-white; they measure about 81%), and the tree must still be white.
+
+**Checks:** all nine browser suites and 14 unit tests pass.

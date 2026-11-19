@@ -1,4 +1,4 @@
-// The White Garden: phone tab bar, how white each screen really is, no stray pinks, the tree growing finer, reduced motion.
+// Light and airy (now red and pink, so screens must stay mostly near-white rather than almost entirely), the tree stays white, phone tab bar, the tree growing finer, reduced motion.
 const { chromium, devices } = require('playwright');
 const A = require('./auth.js');
 const B = 'http://localhost:3100';
@@ -58,7 +58,7 @@ async function whiteness(page) {
     await p.goto(B + u);
     await p.waitForTimeout(u === '/' ? 3500 : 1400);
     const w = await whiteness(p);
-    ok(`${name}: predominantly white (${Math.round(w * 100)}%)`, w >= 0.85, String(w));
+    ok(`${name}: light and airy (${Math.round(w * 100)}% near-white)`, w >= 0.75, String(w));
   }
 
   // no stray pinks anywhere in the styles of these rooms (the muted red #874d50 is allowed)
