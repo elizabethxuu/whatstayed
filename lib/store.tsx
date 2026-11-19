@@ -2,6 +2,7 @@
 
 import { questionsFor } from './questions';
 import { useAccount } from './account';
+import { bloom } from './bloom';
 
 /**
  * The client's view of one person's garden. The server is the source of truth;
@@ -166,8 +167,9 @@ function createStore(initial: Snapshot) {
       attempt(async () => {
         const { memory } = await api<{ memory: Stored }>('/api/memories', { method: 'POST', json: m });
         set((s) => ({ ...s, memories: [...s.memories, memory] }));
+        bloom();
         return memory;
-      }, 'Planted.'),
+      }, 'Saved. Some things stay.'),
     updateMemory: (id: string, m: MemoryInput) =>
       attempt(async () => {
         const { memory } = await api<{ memory: Stored }>(`/api/memories/${encodeURIComponent(id)}`, { method: 'PATCH', json: m });

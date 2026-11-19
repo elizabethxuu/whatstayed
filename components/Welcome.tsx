@@ -74,10 +74,10 @@ export default function Welcome({ resetToken }: { resetToken?: string }) {
     }
   }
 
-  const title = { in: 'Welcome back.', up: 'Create an account.', forgot: 'Reset your password.', reset: 'Choose a new password.' }[mode];
+  const title = { in: 'Welcome back.', up: 'Start your garden.', forgot: 'Reset your password.', reset: 'Choose a new password.' }[mode];
   const sub = {
     in: 'Sign in to your garden.',
-    up: 'A private archive of places, people and memories.',
+    up: 'A private, living garden of places, people and moments worth keeping.',
     forgot: 'Enter the email you signed up with, and we’ll send a link to choose a new password.',
     reset: 'You’ll be signed in, and signed out everywhere else.',
   }[mode];

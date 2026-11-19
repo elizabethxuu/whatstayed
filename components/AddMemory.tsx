@@ -31,16 +31,19 @@ export default function AddMemory({
   initial,
   onClose,
   onPlanted,
+  initialPhotos,
 }: {
   draftId?: string;
   initial?: HandDraft;
+  /** photographs chosen before the flow opened (from the capture sheet) */
+  initialPhotos?: Blob[];
   onClose: () => void;
   onPlanted: (memoryId: string) => void;
 }) {
   const [snap, store] = useStore();
   const [d, setD] = useState<HandDraft>({ step: 0, weight: 'light', people: [], tags: [], related: [], ...initial });
   const [draftId, setDraftId] = useState(startId ?? null);
-  const [photos, setPhotos] = useState<{ blob: Blob; url: string }[]>([]);
+  const [photos, setPhotos] = useState<{ blob: Blob; url: string }[]>(() => (initialPhotos ?? []).map((blob) => ({ blob, url: URL.createObjectURL(blob) })));
   const [busy, setBusy] = useState('');
   const [err, setErr] = useState('');
   const step = d.step ?? 0;
@@ -51,7 +54,10 @@ export default function AddMemory({
   useEffect(() => {
     if (step === 0) first.current?.focus();
   }, [step]);
-  useEffect(() => () => photos.forEach((p) => URL.revokeObjectURL(p.url)), [photos]);
+  // previews are released when the sheet closes (not on every change, which would break the ones still shown)
+  const shown = useRef(photos);
+  shown.current = photos;
+  useEffect(() => () => shown.current.forEach((p) => URL.revokeObjectURL(p.url)), []);
 
   async function close() {
     if (!dirty) return onClose();
@@ -147,6 +153,16 @@ export default function AddMemory({
 
           {step === 0 && (
             <>
+              {photos.length > 0 && (
+                <ul className="shelf-photos add-first-photos" aria-label="Chosen photographs">
+                  {photos.map((p) => (
+                    <li key={p.url}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={p.url} alt="" />
+                    </li>
+                  ))}
+                </ul>
+              )}
               <label className="rv-field rv-m">
                 <span className="sr">The memory</span>
                 <textarea ref={first} rows={4} maxLength={600} value={d.moment ?? ''} onChange={(e) => set({ moment: e.target.value })} placeholder="Start anywhere: a moment, a detail, a sound" />

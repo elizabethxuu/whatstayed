@@ -4,13 +4,15 @@ import RoomsScroll from './RoomsScroll';
 import TabBar from './TabBar';
 import Flower from './Flower';
 
-export type Room = 'today' | 'garden' | 'archives' | 'places' | 'people' | 'timeline' | 'collections' | 'letters' | 'search' | 'you';
+export type Room = 'today' | 'garden' | 'archives' | 'places' | 'people' | 'timeline' | 'collections' | 'letters' | 'search' | 'you' | 'constellation' | 'rewind';
 
 const ROOMS: [Room, string, string][] = [
   ['garden', '/', 'The Garden'],
   ['today', '/today', 'Today'],
   ['archives', '/archives', 'The Archives'],
   ['places', '/places', 'Places'],
+  ['constellation', '/constellation', 'Constellation'],
+  ['rewind', '/rewind', 'Rewind'],
   ['people', '/people', 'People'],
   ['timeline', '/timeline', 'Timeline'],
   ['collections', '/collections', 'Collections'],
@@ -25,7 +27,7 @@ export default function Masthead({ room, children }: { room: Room; children?: Re
         <Link href="/" className="mark-link">
           <span className="mark"><Flower size={30} />What Stayed</span>
         </Link>
-        <p className="sub">An archive of places and memories</p>
+        <p className="sub">A living garden of memories</p>
       </div>
       <div className="top-r">
         <nav className="rooms" aria-label="Rooms">

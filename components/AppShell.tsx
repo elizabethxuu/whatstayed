@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useStoreApi } from '@/lib/store';
 import { clearUnsent, dropUnsent, listUnsent } from '@/lib/unsent';
+import Capture from './Capture';
 
 /**
  * Behaviour that makes the web app feel like an app:
@@ -117,6 +118,21 @@ export default function AppShell({ children }: { children: ReactNode }) {
     };
   }, [store, router]);
 
+  // the glass bars firm up a little once the page moves under them
+  useEffect(() => {
+    let raf = 0;
+    const on = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => document.documentElement.classList.toggle('scrolled', window.scrollY > 12));
+    };
+    on();
+    window.addEventListener('scroll', on, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', on);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+
   return (
     <>
       {(pull > 0 || refreshing) && (
@@ -131,6 +147,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
         </p>
       )}
       {children}
+      <Capture />
     </>
   );
 }

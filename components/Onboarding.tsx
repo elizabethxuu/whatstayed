@@ -191,7 +191,7 @@ function Flow({
         <div className="ob-body ob-hello">
           <p className="mark"><Flower size={34} />What Stayed</p>
           <h1 className="ob-title">What stayed with you?</h1>
-          <p className="ob-sub">An archive of the places you’ve been, the people you’ve loved, and the moments that made you.</p>
+          <p className="ob-sub">A living garden of the places you’ve been, the people you love, and the moments worth keeping.</p>
           <div className="ob-actions">
             <button type="button" className="welcome-go" onClick={() => go(1)} autoFocus>
               Begin your story
@@ -303,8 +303,8 @@ function Flow({
     default:
       return (
         <div className="ob-body ob-hello ob-final">
-          <h1 className="ob-title">Every life leaves something behind.</h1>
-          <p className="ob-sub ob-sub-big">Let’s begin with what stayed.</p>
+          <h1 className="ob-title">Some things stay.</h1>
+          <p className="ob-sub ob-sub-big">Let’s grow your garden.</p>
           <div className="ob-actions">
             <button
               type="button"

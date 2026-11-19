@@ -3,26 +3,29 @@
 import { useEffect } from 'react';
 
 const KEY = 'whatstayed:appearance';
+export type Look = 'system' | 'light' | 'dark';
 
-/** Light, dark, or following the device. Kept in this browser so it applies before the first paint. */
-export function applyAppearance(v: 'system' | 'light' | 'dark') {
-  const html = document.documentElement;
-  if (v === 'system') delete html.dataset.theme;
-  else html.dataset.theme = v;
+/**
+ * Midnight (the garden at night, the default), Daylight, or matching the device.
+ * The page always carries data-theme="dark" or "light", so styles never depend on guessing.
+ * Kept in this browser too, so it applies before the first paint.
+ */
+export function applyAppearance(v: Look) {
+  const dark = v === 'dark' || (v === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
   try {
     localStorage.setItem(KEY, v);
   } catch {
     /* storage unavailable */
   }
-  const dark = v === 'dark' || (v === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#1b1c1a' : '#fefefc');
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#0b1430' : '#fafbfd');
 }
 
-/** Runs before React, from the root layout: no flash of the wrong appearance. */
-export const appearanceScript = `try{var v=localStorage.getItem('${KEY}');if(v==='light'||v==='dark')document.documentElement.dataset.theme=v;}catch(e){}`;
+/** Runs before React, from the root layout: midnight unless this browser chose otherwise. */
+export const appearanceScript = `try{var v=localStorage.getItem('${KEY}');var d=v==='light'?false:v==='system'?matchMedia('(prefers-color-scheme: dark)').matches:true;document.documentElement.dataset.theme=d?'dark':'light';}catch(e){document.documentElement.dataset.theme='dark';}`;
 
 /** The account's saved choice wins over this browser's, once the profile is loaded. */
-export default function Appearance({ value }: { value?: 'system' | 'light' | 'dark' }) {
+export default function Appearance({ value }: { value?: Look }) {
   useEffect(() => {
     if (value) applyAppearance(value);
   }, [value]);

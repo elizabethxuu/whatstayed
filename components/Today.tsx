@@ -8,6 +8,7 @@ import Tree from './Tree';
 import AddMemory from './AddMemory';
 import Revisits from './Revisits';
 import Rediscover from './Rediscover';
+import Flower from './Flower';
 import { mediaFor, mediaUrl, useQuestions, useStore, type Stored } from '@/lib/store';
 import { greeting } from '@/lib/profile';
 import { newId, PREFILL_KEY } from '@/lib/archive';
@@ -33,6 +34,20 @@ export default function Today() {
   const [adding, setAdding] = useState<{ id?: string; initial?: HandDraft } | null>(null);
   const [quick, setQuick] = useState('');
   const [revisited, setRevisited] = useState<string[]>([]);
+  const [lastVisit, setLastVisit] = useState<number | null>(null);
+
+  // new blossoms since the last visit (kept in this browser only)
+  useEffect(() => {
+    const KEY = 'whatstayed:last-visit';
+    try {
+      const v = Number(localStorage.getItem(KEY) || 0);
+      setLastVisit(v || null);
+      const t = setTimeout(() => localStorage.setItem(KEY, String(Date.now())), 4000);
+      return () => clearTimeout(t);
+    } catch {
+      /* storage unavailable */
+    }
+  }, []);
 
   useEffect(() => {
     setNow(new Date());
@@ -74,6 +89,11 @@ export default function Today() {
 
   if (!now) return <main className="today" aria-busy="true" />;
 
+  const fresh = lastVisit ? snap.memories.filter((m) => m.createdAt > lastVisit).length : 0;
+  // an older memory to bring back today: one of the earliest kept, a different one each day
+  const older = [...snap.memories].sort((a, b) => a.createdAt - b.createdAt).slice(0, Math.max(1, Math.ceil(snap.memories.length / 2)));
+  const back = snap.memories.length >= 2 ? older[Math.floor(now.getTime() / 86_400_000) % older.length] : null;
+
   const name = p.name?.trim();
   const dateLine = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   const writing = p.ways?.includes('writing') || p.remember?.includes('reflections');
@@ -93,6 +113,12 @@ export default function Today() {
             {name ? `, ${name}` : ''}.
           </h1>
           {p.intention && p.showIntention !== false && <p className="today-intention">{p.intention}</p>}
+          <p className="today-count" aria-live="polite">
+            {snap.memories.length === 0
+              ? 'Your garden is waiting for its first blossom.'
+              : `${snap.memories.length === 1 ? 'One memory' : `${snap.memories.length} memories`} growing in your garden`}
+            {fresh > 0 && <span className="today-new"> · {fresh === 1 ? 'a new blossom' : `${fresh} new blossoms`} since you were last here</span>}
+          </p>
         </header>
 
         <div className="today-tree">
@@ -109,12 +135,40 @@ export default function Today() {
               <button type="button" className="quiet" onClick={talk}>
                 Talk it through instead
               </button>
+              <Link className="quiet today-voice" href="/?talk=new&voice=1" aria-label="Record a voice memory">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="9" y="3.5" width="6" height="11" rx="3" />
+                  <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5" />
+                </svg>
+                Speak it
+              </Link>
               <button type="button" className="quiet" onClick={() => setAdding({})}>
                 Add a memory step by step
               </button>
             </p>
           </form>
         </div>
+
+        {back && (
+          <section className="today-block today-back" aria-labelledby="tbT">
+            <h2 id="tbT">This moment found its way back</h2>
+            <Link href={`/memory/${back.id}`} className="today-back-card">
+              <Flower size={30} />
+              <span>
+                <span className="today-back-place">{snap.locations[back.id] ? placeTitle(snap.locations[back.id]) : back.place}</span>
+                <span className="today-back-moment">{back.extra?.title || back.moment}</span>
+              </span>
+            </Link>
+            <p className="today-back-acts">
+              <Link className="quiet strong" href={`/?ask=${encodeURIComponent(`What else do I remember about “${back.extra?.title || back.moment}” in ${back.place}?`)}`}>
+                Ask me about it
+              </Link>
+              <Link className="quiet" href="/rewind">
+                Rewind through the past
+              </Link>
+            </p>
+          </section>
+        )}
 
         {reflectionOn && <Reflection now={now} prominent={!!(writing || (p.reminders?.evening && evening))} />}
 
@@ -124,7 +178,7 @@ export default function Today() {
 
         {snap.handDrafts.length > 0 && (
           <section className="today-block" aria-labelledby="tdT">
-            <h2 id="tdT">Unfinished</h2>
+            <h2 id="tdT">A little more of your story</h2>
             <ul className="today-list">
               {snap.handDrafts.map((d) => {
                 const x = d.data as unknown as HandDraft;
@@ -170,12 +224,14 @@ export default function Today() {
         )}
         {revisitedMems.length > 0 && (
           <section className="today-block" aria-labelledby="tvT">
-            <h2 id="tvT">Recently revisited</h2>
+            <h2 id="tvT">Found their way back</h2>
             <MemoryRow list={revisitedMems} />
           </section>
         )}
 
         <nav className="today-explore" aria-label="More of your archive">
+          <Link href="/constellation">Constellation</Link>
+          <Link href="/rewind">Rewind</Link>
           <Link href="/people">People</Link>
           <Link href="/timeline">Timeline</Link>
           <Link href="/collections">Collections</Link>
@@ -191,7 +247,7 @@ export default function Today() {
           onClose={() => setAdding(null)}
           onPlanted={(id) => {
             setAdding(null);
-            store.toast('Planted. A new blossom is opening.');
+            store.toast('Saved. Some things stay.');
             router.push(`/memory/${id}`);
           }}
         />

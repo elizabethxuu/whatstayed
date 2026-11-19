@@ -14,6 +14,7 @@ import { mediaFor, mediaUrl, pagesOfMemory, peopleOf, useStore } from '@/lib/sto
 import { locLine, placeKey, placeTitle, usePlaces } from '@/lib/places';
 import { confirmSheet } from '@/lib/confirm';
 import { REVISITED } from './Today';
+import ShareCard from './ShareCard';
 
 /** Every memory opens into its own page: its photographs, words, date, place, people and connections. */
 export default function MemoryPage({ id }: { id: string }) {
@@ -21,6 +22,7 @@ export default function MemoryPage({ id }: { id: string }) {
   const places = usePlaces();
   const router = useRouter();
   const [editing, setEditing] = useState<'memory' | 'place' | 'people' | 'tie' | 'collect' | null>(null);
+  const [sharing, setSharing] = useState(false);
   const [view, setView] = useState<string | null>(null);
   const m = snap.memories.find((x) => x.id === id);
 
@@ -223,12 +225,16 @@ export default function MemoryPage({ id }: { id: string }) {
           <button type="button" className="quiet strong" onClick={() => setEditing('memory')}>
             Edit
           </button>
+          <button type="button" className="quiet" onClick={() => setSharing(true)}>
+            Share a card
+          </button>
           <button type="button" className="quiet danger" onClick={remove}>
             Delete
           </button>
         </p>
       </article>
 
+      {sharing && <ShareCard m={m} onClose={() => setSharing(false)} />}
       {view && (
         <div className="loc-veil light" onClick={() => setView(null)} role="dialog" aria-modal="true" aria-label="Photograph">
           <figure className="lightbox" onClick={(e) => e.stopPropagation()}>

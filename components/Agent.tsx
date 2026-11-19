@@ -218,3 +218,34 @@ export function usePrompts(mode: Mode, focusPlace?: string) {
     return out.slice(0, 4);
   }, [snap, mode, focusPlace]);
 }
+
+/** How the garden shows what the agent is doing: listening, thinking, searching, connecting, saving. */
+export function gardenState(label: string | null, remembering: boolean): string {
+  if (label === 'Listening') return 'listening';
+  if (label === 'Searching the archive') return 'searching';
+  if (label === 'Connecting memories') return 'connecting';
+  if (label === 'Growing a new blossom') return 'saving';
+  if (label) return 'thinking';
+  return remembering ? 'remembering' : '';
+}
+
+/** Openings in the agent's own voice, each built from something really in the garden. */
+export function useNoticed() {
+  const [snap] = useStore();
+  return useMemo(() => {
+    const out: { label: string; send: string }[] = [];
+    const ms = [...snap.memories].sort((a, b) => b.createdAt - a.createdAt);
+    const name = (m: (typeof ms)[number]) => m.extra?.title || m.moment;
+    if (ms[0]) out.push({ label: `Tell me more about “${name(ms[0])}”.`, send: `I want to tell you more about “${name(ms[0])}” in ${ms[0].place}.` });
+    const byPlace = new Map<string, typeof ms>();
+    ms.forEach((m) => {
+      const p = snap.locations[m.id]?.city || m.place;
+      byPlace.set(p, [...(byPlace.get(p) ?? []), m]);
+    });
+    const shared = [...byPlace.entries()].find(([, xs]) => xs.length >= 2);
+    if (shared) out.push({ label: `I found ${shared[1].length === 2 ? 'another memory' : `${shared[1].length} memories`} from ${shared[0]}.`, send: `What do you remember about ${shared[0]}?` });
+    const old = ms[ms.length - 1];
+    if (ms.length >= 3 && old) out.push({ label: `Would you like to revisit “${name(old)}”?`, send: `Let’s revisit “${name(old)}” in ${old.place}.` });
+    return out.slice(0, 3);
+  }, [snap]);
+}

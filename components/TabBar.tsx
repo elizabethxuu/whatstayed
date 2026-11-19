@@ -57,6 +57,8 @@ const TABS: { room: Room; href: string; label: string; icon: React.ReactNode }[]
 
 const MORE: { room: Room; href: string; label: string }[] = [
   { room: 'people', href: '/people', label: 'People' },
+  { room: 'constellation', href: '/constellation', label: 'Constellation' },
+  { room: 'rewind', href: '/rewind', label: 'Rewind' },
   { room: 'timeline', href: '/timeline', label: 'Timeline' },
   { room: 'collections', href: '/collections', label: 'Collections' },
   { room: 'letters', href: '/letters', label: 'Letters' },

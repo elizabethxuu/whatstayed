@@ -566,3 +566,25 @@ Empty Archives and empty collections were reworded too. Functional controls stay
 - An automatic scan looked for clipped, off-screen or undersized text. It found one tiny note (9.5px), now fixed. Everything else it flagged is screen-reader-only text that is hidden on purpose.
 - Fixed by eye: the Archives search box cut its placeholder short on phones; the filter menus were in the serif; the found-memory chips cut titles off instead of wrapping.
 - **Checks:** all nine browser suites and 14 unit tests pass. The intermittent React hydration warning (#418) is still open and appeared once more, in the life suite.
+
+## The midnight garden (botanical evolution + premium AI-native pass)
+
+**What changed**
+- **Midnight is the default look** (Daylight and Match device remain in You). Navy depth, a moonlit glow, glass that sits inside the garden. No pink anywhere (tested).
+- **A lush weeping willow** (`lib/willow.ts`, `components/Tree.tsx`): ten limbs, ~130 cascading strands, hanging racemes, a ground carpet — hundreds of tiny forget-me-not florets in powder blue, periwinkle, cornflower, silver-blue and ice white. Florets open as the archive grows (more memories → a fuller canopy). Memories are larger five-petal blossoms; drafts are buds; heavy memories form clusters; revisited/found memories glow. Seeded, so the tree is the same every visit. Reduced motion holds it still.
+- **Capture**: a floating + opens "Something worth keeping?" with six ways: tell a story, record a voice memory (the microphone is only asked for after you choose it), write something, add photographs, save a place, capture a moment. In the garden the button sits in the header so it never covers the conversation.
+- **Saving blooms**: a blossom opens over the screen with a light haptic where supported.
+- **A living home** (Today): a real count of memories, what's new since your last visit (remembered on this device only), one older memory that "found its way back", and quick ways to talk or speak.
+- **The agent in the garden**: thinking, searching and remembering show on the willow; found memories glow. Openings are built only from your real memories.
+- **Constellation** (More → Constellation): memories as stars gathered by place. Lines only for stored relationships — red threads, a shared person, the same trip, the same collection — each filterable, with counts.
+- **Rewind** (More → Rewind): this day last year, this month five years ago, your last summer, a city, a person. Exact dates only; it says so when nothing matches. "Play the album" runs a cinematic sequence and ends by asking what you remember now.
+- **Share a card** (on any memory): a 1080×1350 image drawn on your device. You choose what's on it; nothing is uploaded and no link is created.
+- **The map by night**: navy land, silver-blue lines.
+
+**Tests**: all ten Playwright suites (421 checks) and 14 unit tests pass on the production build, including `tests/e2e/midnight.js` (32 checks). Phone layouts checked on iPhone 13 and iPhone SE.
+
+**Not done, deliberately**
+- Home-screen widgets, lock-screen, Shortcuts and share-sheet integration need a native iOS app; this is a PWA, so none of it is claimed.
+- Push notifications aren't set up.
+- Collections with editorial covers suggested by the AI aren't in the UI yet (the agent can already propose collections, which you confirm).
+- An intermittent React hydration warning (#418) has appeared in some production runs; it is recoverable and reported separately by the tests.

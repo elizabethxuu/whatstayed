@@ -7,6 +7,7 @@ import { locLine, searchPlaces, type Loc } from '@/lib/places';
 import { useStore, type ReviewItem } from '@/lib/store';
 import MediaShelf from './MediaShelf';
 import { confirmSheet } from '@/lib/confirm';
+import { bloom } from '@/lib/bloom';
 
 type Edit = ReviewItem & { keep: boolean; suggestions: { to: string; label: string; reason: string; accepted: boolean }[]; locState: 'finding' | 'found' | 'none' | 'set' };
 
@@ -155,6 +156,7 @@ export default function Review({
     setBusy(false);
     if (!r) return;
     const ids = r.made.map((m) => m.memoryId);
+    bloom(ids.length);
     store.toast(ids.length === 1 ? 'Saved. A new blossom is opening.' : `Saved ${ids.length} memories. New blossoms are opening.`);
     setSaved({ ids, collectionId: r.collectionId });
     onSaved(ids);

@@ -10,6 +10,7 @@ import Conversations from './Conversations';
 import AddMemory from './AddMemory';
 import { confirmSheet } from '@/lib/confirm';
 import Tree from './Tree';
+import Flower from './Flower';
 import Masthead from './Masthead';
 import { PREFILL_KEY } from '@/lib/archive';
 import { echoOf } from '@/lib/memory';
@@ -17,7 +18,7 @@ import { locLine, placeKey as placeKeyOf, placeTitle, suggestionKey, usePlaces }
 import { api, pagesOfMemory, peopleOf, useStore, type Stored } from '@/lib/store';
 import { CollectionPicker, Names, PeoplePicker, pageTitle } from './Pickers';
 import Revisits from './Revisits';
-import { activityOf, AgentState, foundIn, FoundMemories, Proposals, usePrompts, type Action, type Mode } from './Agent';
+import { activityOf, AgentState, foundIn, FoundMemories, gardenState, Proposals, useNoticed, usePrompts, type Action, type Mode } from './Agent';
 import LocationEditor from './LocationEditor';
 import ThreadPicker from './ThreadPicker';
 import MemoryEditor from './MemoryEditor';
@@ -121,11 +122,20 @@ export default function Garden({ open }: { open: Open }) {
     (msg) => store.toast(msg, 'error'),
   );
 
-  // /?trip=1 starts a conversation about a trip (from Today)
+  // /?trip=1 starts a conversation about a trip (from Today); /?talk=new a fresh one, &voice=1 ready to speak
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get('trip') === '1') {
+    const sp = new URLSearchParams(window.location.search);
+    if (sp.get('trip') === '1') {
       window.history.replaceState(null, '', '/');
       startTalk('trip');
+    } else if (sp.get('talk') === 'new') {
+      window.history.replaceState(null, '', '/');
+      startTalk('free', sp.get('voice') === '1');
+    } else if (sp.get('voice') === '1') {
+      window.history.replaceState(null, '', `/?c=${encodeURIComponent(sp.get('c') ?? '')}`);
+      setMode('remember');
+      // the microphone needs a tap of its own; the explanation offers it
+      setTimeout(() => (dictation.supported ? setVoiceAsk(true) : store.toast('This browser can’t turn speech into text. You can type, or record a voice note on a memory.', 'error')), 400);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -259,9 +269,9 @@ export default function Garden({ open }: { open: Open }) {
     setSelectedId(null);
   }
 
-  async function startTalk(mode: 'free' | 'trip') {
+  async function startTalk(mode: 'free' | 'trip', voice = false) {
     const made = await store.newTalk(mode);
-    if (made) window.location.assign(`/?c=${encodeURIComponent(made.id)}`);
+    if (made) window.location.assign(`/?c=${encodeURIComponent(made.id)}${voice ? '&voice=1' : ''}`);
   }
 
   function toggleVoice() {
@@ -312,6 +322,8 @@ export default function Garden({ open }: { open: Open }) {
   const found = useMemo(() => (busy ? [] : foundIn([...messages].reverse().find((m) => m.role === 'assistant'))), [messages, busy]);
   const lit = useMemo(() => found.map((f) => memories.findIndex((m) => m.id === f.id)).filter((i) => i >= 0), [found, memories]);
   const activity = activityOf(messages, status, dictation.listening);
+  const noticed = useNoticed();
+  const gstate = gardenState(activity, lit.length > 0);
   const selPeople = sel ? peopleOf(snap, 'memory-person', sel.id) : [];
   const selPages = sel ? pagesOfMemory(snap, sel.id) : [];
   const selLoc = sel ? places.store.locations[sel.id] : undefined;
@@ -339,7 +351,7 @@ export default function Garden({ open }: { open: Open }) {
   }, [memories, selected, sel, places.store]);
 
   return (
-    <main className={`garden${busy ? ' listening' : ''}${messages.length || pending.length ? ' talking' : ''}`}>
+    <main className={`garden${busy ? ' listening' : ''}${messages.length || pending.length ? ' talking' : ''}${gstate ? ` agent-${gstate}` : ''}`}>
       <h1 className="sr">What Stayed, the garden</h1>
       <Masthead room="garden">
         <button
@@ -526,7 +538,7 @@ export default function Garden({ open }: { open: Open }) {
               </>
             ) : (
               <>
-                <p className="voice-line">{mode === 'remember' ? (memories.length ? 'You talk. It remembers.' : 'Your garden is waiting.') : mode === 'ask' ? 'Ask your garden' : 'Reflect'}</p>
+                <p className="voice-line">{mode === 'remember' ? (memories.length ? 'Tell me what you remember.' : 'Your garden is waiting.') : mode === 'ask' ? 'Ask your garden' : 'Reflect'}</p>
                 <p className="voice-sub">
                   {mode === 'remember'
                     ? 'Tell it about a place, a person or a day, in your own words. It drafts the memories, and nothing is kept until you review it.'
@@ -571,6 +583,24 @@ export default function Garden({ open }: { open: Open }) {
           }}
         />
         {dictation.listening && <AgentState label="Listening" />}
+        {!busy && messages.length === 0 && mode === 'remember' && noticed.length > 0 && (
+          <ul className="agent-noticed" aria-label="Where you might begin">
+            {noticed.map((n) => (
+              <li key={n.label}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDraft(n.send);
+                    requestAnimationFrame(() => inputRef.current?.form?.requestSubmit());
+                  }}
+                >
+                  <Flower size={18} />
+                  {n.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
         {!busy && (
           <div className="agent-modes">
             <p className="agent-mode-row" role="radiogroup" aria-label="What would you like to do?">
@@ -789,7 +819,7 @@ export default function Garden({ open }: { open: Open }) {
           onClose={() => setEditing(null)}
           onPlanted={(id) => {
             setEditing(null);
-            store.toast('Planted. A new blossom is opening.');
+            store.toast('Saved. Some things stay.');
             setSelectedId(id);
           }}
         />
