@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import RoomsScroll from './RoomsScroll';
 import TabBar from './TabBar';
+import Flower from './Flower';
 
 export type Room = 'today' | 'garden' | 'archives' | 'places' | 'people' | 'timeline' | 'collections' | 'letters' | 'search' | 'you';
 
@@ -22,7 +23,7 @@ export default function Masthead({ room, children }: { room: Room; children?: Re
     <header className="top">
       <div className="brand">
         <Link href="/" className="mark-link">
-          <span className="mark">What Stayed</span>
+          <span className="mark"><Flower size={30} />What Stayed</span>
         </Link>
         <p className="sub">An archive of places and memories</p>
       </div>

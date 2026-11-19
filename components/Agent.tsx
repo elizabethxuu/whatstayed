@@ -3,6 +3,7 @@
 import type { UIMessage } from 'ai';
 import { useMemo } from 'react';
 import { api, useStore } from '@/lib/store';
+import Flower from './Flower';
 
 /* ---------- what the agent is doing, in the garden's own words ---------- */
 
@@ -34,13 +35,7 @@ export function activityOf(messages: UIMessage[], status: string, listening: boo
 export function AgentState({ label }: { label: string }) {
   return (
     <p className="agent-state" role="status" aria-live="polite">
-      <span className="agent-petals" aria-hidden="true">
-        <i />
-        <i />
-        <i />
-        <i />
-        <i />
-      </span>
+      <Flower size={24} className="agent-flower" />
       <span className="agent-label" key={label}>
         {label}
       </span>

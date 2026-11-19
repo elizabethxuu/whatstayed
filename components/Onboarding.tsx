@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '@/lib/store';
 import { REMEMBER, REMEMBER_LABEL, STARTS, STARTS_LABEL, WAYS, WAYS_LABEL, type Profile } from '@/lib/profile';
 import Tree from './Tree';
+import Flower from './Flower';
 
 const KEY = 'whatstayed:onboarding';
 const RETURNING = 'whatstayed:has-account';
@@ -188,7 +189,7 @@ function Flow({
     case 0:
       return (
         <div className="ob-body ob-hello">
-          <p className="mark">What Stayed</p>
+          <p className="mark"><Flower size={34} />What Stayed</p>
           <h1 className="ob-title">What stayed with you?</h1>
           <p className="ob-sub">An archive of the places you’ve been, the people you’ve loved, and the moments that made you.</p>
           <div className="ob-actions">
@@ -489,7 +490,7 @@ function SignIn({ onForgot, onNew }: { onForgot: () => void; onNew: () => void }
   }
   return (
     <div className="ob-body">
-      <p className="mark">What Stayed</p>
+      <p className="mark"><Flower size={34} />What Stayed</p>
       <h1 className="ob-title">Welcome back.</h1>
       <p className="ob-sub">Sign in to your garden.</p>
       <form className="welcome-form" onSubmit={submit} noValidate>

@@ -442,3 +442,17 @@ Also checked: reflections are built only from stored memories, are offered not s
   | agent | 48/48 |
 
 - The intermittent React hydration warning (#418) is still open. It appeared in about one run in five of the app suite, on different pages, and not in a development build.
+
+## Design update: Prism Glass, after Liz's portfolio (November 19)
+
+The purple-and-sage look was replaced to match the glass on elizabeth-xu.com:
+
+- **Background:** near-white, with a soft prism glow (pink, peach, butter, mint, sky, lavender) pooled at the top left and echoed at the lower right. It drifts very slowly and holds still for reduced motion.
+- **Glass panes:** translucent white, a bright white edge, soft long shadows, a thin prism line along the top edge, and rounded 24–30px corners.
+- **Type:** Bodoni Moda for titles and the name; EB Garamond for words; small spaced IBM Plex Mono capitals for labels, tabs and buttons.
+- **Buttons:** ink pills, like the portfolio's type.
+- **The mark is now the periwinkle blossom.** It sits beside the name, is the app icon and launch screens, and is the agent's activity indicator, turning slowly.
+- The tree stays white. The deep red is kept for red threads and anything destructive.
+- **Fixed:** the glow layers had been hidden behind the body's background; the page colour now lives on the root element.
+
+**Checks:** all nine browser suites pass (accounts 60, life 60, garden 10, archives 23, places 36, white 26, conversation 52, app 68, agent 48). Typecheck, lint and build are clean.
