@@ -189,7 +189,7 @@ function Flow({
     case 0:
       return (
         <div className="ob-body ob-hello">
-          <p className="mark"><Flower size={34} />What Stayed</p>
+          <p className="mark"><Flower size={30} />What Stayed</p>
           <h1 className="ob-title">What stayed with you?</h1>
           <p className="ob-sub">A living garden of the places you’ve been, the people you love, and the moments worth keeping.</p>
           <div className="ob-actions">
@@ -490,7 +490,7 @@ function SignIn({ onForgot, onNew }: { onForgot: () => void; onNew: () => void }
   }
   return (
     <div className="ob-body">
-      <p className="mark"><Flower size={34} />What Stayed</p>
+      <p className="mark"><Flower size={30} />What Stayed</p>
       <h1 className="ob-title">Welcome back.</h1>
       <p className="ob-sub">Sign in to your garden.</p>
       <form className="welcome-form" onSubmit={submit} noValidate>

@@ -5,7 +5,7 @@ export default function Unconfigured({ reason }: { reason: string }) {
   return (
     <main className="welcome">
       <div className="welcome-card">
-        <p className="mark"><Flower size={34} />What Stayed</p>
+        <p className="mark"><Flower size={30} />What Stayed</p>
         <h1 className="welcome-title">The garden isn’t connected yet.</h1>
         <p className="welcome-sub">{reason}</p>
       </div>

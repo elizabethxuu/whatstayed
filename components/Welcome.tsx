@@ -88,7 +88,7 @@ export default function Welcome({ resetToken }: { resetToken?: string }) {
         <Tree memories={NONE} threads={NONE} selected={null} onSelect={noop} />
       </div>
       <div className="welcome-card">
-        <p className="mark"><Flower size={34} />What Stayed</p>
+        <p className="mark"><Flower size={30} />What Stayed</p>
         <h1 className="welcome-title">{title}</h1>
         <p className="welcome-sub">{sub}</p>
 

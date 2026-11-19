@@ -246,18 +246,18 @@ function Preferences() {
       <div className="you-row">
         <span>Appearance</span>
         <span className="seg" role="radiogroup" aria-label="Appearance">
-          {(['dark', 'light', 'system'] as const).map((v) => (
+          {(['light', 'system', 'dark'] as const).map((v) => (
             <button
               key={v}
               type="button"
               role="radio"
-              aria-checked={(p.appearance ?? 'dark') === v}
+              aria-checked={(p.appearance ?? 'light') === v}
               onClick={() => {
                 applyAppearance(v);
                 store.saveProfile({ appearance: v }, true);
               }}
             >
-              {v === 'system' ? 'Match device' : v === 'light' ? 'Daylight' : 'Midnight'}
+              {v === 'system' ? 'Follow the day' : v === 'light' ? 'Dawn' : 'Night'}
             </button>
           ))}
         </span>

@@ -1,6 +1,6 @@
 /**
  * A seeded weeping willow: the same tree every visit, so memories keep their place.
- * A leaning trunk, arching limbs, and long strands that cascade from the limbs. Each strand carries
+ * A slender leaning trunk, limbs that leave it at different heights, and long strands that cascade from the limbs. Each strand carries
  * fine leaves and many tiny florets; some end in a hanging cluster, like wisteria. Memories hang on
  * the strands as larger blossoms. Nothing here is data; the memories are placed by Tree.tsx.
  */
@@ -50,34 +50,49 @@ const f = (n: number) => n.toFixed(1);
 
 export function growWillow(seed = 4127): Willow {
   const r = rng(seed);
-  const base: Pt = { x: 488, y: 694 };
-  const fork: Pt = { x: 470, y: 352 };
+  const base: Pt = { x: 500, y: 694 };
+  // the trunk's centre line: it leans a little, then rises to where the crown begins
+  const spine: [Pt, Pt, Pt, Pt] = [base, { x: 470, y: 600 }, { x: 428, y: 470 }, { x: 462, y: 352 }];
+  const fork = spine[3];
 
-  // the trunk: a filled, gently twisting form, wider at the root
-  const trunk = `M${base.x - 30} ${base.y} C ${base.x - 16} ${base.y - 90}, ${fork.x - 34} ${fork.y + 150}, ${fork.x - 16} ${fork.y + 8}
-    C ${fork.x - 8} ${fork.y - 6}, ${fork.x + 12} ${fork.y - 6}, ${fork.x + 22} ${fork.y + 6}
-    C ${fork.x + 10} ${fork.y + 140}, ${base.x + 26} ${base.y - 110}, ${base.x + 34} ${base.y} Z`;
-  const trunkLight = `M${base.x - 18} ${base.y - 4} C ${base.x - 6} ${base.y - 90}, ${fork.x - 22} ${fork.y + 150}, ${fork.x - 6} ${fork.y + 14}`;
+  // the trunk: drawn around the centre line, flared at the root and slender at the top
+  const left: Pt[] = [];
+  const right: Pt[] = [];
+  for (let k = 0; k <= 24; k++) {
+    const t = k / 24;
+    const p = bez(...spine, t);
+    const q = bez(...spine, Math.min(1, t + 0.01));
+    const len = Math.hypot(q.x - p.x, q.y - p.y) || 1;
+    const nx = -(q.y - p.y) / len;
+    const ny = (q.x - p.x) / len;
+    const w = 5 + 10 * (1 - t) + 9 * Math.pow(Math.max(0, 1 - t * 6), 2);
+    left.push({ x: p.x + nx * w, y: p.y + ny * w });
+    right.push({ x: p.x - nx * w, y: p.y - ny * w });
+  }
+  const trunk = `M${left.map((p) => `${f(p.x)} ${f(p.y)}`).join(' L')} L${right.reverse().map((p) => `${f(p.x)} ${f(p.y)}`).join(' L')} Z`;
+  const lit = left.slice(1, 20).map((p, k) => bez(...spine, (k + 1) / 24)).map((c, k) => ({ x: (c.x + left[k + 1].x) / 2, y: (c.y + left[k + 1].y) / 2 }));
+  const trunkLight = `M${lit.map((p) => `${f(p.x)} ${f(p.y)}`).join(' L')}`;
 
-  // arching limbs: rise from the fork, spread, then bow toward the ground at the tips
+  // limbs leave the trunk at different heights and arch outward; the left reaches further than the right
   const limbDefs = [
-    { to: { x: 130, y: 270 }, up: 110, w: 4.2 },
-    { to: { x: 220, y: 180 }, up: 150, w: 4.6 },
-    { to: { x: 330, y: 118 }, up: 185, w: 5 },
-    { to: { x: 450, y: 86 }, up: 205, w: 5.4 },
-    { to: { x: 570, y: 92 }, up: 200, w: 5.4 },
-    { to: { x: 690, y: 130 }, up: 180, w: 5 },
-    { to: { x: 800, y: 196 }, up: 145, w: 4.6 },
-    { to: { x: 885, y: 290 }, up: 105, w: 4.2 },
+    { at: 0.6, to: { x: 140, y: 310 }, up: 70, w: 3 },
+    { at: 0.71, to: { x: 205, y: 205 }, up: 115, w: 3.4 },
+    { at: 0.84, to: { x: 318, y: 132 }, up: 150, w: 3.8 },
+    { at: 0.97, to: { x: 438, y: 96 }, up: 170, w: 4 },
+    { at: 1, to: { x: 562, y: 108 }, up: 160, w: 3.8 },
+    { at: 0.9, to: { x: 672, y: 152 }, up: 135, w: 3.5 },
+    { at: 0.78, to: { x: 768, y: 222 }, up: 105, w: 3.1 },
+    { at: 0.66, to: { x: 846, y: 322 }, up: 66, w: 2.7 },
     // inner arcs fill the dome
-    { to: { x: 300, y: 230 }, up: 90, w: 3 },
-    { to: { x: 660, y: 230 }, up: 90, w: 3 },
+    { at: 0.8, to: { x: 322, y: 252 }, up: 70, w: 2.2 },
+    { at: 0.87, to: { x: 640, y: 256 }, up: 70, w: 2.2 },
   ];
   const limbs: { d: string; w: number }[] = [];
   const arcs: [Pt, Pt, Pt, Pt][] = [];
   for (const L of limbDefs) {
-    const p0 = { x: fork.x + (r() - 0.5) * 18, y: fork.y + 4 };
-    const p1 = { x: p0.x + (L.to.x - p0.x) * 0.15, y: p0.y - L.up };
+    const o = bez(...spine, L.at);
+    const p0 = { x: o.x + (r() - 0.5) * 6, y: o.y };
+    const p1 = { x: p0.x + (L.to.x - p0.x) * 0.2, y: p0.y - L.up };
     const p2 = { x: L.to.x - (L.to.x - p0.x) * 0.25, y: L.to.y - 40 };
     const p3 = { x: L.to.x, y: L.to.y + 34 };
     arcs.push([p0, p1, p2, p3]);

@@ -35,7 +35,7 @@ export function activityOf(messages: UIMessage[], status: string, listening: boo
 export function AgentState({ label }: { label: string }) {
   return (
     <p className="agent-state" role="status" aria-live="polite">
-      <Flower size={24} className="agent-flower" />
+      <Flower size={24} className="agent-flower as-blossom" />
       <span className="agent-label" key={label}>
         {label}
       </span>

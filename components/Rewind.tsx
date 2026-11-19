@@ -211,7 +211,7 @@ function Album({ list, title, onClose }: { list: Stored[]; title: string; onClos
               // eslint-disable-next-line @next/next/no-img-element
               <img src={mediaUrl(photo.id)} alt="" />
             ) : (
-              <Flower size={220} className="album-flower" />
+              <Flower size={220} className="album-flower as-blossom" />
             )}
           </div>
           <div className="album-words">
@@ -227,7 +227,7 @@ function Album({ list, title, onClose }: { list: Stored[]; title: string; onClos
         </article>
       ) : (
         <article className="album-page album-end">
-          <Flower size={64} />
+          <Flower size={64} className="as-blossom" />
           <h2 className="album-title">This is what found its way back.</h2>
           <p className="album-moment">What do you remember about them now?</p>
           <p className="album-end-acts">

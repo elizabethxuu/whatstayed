@@ -10,6 +10,7 @@ import Conversations from './Conversations';
 import AddMemory from './AddMemory';
 import { confirmSheet } from '@/lib/confirm';
 import Tree from './Tree';
+import Scene from './Scene';
 import Flower from './Flower';
 import Masthead from './Masthead';
 import { PREFILL_KEY } from '@/lib/archive';
@@ -242,6 +243,7 @@ export default function Garden({ open }: { open: Open }) {
   );
   const lastAssistant = [...messages].reverse().find((m) => m.role === 'assistant' && textOf(m));
   const lastUser = [...messages].reverse().find((m) => m.role === 'user');
+  const firstUser = messages.find((m) => m.role === 'user');
   const voice = lastAssistant ? textOf(lastAssistant) : '';
   const latestIsUser = messages.length > 0 && messages[messages.length - 1].role === 'user';
 
@@ -373,36 +375,13 @@ export default function Garden({ open }: { open: Open }) {
       </Masthead>
 
       <section className="stage">
-        <Tree memories={memories} threads={threads} selected={selected >= 0 ? selected : null} onSelect={setSelected} buds={pending.length} marks={marks} anchors={anchors} lit={lit} />
+        <Scene>
+          <Tree memories={memories} threads={threads} selected={selected >= 0 ? selected : null} onSelect={setSelected} buds={pending.length} marks={marks} anchors={anchors} lit={lit} />
+        </Scene>
         {memories.length > 0 && (
           <p className="fig" aria-hidden="true">
             Fig. {memories.length} · {memories.length === 1 ? 'one memory, kept' : `${memories.length} memories, kept`}
           </p>
-        )}
-        {memories.length > 0 && (
-          <div className="drift" aria-hidden="true">
-            {Array.from({ length: Math.min(6, memories.length + 2) }).map((_, i) => {
-              const h = (n: number) => ((Math.sin((i + 1) * n * 7.13) * 9301.7) % 1 + 1) % 1;
-              return (
-                <span
-                  key={i}
-                  style={
-                    {
-                      left: `${30 + h(1) * 40}%`,
-                      top: `${16 + h(2) * 22}%`,
-                      '--s': (0.65 + h(3) * 0.7).toFixed(2),
-                      '--o': (0.45 + h(4) * 0.4).toFixed(2),
-                      '--dx': `${(h(5) - 0.3) * 160}px`,
-                      animationDuration: `${(19 + h(6) * 12).toFixed(1)}s`,
-                      animationDelay: `${(3 + i * 6.5 + h(7) * 3).toFixed(1)}s`,
-                    } as CSSProperties
-                  }
-                >
-                  <i style={{ animationDuration: `${(3.5 + h(8) * 2.5).toFixed(1)}s` }} />
-                </span>
-              );
-            })}
-          </div>
         )}
         {sel && (
           <aside className="card" aria-live="polite">
@@ -510,7 +489,7 @@ export default function Garden({ open }: { open: Open }) {
       <section className="talk" aria-live="polite">
         {(talk || pending.length > 0) && (
           <p className="talk-head">
-            {talk && (
+            {talk && !sameAsFirst(talk.trip?.title || talk.title, firstUser) && (
               <span className="talk-name">
                 {talk.mode === 'trip' ? 'Trip · ' : ''}
                 {talk.trip?.title || talk.title || 'New conversation'}
@@ -567,7 +546,7 @@ export default function Garden({ open }: { open: Open }) {
             ) : activity && (latestIsUser || !voice || busy) && activity !== 'Listening' ? (
               <AgentState label={activity} />
             ) : (
-              <p className="voice-line" key={lastAssistant?.id}>
+              <p className={`voice-line${voice && voice.length > 140 ? ' long' : ''}`} key={lastAssistant?.id}>
                 {voice}
               </p>
             )}
@@ -594,7 +573,7 @@ export default function Garden({ open }: { open: Open }) {
                     requestAnimationFrame(() => inputRef.current?.form?.requestSubmit());
                   }}
                 >
-                  <Flower size={18} />
+                  <Flower size={18} className="as-blossom" />
                   {n.label}
                 </button>
               </li>
@@ -857,4 +836,13 @@ export default function Garden({ open }: { open: Open }) {
       </ul>
     </main>
   );
+}
+
+/** a conversation named after its first line shouldn't show that line twice */
+function sameAsFirst(title: string | undefined, first: UIMessage | undefined) {
+  if (!title || !first) return false;
+  const norm = (x: string) => x.replace(/[….\s]+$/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
+  const t = norm(title);
+  const f = norm(textOf(first));
+  return !!t && (f === t || f.startsWith(t));
 }

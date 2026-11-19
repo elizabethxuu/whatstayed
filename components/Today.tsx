@@ -5,6 +5,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Masthead from './Masthead';
 import Tree from './Tree';
+import Scene from './Scene';
 import AddMemory from './AddMemory';
 import Revisits from './Revisits';
 import Rediscover from './Rediscover';
@@ -122,7 +123,9 @@ export default function Today() {
         </header>
 
         <div className="today-tree">
-          <Tree memories={snap.memories} threads={NONE} selected={null} onSelect={(i) => i !== null && snap.memories[i] && router.push(`/memory/${snap.memories[i].id}`)} />
+          <Scene size="small">
+            <Tree memories={snap.memories} threads={NONE} selected={null} onSelect={(i) => i !== null && snap.memories[i] && router.push(`/memory/${snap.memories[i].id}`)} />
+          </Scene>
           <form className="today-ask" onSubmit={keep}>
             <label htmlFor="today-q" className="today-q">
               What would you like to remember today?
@@ -153,7 +156,7 @@ export default function Today() {
           <section className="today-block today-back" aria-labelledby="tbT">
             <h2 id="tbT">This moment found its way back</h2>
             <Link href={`/memory/${back.id}`} className="today-back-card">
-              <Flower size={30} />
+              <Flower size={30} className="as-blossom" />
               <span>
                 <span className="today-back-place">{snap.locations[back.id] ? placeTitle(snap.locations[back.id]) : back.place}</span>
                 <span className="today-back-moment">{back.extra?.title || back.moment}</span>

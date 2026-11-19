@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Flower from './Flower';
 
-/** A blossom unfolding at the centre of the screen when a memory is saved; it never blocks a tap. */
+/** A blossom unfurls at the centre of the screen when a memory is saved, with one soft ring and a single word. It never blocks a tap. */
 export default function BloomBurst() {
   const [show, setShow] = useState<{ key: number; count: number } | null>(null);
   useEffect(() => {
@@ -24,8 +24,9 @@ export default function BloomBurst() {
   return (
     <div className="bloom-burst" key={show.key} aria-hidden="true">
       <span className="bloom-ring" />
-      <Flower size={92} className="bloom-flower" />
-      <span className="bloom-word">{show.count > 1 ? `${show.count} new blossoms` : 'A new blossom'}</span>
+      <Flower size={92} className="bloom-flower as-blossom" />
+      <span className="bloom-word">Kept.</span>
+      {show.count > 1 && <span className="bloom-sub">{show.count} new blossoms</span>}
     </div>
   );
 }

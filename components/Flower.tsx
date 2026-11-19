@@ -1,25 +1,16 @@
-/** The What Stayed mark: a forget-me-not blossom, five notched petals around a pale heart. */
+/** The What Stayed mark: a forget-me-not blossom, five notched petals around a pale heart, drawn in ink. */
 export default function Flower({ size = 28, className = '' }: { size?: number; className?: string }) {
   const petal = 'M0 -1.2 C -4.2 -4.6 -5.6 -10.4 -3.1 -14.2 C -1.9 -15.9 -0.9 -15.2 0 -13.6 C 0.9 -15.2 1.9 -15.9 3.1 -14.2 C 5.6 -10.4 4.2 -4.6 0 -1.2 Z';
   return (
     <svg className={`flower ${className}`} width={size} height={size} viewBox="-18 -18 36 36" aria-hidden="true">
-      <defs>
-        <radialGradient id="flowerPetal" cx="50%" cy="85%" r="95%">
-          <stop offset="0" stopColor="#eef4ff" />
-          <stop offset=".55" stopColor="#a9c6ff" />
-          <stop offset="1" stopColor="#6f9cf2" />
-        </radialGradient>
-      </defs>
       {[0, 72, 144, 216, 288].map((r) => (
-        <path key={r} d={petal} transform={`rotate(${r})`} fill="url(#flowerPetal)" stroke="#3d6fd8" strokeWidth=".9" strokeLinejoin="round" />
+        <path key={r} className="fl-petal" d={petal} transform={`rotate(${r})`} />
       ))}
       {[0, 72, 144, 216, 288].map((r) => (
-        <path key={`v${r}`} d="M0 -2.4 L0 -8.6" transform={`rotate(${r})`} stroke="#5b86e0" strokeWidth=".55" strokeLinecap="round" opacity=".7" />
+        <path key={`v${r}`} className="fl-vein" d="M0 -2.4 L0 -8.6" transform={`rotate(${r})`} strokeWidth=".55" strokeLinecap="round" />
       ))}
-      <circle r="2.8" fill="#ffffff" stroke="#c9dbff" strokeWidth=".6" /><circle r="1.1" fill="#ffe59a" />
-      {[36, 108, 180, 252, 324].map((r) => (
-        <circle key={`s${r}`} cx="0" cy="-4.4" r=".75" transform={`rotate(${r})`} fill="#3d6fd8" />
-      ))}
+      <circle className="fl-heart" r="2.8" />
+      <circle className="fl-eye" r="1.1" />
     </svg>
   );
 }

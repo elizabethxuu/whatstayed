@@ -21,14 +21,10 @@ type Props = {
   lit?: number[];
 };
 
-/** light drifting through the canopy: x, y, delay, duration */
-const FIREFLIES: [number, number, number, number][] = [
-  [260, 300, 0, 9], [380, 210, 1.6, 11], [540, 180, 3.1, 10], [660, 260, 0.8, 12], [720, 400, 2.4, 9], [300, 470, 4.2, 13],
-  [470, 330, 5.1, 10], [600, 470, 1.2, 11], [820, 330, 3.6, 12], [180, 400, 2.8, 10], [420, 560, 0.4, 14], [560, 600, 4.8, 12],
-];
+/** pollen motes drifting through the canopy: x, y, delay, duration (six; with the six petals, never more than twelve) */
+const MOTES: [number, number, number, number][] = [[300, 300, 0, 22], [560, 200, 6, 26], [700, 380, 3, 24], [420, 470, 11, 28], [820, 280, 15, 25], [230, 430, 9, 27]];
 /** petals drifting down: start x, delay, duration, scale */
 const DRIFT: [number, number, number, number][] = [[320, 0, 15, 1], [540, 4.5, 18, 0.8], [430, 9, 16, 1.1], [640, 2.2, 20, 0.7], [380, 12, 17, 0.9], [500, 7, 19, 1]];
-const TONES = ['url(#fl0)', 'url(#fl1)', 'url(#fl2)', 'url(#fl3)'];
 const OPEN = 2.4; // seconds for the willow to finish unfolding
 
 function hash(n: number) {
@@ -40,12 +36,11 @@ function hash(n: number) {
 const PETAL = 'M0 0 C -4.6 -2.2, -6.2 -8.6, -3.2 -11.4 C -1.6 -12.8, 1.6 -12.8, 3.2 -11.4 C 6.2 -8.6, 4.6 -2.2, 0 0 Z';
 
 function floret(fl: Floret, k: number, open: boolean) {
-  if (!open)
-    return <circle key={k} className="fbud" cx={fl.x} cy={fl.y} r={Math.max(0.9, fl.r * 0.55)} />;
+  if (!open) return null;
   return (
-    <g key={k} className="floret" transform={`translate(${fl.x.toFixed(1)} ${fl.y.toFixed(1)}) rotate(${fl.rot.toFixed(0)}) scale(${(fl.r / 9).toFixed(3)})`}>
+    <g key={k} className={`floret t${fl.tone % 2}`} transform={`translate(${fl.x.toFixed(1)} ${fl.y.toFixed(1)}) rotate(${fl.rot.toFixed(0)}) scale(${(fl.r / 9).toFixed(3)})`}>
       {[0, 72, 144, 216, 288].map((a) => (
-        <path key={a} d={PETAL} transform={`rotate(${a})`} fill={TONES[fl.tone]} />
+        <path key={a} d={PETAL} transform={`rotate(${a})`} />
       ))}
       <circle r="2.2" className="feye" />
     </g>
@@ -61,12 +56,16 @@ function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors,
   if (born.current === null && typeof performance !== 'undefined') born.current = performance.now();
   const age = born.current === null ? 0 : (performance.now() - born.current) / 1000;
   const waits = useRef(new Map<number, number>());
+  const fresh = useRef(new Set<number>());
   memories.forEach((_, i) => {
-    if (!waits.current.has(i)) waits.current.set(i, Math.max(0, OPEN - age + 0.3 + i * 0.12));
+    if (!waits.current.has(i)) {
+      waits.current.set(i, Math.max(0, OPEN - age + 0.3 + i * 0.12));
+      if (age > OPEN) fresh.current.add(i);
+    }
   });
 
-  // the garden fills as the archive grows: more of the tiny florets open with every memory
-  const opened = Math.min(W.total, 380 + memories.length * 40);
+  // the garden fills as the archive grows: a scattering at first light, more florets with every memory
+  const opened = Math.min(W.total, 110 + memories.length * 26);
 
   // which slot on which strand carries each memory; a memory tied to an earlier one hangs near it
   const anchorKey = (anchors ?? []).join(',');
@@ -144,14 +143,13 @@ function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors,
     const m = memories[i];
     const isSel = selected === i;
     const wait = waits.current.get(i) ?? 0;
-    const size = (m.weight === 'heavy' ? 1.12 : m.weight === 'tender' ? 1.02 : 0.94) * (0.9 + hash(i + 11) * 0.2);
-    const tint = m.weight === 'heavy' ? 'url(#pMeaning)' : m.weight === 'tender' ? 'url(#pMist)' : 'url(#pWhite)';
+    const size = 1.45 * (m.weight === 'heavy' ? 1.12 : m.weight === 'tender' ? 1.02 : 0.94) * (0.9 + hash(i + 11) * 0.2);
     const tilt = (hash(i + 3) - 0.5) * 50;
     const flower = (sx: number, sy: number, sc: number, key: string, main: boolean) => (
       <g key={key} transform={`translate(${sx} ${sy}) scale(${sc})`}>
         {[0, 72, 144, 216, 288].map((a, k) => (
           <g key={a} transform={`rotate(${a + (hash(i * 5 + k) - 0.5) * 10})`}>
-            <path className="petal" d={PETAL} fill={tint} style={{ '--k': k } as CSSProperties} />
+            <path className="petal" d={PETAL} style={{ '--k': k } as CSSProperties} />
           </g>
         ))}
         {main && <circle className="heart" r="3" />}
@@ -162,7 +160,7 @@ function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors,
     return (
       <g
         key={`b${i}`}
-        className={`blossom w-${m.weight}${isSel ? ' is-sel' : ''}${lit?.includes(i) ? ' is-lit' : ''}`}
+        className={`blossom w-${m.weight}${fresh.current.has(i) ? ' is-fresh' : ''}${isSel ? ' is-sel' : ''}${lit?.includes(i) ? ' is-lit' : ''}`}
         transform={`translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${tilt.toFixed(0)}) scale(${size.toFixed(3)})`}
         role="button"
         tabIndex={0}
@@ -179,7 +177,7 @@ function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors,
       >
         <circle className="hit" r="22" />
         <circle data-anchor={i} r="0.1" fill="none" />
-        <circle className="glow" r="26" fill="url(#bGlow)" />
+        {fresh.current.has(i) && <circle className="ripple" r="14" />}
         {m.weight === 'heavy' && (
           <>
             {flower(-11, 7, 0.62, 'h1', false)}
@@ -214,57 +212,16 @@ function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors,
       role="img"
       aria-label={`A willow with ${memories.length} ${memories.length === 1 ? 'blossom' : 'blossoms'}${buds ? `, and ${buds} ${buds === 1 ? 'bud' : 'buds'} waiting for review` : ''}`}
     >
-      <defs>
-        {/* memory blossoms: luminous blue petals, paler at the edge */}
-        <radialGradient id="pWhite" cx="50%" cy="100%" r="110%">
-          <stop offset="0" stopColor="#4f7fe6" />
-          <stop offset=".55" stopColor="#8fb6ff" />
-          <stop offset="1" stopColor="#d9e7ff" />
-        </radialGradient>
-        <radialGradient id="pMist" cx="50%" cy="100%" r="110%">
-          <stop offset="0" stopColor="#5b6fe0" />
-          <stop offset=".55" stopColor="#9ea9f5" />
-          <stop offset="1" stopColor="#e2e4ff" />
-        </radialGradient>
-        <radialGradient id="pMeaning" cx="50%" cy="100%" r="110%">
-          <stop offset="0" stopColor="#3f6fe0" />
-          <stop offset=".5" stopColor="#7fa8ff" />
-          <stop offset="1" stopColor="#eef4ff" />
-        </radialGradient>
-        {/* tiny florets: powder blue, periwinkle, cornflower, a little lavender */}
-        <radialGradient id="fl0" cx="50%" cy="100%" r="110%"><stop offset="0" stopColor="#6d93ee" /><stop offset="1" stopColor="#c7dbff" /></radialGradient>
-        <radialGradient id="fl1" cx="50%" cy="100%" r="110%"><stop offset="0" stopColor="#7d87e8" /><stop offset="1" stopColor="#d3d6ff" /></radialGradient>
-        <radialGradient id="fl2" cx="50%" cy="100%" r="110%"><stop offset="0" stopColor="#5f8fe6" /><stop offset="1" stopColor="#b4ceff" /></radialGradient>
-        <radialGradient id="fl3" cx="50%" cy="100%" r="110%"><stop offset="0" stopColor="#8f8ae6" /><stop offset="1" stopColor="#e1dcff" /></radialGradient>
-        <radialGradient id="bGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0" stopColor="#bcd3ff" stopOpacity=".55" />
-          <stop offset="1" stopColor="#bcd3ff" stopOpacity="0" />
-        </radialGradient>
-        <radialGradient id="moonhalo" cx="50%" cy="50%" r="50%">
-          <stop offset="0" stopColor="#9fbcff" stopOpacity=".28" />
-          <stop offset=".6" stopColor="#6f8fe0" stopOpacity=".08" />
-          <stop offset="1" stopColor="#6f8fe0" stopOpacity="0" />
-        </radialGradient>
-        <radialGradient id="pool" cx="50%" cy="50%" r="50%">
-          <stop offset="0" stopColor="#8fb0ff" stopOpacity=".3" />
-          <stop offset="1" stopColor="#8fb0ff" stopOpacity="0" />
-        </radialGradient>
-        <linearGradient id="bark" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#5d6f9c" />
-          <stop offset=".45" stopColor="#36466f" />
-          <stop offset="1" stopColor="#1c2747" />
-        </linearGradient>
-      </defs>
 
-      <ellipse className="halo" cx="488" cy="300" rx="430" ry="300" fill="url(#moonhalo)" />
-      <ellipse className="ground" cx="488" cy="694" rx="360" ry="26" fill="url(#pool)" />
+      {/* the daytime moon, faint, high to the right of the crown */}
+      <circle className="moon" cx="918" cy="64" r="30" aria-hidden="true" />
 
       {/* the strands at the back of the crown first, then the tree, then the front */}
       {[0, 1].map((layer) => (
         <g key={layer} className={`strands layer-${layer}`}>
           {layer === 1 && (
             <g className="wood">
-              <path className="trunk" d={W.trunk} fill="url(#bark)" />
+              <path className="trunk" d={W.trunk} />
               <path className="trunk-light" d={W.trunkLight} />
               {W.limbs.map((l, k) => (
                 <path key={k} className="limb-arc" d={l.d} strokeWidth={l.w} style={{ animationDelay: `${0.2 + k * 0.08}s` }} />
@@ -310,9 +267,9 @@ function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors,
         ))}
       </g>
 
-      <g className="fireflies" aria-hidden="true">
-        {FIREFLIES.map(([x, y, d, dur], k) => (
-          <circle key={k} cx={x} cy={y} r={1.3 + (k % 3) * 0.5} style={{ animationDelay: `${d}s`, animationDuration: `${dur}s` } as CSSProperties} />
+      <g className="motes" aria-hidden="true">
+        {MOTES.map(([x, y, d, dur], k) => (
+          <circle key={k} cx={x} cy={y} r={1.6 + (k % 3) * 0.5} style={{ animationDelay: `${d}s`, animationDuration: `${dur}s` } as CSSProperties} />
         ))}
       </g>
       {memories.length > 0 && (

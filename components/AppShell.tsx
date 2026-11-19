@@ -133,6 +133,14 @@ export default function AppShell({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // the garden rests when no one is looking: every animation pauses while the tab is hidden
+  useEffect(() => {
+    const on = () => document.documentElement.classList.toggle('paused', document.hidden);
+    on();
+    document.addEventListener('visibilitychange', on);
+    return () => document.removeEventListener('visibilitychange', on);
+  }, []);
+
   return (
     <>
       {(pull > 0 || refreshing) && (
