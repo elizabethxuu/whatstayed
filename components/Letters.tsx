@@ -50,7 +50,7 @@ export default function Letters() {
       <Masthead room="letters" />
       <section className="arc-head">
         <h1 className="arc-title">Letters</h1>
-        <p className="arc-sub">To the person you’ll be.</p>
+        <p className="arc-sub">Sealed until the date you choose.</p>
       </section>
 
       {arrived.length > 0 && (
@@ -72,7 +72,7 @@ export default function Letters() {
           className="sheet letter-sheet"
           value={body}
           maxLength={50000}
-          placeholder="Dear me, by the time you read this…"
+          placeholder="Write a letter…"
           onChange={(e) => {
             setBody(e.target.value);
             if (err.body) setErr((x) => ({ ...x, body: '' }));
@@ -112,11 +112,11 @@ export default function Letters() {
                   <button
                     type="button"
                     className="quiet"
-                    onClick={() => window.confirm('Break the seal early? You’ll be able to read it now.') && store.openLetter(l.id)}
+                    onClick={() => window.confirm('Open this letter early?') && store.openLetter(l.id)}
                   >
                     Open early
                   </button>
-                  <button type="button" className="quiet danger" onClick={() => window.confirm('Throw this letter away unread? It can’t be brought back.') && store.deleteLetter(l.id)}>
+                  <button type="button" className="quiet danger" onClick={() => window.confirm('Delete this letter without opening it? This can’t be undone.') && store.deleteLetter(l.id)}>
                     Throw away
                   </button>
                 </span>
@@ -152,7 +152,7 @@ function Arrived({ l }: { l: Letter }) {
         </button>
       )}
       <p className="card-links">
-        <button type="button" className="quiet danger" onClick={() => window.confirm('Throw this letter away? It can’t be brought back.') && store.deleteLetter(l.id)}>
+        <button type="button" className="quiet danger" onClick={() => window.confirm('Delete this letter? This can’t be undone.') && store.deleteLetter(l.id)}>
           Throw away
         </button>
       </p>

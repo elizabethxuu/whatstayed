@@ -70,7 +70,7 @@ export default function Garden({ initial }: { initial: UIMessage[] }) {
     store
       .refresh()
       .then(() => setSelectedId(fresh[fresh.length - 1]))
-      .catch(() => store.toast('The new memory was planted, but the garden couldn’t refresh. Reload to see it.', 'error'));
+      .catch(() => store.toast('The memory was added, but the garden couldn’t refresh. Reload to see it.', 'error'));
   }, [planted, status, store]);
 
   // /?m=<id> opens that memory (from People, the Timeline, search or a collection)
@@ -142,7 +142,7 @@ export default function Garden({ initial }: { initial: UIMessage[] }) {
   }
 
   async function beginAgain() {
-    if (!window.confirm('Clear your tree, its places, threads and photographs, and begin again? Your Archives stay. This can’t be undone.')) return;
+    if (!window.confirm('Clear the tree, with its places, threads and photos? The Archives aren’t affected. This can’t be undone.')) return;
     const ok = await store.clearGarden();
     if (!ok) return;
     setMessages([]);
@@ -156,7 +156,7 @@ export default function Garden({ initial }: { initial: UIMessage[] }) {
 
   async function letGo() {
     if (!sel) return;
-    if (!window.confirm('Let this memory go? Its place, threads, photographs and recordings go with it. This can’t be undone.')) return;
+    if (!window.confirm('Delete this memory? Its place, threads, photos and recordings are deleted too. This can’t be undone.')) return;
     const ok = await store.deleteMemory(sel.id);
     if (ok) setSelectedId(null);
   }
@@ -262,7 +262,7 @@ export default function Garden({ initial }: { initial: UIMessage[] }) {
                 Edit
               </button>
               <button type="button" className="quiet danger" onClick={letGo}>
-                Let it go
+                Delete
               </button>
             </p>
             <MediaShelf key={sel.id} owner={{ type: 'memory', id: sel.id }} compact />
@@ -335,8 +335,8 @@ export default function Garden({ initial }: { initial: UIMessage[] }) {
       <section className="talk" aria-live="polite">
         {messages.length === 0 ? (
           <div className="voice">
-            <p className="voice-line">What stayed with you?</p>
-            <p className="voice-sub">Tell me about a place you’ve been, and a moment from it.</p>
+            <p className="voice-line">Add a memory</p>
+            <p className="voice-sub">Name a place and a moment from it. It becomes a blossom on the tree.</p>
           </div>
         ) : (
           <div className="voice">
@@ -395,7 +395,7 @@ export default function Garden({ initial }: { initial: UIMessage[] }) {
             {hint}
           </p>
         ) : (
-          <p className="privacy">Kept in your account. Only you can see it.</p>
+          <p className="privacy">Private to your account.</p>
         )}
       </section>
 

@@ -103,9 +103,9 @@ function Collection({
 
       <section className="arc-head">
         <h1 className="arc-title">The Archives</h1>
-        <p className="arc-sub">Things I wanted to remember.</p>
+        <p className="arc-sub">Pages and notes.</p>
         <button type="button" className="invite" onClick={() => onOpen(newId())}>
-          Leave something here…
+          Write something…
         </button>
       </section>
 
@@ -290,7 +290,7 @@ function Page({ id, entry, onClose }: { id: string; entry: Stored | null; onClos
   }
 
   async function remove() {
-    if (!window.confirm('Delete this page, with its photographs and recordings? It can’t be brought back.')) return;
+    if (!window.confirm('Delete this page and its photos and recordings? This can’t be undone.')) return;
     if (timer.current) clearTimeout(timer.current);
     timer.current = null;
     await inflight.current.catch(() => {});
@@ -346,7 +346,7 @@ function Page({ id, entry, onClose }: { id: string; entry: Stored | null; onClos
         ref={area}
         className="sheet"
         value={body}
-        placeholder="Leave something here…"
+        placeholder="Write something…"
         onChange={(e) => onChange(e.target.value)}
         spellCheck
       />

@@ -6,7 +6,7 @@ import { gate } from '@/lib/server/gate';
 
 export const metadata: Metadata = {
   title: 'The Archives · What Stayed',
-  description: 'Things I wanted to remember.',
+  description: 'Pages and notes.',
 };
 export const dynamic = 'force-dynamic';
 

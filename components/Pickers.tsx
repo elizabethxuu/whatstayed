@@ -218,7 +218,7 @@ export function CollectionPicker({ kind, id, onClose }: { kind: CollectionItem['
       <form className="tie-note pick-new" onSubmit={make}>
         <label>
           <span>A new collection</span>
-          <input value={name} maxLength={80} onChange={(e) => setName(e.target.value)} placeholder="People I’ve loved" />
+          <input value={name} maxLength={80} onChange={(e) => setName(e.target.value)} placeholder="Paris, 2024" />
         </label>
         <button type="submit" className="quiet strong" disabled={busy || !name.trim()}>
           Make it

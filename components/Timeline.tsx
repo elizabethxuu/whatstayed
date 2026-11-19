@@ -121,7 +121,7 @@ export default function Timeline() {
     <main className="timeline">
       <Masthead room="timeline">
         <button type="button" className="quiet" onClick={() => setMarking('new')}>
-          Mark a day
+          Add a date
         </button>
       </Masthead>
       <section className="arc-head">
@@ -206,7 +206,7 @@ export default function Timeline() {
         <div className="empty-room">
           <p className="quiet-note">Nothing here yet. Plant a memory, write a page, or mark a day that mattered.</p>
           <button type="button" className="invite" onClick={() => setMarking('new')}>
-            Mark a day that mattered…
+            Add a date…
           </button>
         </div>
       ) : shown.length === 0 ? (
@@ -225,7 +225,7 @@ export default function Timeline() {
                         <li key={i.key} className={`tl-item c-${i.cat}`}>
                           <span className="tl-dot" aria-hidden="true" />
                           <p className="tl-when">
-                            {i.dated ? dayLabel(i.t) : `Kept ${dayLabel(i.t)}`}
+                            {i.dated ? dayLabel(i.t) : `Added ${dayLabel(i.t)}`}
                             <span> · {i.cat === 'memory' ? 'Memory' : i.cat === 'entry' ? 'Page' : i.cat === 'milestone' ? 'An important day' : 'Letter'}</span>
                             {i.place ? <span> · {i.place}</span> : null}
                           </p>
@@ -307,7 +307,7 @@ function DayEditor({ day, onSave, onClose }: { day?: Milestone; onSave: (m: { ti
   }
 
   return (
-    <Sheet title={day ? 'An important day' : 'Mark a day that mattered'} kicker="A milestone" onClose={onClose}>
+    <Sheet title={day ? 'Edit date' : 'Add a date'} kicker="Timeline" onClose={onClose}>
       <form onSubmit={submit} noValidate>
         <div className="loc-fields mem-fields">
           <label className="wide">

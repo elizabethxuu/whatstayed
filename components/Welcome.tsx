@@ -38,11 +38,11 @@ export default function Welcome() {
       </div>
       <div className="welcome-card">
         <p className="mark">What Stayed</p>
-        <h1 className="welcome-title">{mode === 'in' ? 'Welcome back.' : 'Begin a garden.'}</h1>
+        <h1 className="welcome-title">{mode === 'in' ? 'Welcome back.' : 'Create an account.'}</h1>
         <p className="welcome-sub">
           {mode === 'in'
-            ? 'Your memories, pages and places are waiting where you left them.'
-            : 'A quiet place for the moments that stayed with you. Only you can see what you keep here.'}
+            ? 'Sign in to your garden.'
+            : 'A private archive of places, people and memories.'}
         </p>
 
         <form className="welcome-form" onSubmit={submit} noValidate>
@@ -78,7 +78,7 @@ export default function Welcome() {
             {error}
           </p>
           <button type="submit" className="welcome-go" disabled={busy}>
-            {busy ? (mode === 'in' ? 'Opening…' : 'Planting…') : mode === 'in' ? 'Sign in' : 'Begin'}
+            {busy ? (mode === 'in' ? 'Opening…' : 'Creating…') : mode === 'in' ? 'Sign in' : 'Begin'}
           </button>
         </form>
 

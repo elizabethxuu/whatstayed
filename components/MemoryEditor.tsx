@@ -11,9 +11,9 @@ type Props = {
 };
 
 const WEIGHTS: { v: Memory['weight']; label: string; hint: string }[] = [
-  { v: 'light', label: 'Light', hint: 'joyful, easy' },
-  { v: 'tender', label: 'Tender', hint: 'warm, bittersweet' },
-  { v: 'heavy', label: 'Heavy', hint: 'something that still aches' },
+  { v: 'light', label: 'White', hint: 'a white blossom' },
+  { v: 'tender', label: 'Mist', hint: 'a pale grey heart' },
+  { v: 'heavy', label: 'Marked', hint: 'a red heart' },
 ];
 
 /** Plant a memory by hand, or tend one already on the tree. */
@@ -38,9 +38,9 @@ export default function MemoryEditor({ memory, onSave, onClose }: Props) {
   async function submit(e: FormEvent) {
     e.preventDefault();
     const next: Record<string, string> = {};
-    if (!place.trim()) next.place = 'Where was it? A city, a kitchen, a train.';
-    if (moment.trim().length < 2) next.moment = 'A line about the moment itself.';
-    if (!feeling.trim()) next.feeling = 'One or two words for how it felt.';
+    if (!place.trim()) next.place = 'Add a place.';
+    if (moment.trim().length < 2) next.moment = 'Add a short description.';
+    if (!feeling.trim()) next.feeling = 'Add one word.';
     setErrors(next);
     if (Object.keys(next).length) return;
     setBusy(true);
@@ -67,19 +67,19 @@ export default function MemoryEditor({ memory, onSave, onClose }: Props) {
   return (
     <div className="loc-veil" onClick={() => !busy && onClose()}>
       <form className="loc-ed mem-ed" role="dialog" aria-modal="true" aria-labelledby="memT" onClick={(e) => e.stopPropagation()} onSubmit={submit} noValidate>
-        <p className="loc-k">{memory ? 'Tending a memory' : 'By hand'}</p>
-        <h2 id="memT" className="loc-t">{memory ? 'What stayed' : 'Plant a memory'}</h2>
+        <p className="loc-k">{memory ? 'Edit' : 'New'}</p>
+        <h2 id="memT" className="loc-t">{memory ? 'Memory' : 'Plant a memory'}</h2>
 
         <div className="loc-fields mem-fields">
           <label className="wide">
-            <span>The moment</span>
+            <span>Moment</span>
             <textarea
               id="moment"
               rows={3}
               maxLength={600}
               value={moment}
               onChange={(e) => { setMoment(e.target.value); clear('moment'); }}
-              placeholder="The steam rising off the dumplings, my sister laughing"
+              placeholder="Steam rising off the dumplings at the night market"
               required
               {...field('moment')}
             />
@@ -99,12 +99,12 @@ export default function MemoryEditor({ memory, onSave, onClose }: Props) {
             <input type="date" value={date} max="9999-12-31" onChange={(e) => setDate(e.target.value)} />
           </label>
           <label>
-            <span>How it felt</span>
-            <input id="feeling" maxLength={40} value={feeling} onChange={(e) => { setFeeling(e.target.value); clear('feeling'); }} placeholder="Held" required {...field('feeling')} />
+            <span>In a word</span>
+            <input id="feeling" maxLength={40} value={feeling} onChange={(e) => { setFeeling(e.target.value); clear('feeling'); }} placeholder="Calm" required {...field('feeling')} />
             {errors.feeling && <em id="feeling-err" className="field-err">{errors.feeling}</em>}
           </label>
           <fieldset className="mem-weight">
-            <legend>Its weight</legend>
+            <legend>Blossom</legend>
             {WEIGHTS.map((w) => (
               <label key={w.v} className={weight === w.v ? 'on' : ''} title={w.hint}>
                 <input type="radio" name="weight" value={w.v} checked={weight === w.v} onChange={() => setWeight(w.v)} />
@@ -121,7 +121,7 @@ export default function MemoryEditor({ memory, onSave, onClose }: Props) {
             Cancel
           </button>
           <button type="submit" className="quiet strong" disabled={busy}>
-            {busy ? 'Saving…' : memory ? 'Save' : 'Plant it'}
+            {busy ? 'Saving…' : memory ? 'Save' : 'Plant'}
           </button>
         </div>
       </form>

@@ -94,7 +94,7 @@ function PersonEditor({ person, onSave, onClose }: { person?: Person; onSave: (p
   }
 
   return (
-    <Sheet title={person ? 'About them' : 'Someone who stayed'} onClose={onClose}>
+    <Sheet title={person ? 'About them' : 'Add a person'} onClose={onClose}>
       <form onSubmit={submit} noValidate>
         <div className="loc-fields mem-fields">
           <label>
@@ -108,7 +108,7 @@ function PersonEditor({ person, onSave, onClose }: { person?: Person; onSave: (p
           </label>
           <label className="wide">
             <span>A few words (optional)</span>
-            <textarea rows={3} maxLength={600} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="She hummed while she cooked and never measured anything." />
+            <textarea rows={3} maxLength={600} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A short description" />
           </label>
         </div>
         <div className="loc-acts">
@@ -207,7 +207,7 @@ function PersonPage({ person, onGone }: { person: Person; onGone: () => void }) 
         </section>
 
         <section className="person-block">
-          <h2 className="month-label">Pages about them</h2>
+          <h2 className="month-label">Pages</h2>
           {pages.length === 0 ? (
             <p className="names-empty">None yet.</p>
           ) : (
@@ -237,7 +237,7 @@ function PersonPage({ person, onGone }: { person: Person; onGone: () => void }) 
             className="person-notes"
             value={notes}
             maxLength={20000}
-            placeholder="Things you don’t want to forget about them…"
+            placeholder="Notes…"
             onChange={(e) => {
               setNotes(e.target.value);
               setNoteState('');
@@ -258,7 +258,7 @@ function PersonPage({ person, onGone }: { person: Person; onGone: () => void }) 
       {sheet === 'edit' && <PersonEditor person={person} onClose={() => setSheet(null)} onSave={(p) => store.updatePerson(person.id, { ...p, notes: notes.trim() || undefined })} />}
       {sheet === 'memories' && (
         <ItemPicker
-          title="Memories you shared"
+          title="Memories"
           kicker={person.name}
           kinds={['memory']}
           isOn={(_k, id) => snap.links.some((l) => l.kind === 'memory-person' && l.a === id && l.b === person.id)}
@@ -268,7 +268,7 @@ function PersonPage({ person, onGone }: { person: Person; onGone: () => void }) 
       )}
       {sheet === 'pages' && (
         <ItemPicker
-          title="Pages about them"
+          title="Pages"
           kicker={person.name}
           kinds={['entry']}
           isOn={(_k, id) => snap.links.some((l) => l.kind === 'entry-person' && l.a === id && l.b === person.id)}

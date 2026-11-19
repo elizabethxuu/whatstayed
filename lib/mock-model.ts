@@ -40,7 +40,7 @@ export function mockModel() {
       const said = lastUserText(p);
       let chunks: LanguageModelV2StreamPart[];
       if (justPlanted) {
-        chunks = textChunks('That one stays. Is there another moment, from this trip or somewhere else?');
+        chunks = textChunks('Planted. Is there another place, or another moment from this one?');
       } else if (userTurns % 2 === 0) {
         const place = (said.match(/\b(?:in|at|on)\s+([A-Z][\w'’-]+(?:\s+[A-Z][\w'’-]+)?)/) || [])[1] || 'Somewhere';
         const weights = ['light', 'tender', 'heavy'] as const;
@@ -65,7 +65,7 @@ export function mockModel() {
           { type: 'finish' as const, finishReason: 'tool-calls' as const, usage },
         ];
       } else {
-        chunks = textChunks('What do you remember most about being there? A sound, a smell, who you were with?');
+        chunks = textChunks('What do you see when you picture it? The light, the weather, who was there?');
       }
       return { stream: simulateReadableStream({ chunks, chunkDelayInMs: 25 }) };
     },

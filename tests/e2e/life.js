@@ -106,7 +106,7 @@ const PW = 'quiet-garden-27';
 
   // Archives: page with place, person, and a red thread to a memory
   await p.goto(B + '/archives');
-  await p.click('text=Leave something here…');
+  await p.click('text=Write something…');
   await p.fill('#page', 'Dreamt of the courtyard again, and her radio.');
   await p.waitForSelector('.saved.s-saved', { timeout: 8000 });
   await p.click('.page-ties >> text=Add a place');
@@ -164,7 +164,7 @@ const PW = 'quiet-garden-27';
   // Timeline
   await p.click('.rooms >> text=Timeline');
   await p.waitForURL('**/timeline');
-  await p.click('text=Mark a day');
+  await p.click('text=Add a date');
   await p.fill('.loc-ed input[placeholder="Moved to New York"]', 'Moved to New York');
   await p.fill('.loc-ed input[type=date]', '2023-08-15');
   await p.click('.loc-ed button[type=submit]');
@@ -254,7 +254,7 @@ const PW = 'quiet-garden-27';
   await p.addInitScript(() => { Object.defineProperty(Date.prototype, 'getTimezoneOffset', { value: () => -1500 }); });
   await p.goto(B + '/');
   await p.waitForTimeout(800);
-  ok('on its day, the garden says a letter has arrived', /A letter has arrived/.test((await p.textContent('.revisits').catch(() => '')) || ''));
+  ok('on its day, the garden says a letter has arrived', /A letter is ready/.test((await p.textContent('.revisits').catch(() => '')) || ''));
   await p.click('.revisits >> text=Read it');
   await p.waitForURL('**/letters**');
   await p.waitForSelector('.letter-body');
@@ -290,7 +290,7 @@ const PW = 'quiet-garden-27';
   ok('a result opens the old memory', /Crêpes on the Seine/.test(await p.textContent('.card')));
   await p.goto(B + '/search?q=zzzz');
   await p.waitForTimeout(500);
-  ok('search: honest empty state', /Nothing you’ve kept mentions/.test(await p.textContent('main')));
+  ok('search: honest empty state', /No results for/.test(await p.textContent('main')));
 
   // remove a person: memories stay
   await p.goto(B + '/people');

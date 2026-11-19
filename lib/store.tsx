@@ -163,7 +163,7 @@ function createStore(initial: Snapshot) {
         });
         refresh().catch(() => {});
         return true;
-      }, 'The memory has been let go.'),
+      }, 'Memory deleted.'),
 
     /* places & threads */
     setLocation: (memId: string, loc: Loc) =>
@@ -188,7 +188,7 @@ function createStore(initial: Snapshot) {
         const { id } = await api<{ id: string }>('/api/threads', { method: 'POST', json: { a, b, origin, note: n } });
         set((s) => (s.threads.some((t) => t.id === id) ? s : { ...s, threads: [...s.threads, { id, a, b, note: n, origin, createdAt: Date.now() }] }));
         return id;
-      }, 'A red thread, tied.'),
+      }, 'Thread added.'),
     updateThread: (id: string, note?: string) =>
       attempt(async () => {
         const n = note?.trim() || undefined;
@@ -201,7 +201,7 @@ function createStore(initial: Snapshot) {
         set((s) => ({ ...s, threads: without(s.threads, id) }));
         await api(`/api/threads/${encodeURIComponent(id)}`, { method: 'DELETE' });
         return true;
-      }, 'Untied.'),
+      }, 'Thread removed.'),
     dismiss: (key: string) =>
       attempt(async () => {
         set((s) => ({ ...s, dismissed: [...new Set([...s.dismissed, key])] }));
@@ -249,7 +249,7 @@ function createStore(initial: Snapshot) {
         const { media } = await api<{ media: Media }>('/api/media', { method: 'POST', body: f });
         set((s) => ({ ...s, media: [...s.media, media] }));
         return media;
-      }, kind === 'photo' ? 'Photograph kept.' : 'Recording kept.'),
+      }, kind === 'photo' ? 'Photo added.' : 'Recording added.'),
     deleteMedia: (id: string) =>
       attempt(async () => {
         set((s) => ({ ...s, media: without(s.media, id) }));
@@ -386,7 +386,7 @@ function createStore(initial: Snapshot) {
         set((s) => ({ ...s, memories: [], locations: {}, threads: [], dismissed: [], media: s.media.filter((m) => m.ownerType !== 'memory') }));
         refresh().catch(() => {});
         return true;
-      }, 'The garden is clear. Your Archives stay.'),
+      }, 'Garden cleared.'),
   };
 }
 

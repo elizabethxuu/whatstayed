@@ -52,7 +52,7 @@ await p.screenshot({path:'pl-atlas.png'});
 await p.click('.a-mark[aria-label^="Lisbon"]');await p.waitForTimeout(500);ok('marker reveals memories',/bells were ringing/.test(await p.textContent('.pl-peek')));
 await p.screenshot({path:'pl-peek.png'});
 await p.click('text=Open this place');await p.waitForTimeout(800);
-const pg=await p.textContent('.pl-page');ok('place page: name, region, count, excerpt, threads',/Lisbon/.test(pg)&&/Portugal/.test(pg)&&/One memory lives here/.test(pg)&&/bells/.test(pg)&&/Jiangmen, China/.test(pg)&&/Same trip/.test(pg));
+const pg=await p.textContent('.pl-page');ok('place page: name, region, count, excerpt, threads',/Lisbon/.test(pg)&&/Portugal/.test(pg)&&/1 memory/.test(pg)&&/bells/.test(pg)&&/Jiangmen, China/.test(pg)&&/Same trip/.test(pg));
 await p.screenshot({path:'pl-page.png',fullPage:true});
 await p.click('a.pl-tie-place:has-text("Jiangmen")');await p.waitForTimeout(700);ok('follow thread to Jiangmen page',/Jiangmen/.test(await p.textContent('.pl-page h1')));
 // edit off-map place via search to pin it

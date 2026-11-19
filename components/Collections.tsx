@@ -41,7 +41,7 @@ export default function Collections() {
       </Masthead>
       <section className="arc-head">
         <h1 className="arc-title">Collections</h1>
-        <p className="arc-sub">Childhood. Paris. People I’ve loved. Summer.</p>
+        <p className="arc-sub">Group memories and pages.</p>
       </section>
       {cid && !col && <p className="quiet-note">That collection isn’t here any more.</p>}
       {snap.collections.length === 0 ? (

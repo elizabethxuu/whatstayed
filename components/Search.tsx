@@ -59,7 +59,7 @@ export default function Search() {
       }));
     const places: Hit[] = groupPlaces(snap.memories, snap.locations)
       .filter((g) => has(g.title, g.country, g.region, ...g.items.map((i) => i.loc.name), ...g.items.map((i) => i.loc.neighborhood)))
-      .map((g) => ({ key: g.key, href: `/places?p=${encodeURIComponent(g.key)}`, k: [g.region, g.country].filter((x) => x && x !== g.title).join(' · '), title: g.title, text: g.items.length === 1 ? 'One memory lives here.' : `${g.items.length} memories live here.` }));
+      .map((g) => ({ key: g.key, href: `/places?p=${encodeURIComponent(g.key)}`, k: [g.region, g.country].filter((x) => x && x !== g.title).join(' · '), title: g.title, text: g.items.length === 1 ? '1 memory' : `${g.items.length} memories live here.` }));
     const people: Hit[] = snap.people
       .filter((p) => has(p.name, p.relation, p.description, p.notes))
       .map((p) => ({ key: p.id, href: `/people?p=${encodeURIComponent(p.id)}`, k: p.relation || 'Someone', title: p.name, text: p.description || (p.notes && has(p.notes) ? snippet(p.notes, q.trim()) : undefined) }));
@@ -107,7 +107,7 @@ export default function Search() {
 
       {ql && total === 0 && (
         <p className="quiet-note">
-          Nothing you’ve kept mentions “{q.trim()}”.{sealed ? ' Sealed letters aren’t searched until they open.' : ''}
+          No results for “{q.trim()}”.{sealed ? ' Sealed letters aren’t searched until they open.' : ''}
         </p>
       )}
       <div className="results">

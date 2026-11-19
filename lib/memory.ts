@@ -23,11 +23,11 @@ export const memorySchema = z.object({
     .string()
     .min(1)
     .max(24)
-    .describe('One or two words for the feeling they described or clearly implied. "Free", "homesick", "held".'),
+    .describe('One plain word for the moment, from what they said. "Calm", "bright", "busy".'),
   weight: z
     .enum(['light', 'tender', 'heavy'])
     .describe(
-      'light = joyful or easy. tender = warm, bittersweet, close to the heart. heavy = grief, loss, or something that still aches.',
+      'The blossom: light = a white blossom (most memories). tender = a pale grey heart (quieter, more personal). heavy = a red heart, only for a memory they say matters a great deal.',
     ),
   echoes: z
     .string()

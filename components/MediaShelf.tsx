@@ -23,12 +23,12 @@ export default function MediaShelf({ owner, compact = false }: { owner: Owner; c
     const files = [...(e.target.files || [])];
     e.target.value = '';
     for (let i = 0; i < files.length; i++) {
-      setBusy(files.length > 1 ? `Keeping photograph ${i + 1} of ${files.length}…` : 'Keeping the photograph…');
+      setBusy(files.length > 1 ? `Keeping photograph ${i + 1} of ${files.length}…` : 'Uploading…');
       try {
         const blob = await preparePhoto(files[i]);
         await store.addMedia(owner, 'photo', blob);
       } catch (err) {
-        store.toast(err instanceof Error ? err.message : 'That photograph couldn’t be kept.', 'error');
+        store.toast(err instanceof Error ? err.message : 'That photo couldn’t be uploaded.', 'error');
       }
     }
     setBusy('');
@@ -39,13 +39,13 @@ export default function MediaShelf({ owner, compact = false }: { owner: Owner; c
     e.target.value = '';
     if (!f) return;
     if (f.size > 4 * 1024 * 1024) return store.toast('That recording is too large (4 MB at most).', 'error');
-    setBusy('Keeping the recording…');
+    setBusy('Uploading…');
     await store.addMedia(owner, 'voice', f);
     setBusy('');
   }
 
   async function remove(m: Media) {
-    if (!window.confirm(m.kind === 'photo' ? 'Remove this photograph?' : 'Delete this recording? It can’t be brought back.')) return;
+    if (!window.confirm(m.kind === 'photo' ? 'Remove this photograph?' : 'Delete this recording? This can’t be undone.')) return;
     setView(null);
     await store.deleteMedia(m.id);
   }
@@ -167,7 +167,7 @@ function Recorder({ owner, disabled, onAudioFile }: { owner: Owner; disabled: bo
       const blob = new Blob(chunks.current, { type: (r.mimeType || 'audio/webm').split(';')[0] });
       if (!blob.size || ms < 500) {
         setPhase('idle');
-        store.toast('That was too short to keep.', 'error');
+        store.toast('That recording was too short.', 'error');
         return;
       }
       setPhase('saving');

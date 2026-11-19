@@ -16,7 +16,7 @@ export function revisits(snap: Snapshot, now = new Date()): Revisit[] {
   const today = md(now);
   const y = now.getFullYear();
 
-  for (const l of snap.letters) if (!l.sealed && !l.openedAt) out.push({ kind: 'letter', id: l.id, label: 'A letter has arrived', text: `You wrote it on ${new Date(l.writtenAt).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}.` });
+  for (const l of snap.letters) if (!l.sealed && !l.openedAt) out.push({ kind: 'letter', id: l.id, label: 'A letter is ready', text: `You wrote it on ${new Date(l.writtenAt).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}.` });
 
   for (const m of snap.milestones) {
     const d = local(m.onDate);

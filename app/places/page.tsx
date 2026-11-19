@@ -7,7 +7,7 @@ import { gate } from '@/lib/server/gate';
 
 export const metadata: Metadata = {
   title: 'Places · What Stayed',
-  description: 'Some places never really leave us.',
+  description: 'Every memory, on the map.',
 };
 export const dynamic = 'force-dynamic';
 

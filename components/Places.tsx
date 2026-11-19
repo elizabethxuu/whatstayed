@@ -116,7 +116,7 @@ export default function Places() {
       <Masthead room="places" />
       <section className="pl-head">
         <h1 className="arc-title">Places</h1>
-        <p className="arc-sub">Some places never really leave us.</p>
+        <p className="arc-sub">Every memory, on the map.</p>
       </section>
 
       <section className="pl-map">
@@ -254,7 +254,7 @@ function PlacePage({
         {region.length > 0 && <p className="card-no">{region.join(' · ')}</p>}
         <h1 className="arc-title">{g.title}</h1>
         <p className="arc-sub">
-          {g.items.length === 1 ? 'One memory lives here.' : `${g.items.length} memories live here.`}
+          {g.items.length === 1 ? '1 memory' : `${g.items.length} memories live here.`}
         </p>
       </header>
 

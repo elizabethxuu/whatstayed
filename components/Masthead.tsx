@@ -23,7 +23,7 @@ export default function Masthead({ room, children }: { room: Room; children?: Re
         <Link href="/" className="mark-link">
           <span className="mark">What Stayed</span>
         </Link>
-        <p className="sub">An archive of the places that stayed</p>
+        <p className="sub">An archive of places and memories</p>
       </div>
       <div className="top-r">
         <nav className="rooms" aria-label="Rooms">
