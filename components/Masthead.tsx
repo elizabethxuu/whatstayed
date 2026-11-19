@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import RoomsScroll from './RoomsScroll';
+import TabBar from './TabBar';
 
 export type Room = 'garden' | 'archives' | 'places' | 'people' | 'timeline' | 'collections' | 'letters' | 'search' | 'account';
 
@@ -49,6 +50,7 @@ export default function Masthead({ room, children }: { room: Room; children?: Re
           </Link>
         </span>
       </div>
+      <TabBar room={room} />
     </header>
   );
 }

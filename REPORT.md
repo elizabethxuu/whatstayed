@@ -196,3 +196,28 @@ For your own use, neither blocks launch.
 5. **Load data per room instead of the whole account per page.** It's fast at personal scale (hundreds of items) but should be paged at thousands.
 6. **The tree's next layer from the brief:** branches that represent people, places and periods, and hover hints on branches (today they're on blossoms).
 7. **Cross-browser pass** (Safari and Firefox) and a screen-reader pass.
+
+---
+
+## Design update: The White Garden (November 19)
+
+- **Palette:** porcelain `#FEFEFC`, ivory `#F8F7F2`, mist `#F1F2EF`, pale stone `#E8E8E2`, botanical grey `#B9BDB7`, branch grey `#929991`, charcoal `#343733`, and the muted red `#874D50`. Every pink is gone. The red appears only on red threads, a meaningful (heavy) blossom's heart, errors, the letter seal and very small active marks.
+- **Tree:**
+  - Finer branches that pale and turn translucent toward the tips, with light along the older limbs.
+  - A tapering, leaning trunk.
+  - Pale leaves that each move on their own timing.
+  - Almost-white translucent blossoms, each a slightly different size and shape, that unfold slowly.
+  - Fine twiglets appear as memories accumulate, so the crown becomes more intricate.
+  - While the agent is replying, the light around the tree gathers.
+- **Type:** light serif titles. Sentence-case sans labels with almost no tracking; capitals remain only on small month dividers and the tagline.
+- **Conversation:** the input is barely there until you reach for it. Your last words appear as a quiet italic recollection.
+- **Phones:** a translucent bottom tab bar (Garden, Archives, Places, People, More), fine-line icons and a small red dot for where you are. Timeline, Collections, Letters, Search and your account live under More.
+- **Arrival:** the bare tree draws itself beside the sign-in form.
+- **Atmosphere:** the faintest grain over everything.
+- **Tested** (`tests/e2e/white.js`, 25 checks):
+  - Each room measures 98–99% white or near-white.
+  - No pinks anywhere.
+  - Twiglets grow with memories.
+  - The tab bar and More sheet work.
+  - Reduced motion holds the tree still.
+  - All earlier suites still pass (186 checks).

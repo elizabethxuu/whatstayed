@@ -14,6 +14,8 @@ export type Limb = {
   angle: number;
   d: string;
   kids: Limb[];
+  /** fine twiglets appear only once the garden holds this many memories */
+  later?: number;
 };
 
 export type Tip = { x: number; y: number; angle: number; limb: number };
@@ -65,12 +67,38 @@ export function growTree(seed = 2590) {
       const spread = 0.38 + r() * 0.32;
       const dir = kids === 3 ? (k - 1) * spread : (k === 0 ? -1 : 1) * spread * (depth < 2 ? 1 : 0.7 + r() * 0.6);
       const lift = depth > 3 ? -0.08 : 0; // the crown lifts and widens, like a cherry tree
-      limb.kids.push(grow(x2, y2, a2 + dir + lift, len * (0.7 + r() * 0.14), Math.max(0.7, width * 0.66), depth + 1));
+      limb.kids.push(grow(x2, y2, a2 + dir + lift, len * (0.7 + r() * 0.14), Math.max(0.35, width * 0.63), depth + 1));
     }
     return limb;
   }
 
-  const root = grow(VIEW.w / 2, VIEW.h - 40, -Math.PI / 2, 150, 20, 0);
+  const root = grow(VIEW.w / 2, VIEW.h - 40, -Math.PI / 2, 150, 11, 0);
+
+  // Fine twiglets at the outer tips, from their own seed so the tree's shape never shifts.
+  // Each waits for a number of memories, so the crown grows more intricate as the garden fills.
+  const r2 = rng(seed * 31 + 7);
+  const leaves: Limb[] = [];
+  (function walk(l: Limb) {
+    if (!l.kids.length) leaves.push(l);
+    l.kids.forEach(walk);
+  })(root);
+  for (const l of leaves) {
+    if (l.y2 > VIEW.h - 240) continue;
+    const n = r2() < 0.55 ? 2 : 1;
+    for (let k = 0; k < n; k++) {
+      const a = l.angle + (k === 0 ? -1 : 1) * (0.35 + r2() * 0.5);
+      const len = 9 + r2() * 13;
+      const bx = l.x + (l.x2 - l.x) * (0.55 + r2() * 0.35);
+      const by = l.y + (l.y2 - l.y) * (0.55 + r2() * 0.35);
+      const x2 = bx + Math.cos(a) * len;
+      const y2 = by + Math.sin(a) * len;
+      l.kids.push({
+        id: next++, depth: 8, w: 0.3, x: bx, y: by, x2, y2, angle: a,
+        d: `M${bx.toFixed(1)} ${by.toFixed(1)} L${x2.toFixed(1)} ${y2.toFixed(1)}`,
+        kids: [], later: 1 + Math.floor(r2() * 18),
+      });
+    }
+  }
 
   // Order the tips so blossoms spread across the crown instead of filling one side first.
   const crown = tips.filter((t) => t.y < VIEW.h - 220);

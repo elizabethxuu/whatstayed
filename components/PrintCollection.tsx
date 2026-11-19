@@ -9,7 +9,7 @@ import { coverOf } from './Collections';
 
 /** The look of the printed edition. Also embedded in the downloaded web page, so both match. */
 const DOC_CSS = `
-.print-doc{--ink:#33312f;--soft:#78736d;--faint:#a8a39c;--thread:#9e2f3c;max-width:720px;margin:0 auto;padding:72px 48px 96px;color:var(--ink);background:#fbfaf7;font-family:'Cormorant Garamond','Iowan Old Style',Palatino,Georgia,serif}
+.print-doc{--ink:#343733;--soft:#636862;--faint:#8e938d;--thread:#874d50;max-width:720px;margin:0 auto;padding:72px 48px 96px;color:var(--ink);background:#fefefc;font-family:'Cormorant Garamond','Iowan Old Style',Palatino,Georgia,serif}
 .print-doc .pd-mark{font-style:italic;font-size:16px;color:var(--soft);margin:0 0 120px}
 .print-doc .pd-cover{width:100%;max-height:520px;object-fit:cover;display:block;margin:0 0 48px;filter:saturate(.9)}
 .print-doc h1{font-weight:400;font-size:64px;line-height:1;letter-spacing:-.015em;margin:0}
@@ -71,7 +71,7 @@ export default function PrintCollection() {
         imgs[i].removeAttribute('loading');
       }
       const esc = (s: string) => s.replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch] as string);
-      const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(c!.name)} · What Stayed</title><style>body{margin:0;background:#fbfaf7}${DOC_CSS}@media (max-width:600px){.print-doc{padding:40px 20px}.print-doc h1{font-size:44px}}</style></head><body>${clone.outerHTML}</body></html>`;
+      const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(c!.name)} · What Stayed</title><style>body{margin:0;background:#fefefc}${DOC_CSS}@media (max-width:600px){.print-doc{padding:40px 20px}.print-doc h1{font-size:44px}}</style></head><body>${clone.outerHTML}</body></html>`;
       const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
       const a = document.createElement('a');
       a.href = url;

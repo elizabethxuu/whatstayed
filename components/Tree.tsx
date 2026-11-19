@@ -17,13 +17,30 @@ const OPEN = 2.6; // seconds for the tree to finish drawing itself
 // deterministic 0..1 noise
 const hash = (n: number) => ((Math.sin(n * 12.9898 + 4.1414) * 43758.5453) % 1 + 1) % 1;
 
-/** warm charcoal for the trunk, fading to muted warm gray at the twigs */
+/** muted branch grey at the trunk, paling to botanical grey and translucency at the twigs */
 function branchColor(depth: number) {
   const t = Math.min(1, depth / 7);
-  const a = [0x77, 0x73, 0x6e];
-  const b = [0xb7, 0xb2, 0xaa];
+  const a = [0x95, 0x93, 0x8a]; // pale taupe at the trunk
+  const b = [0xb9, 0xbd, 0xb7];
   const c = a.map((v, i) => Math.round(v + (b[i] - v) * t));
-  return `rgb(${c[0]},${c[1]},${c[2]})`;
+  return `rgba(${c[0]},${c[1]},${c[2]},${(0.92 - t * 0.42).toFixed(2)})`;
+}
+
+/** The trunk as a filled, tapering form with a slight lean, so it reads as wood rather than a line. */
+function trunkPath(n: LimbT) {
+  const hb = n.w * 0.75; // half-width at the root flare
+  const ht = n.w * 0.36; // half-width where it forks
+  const lean = 5;
+  const my = (n.y + n.y2) / 2;
+  return [
+    `M${(n.x - hb * 1.6).toFixed(1)} ${(n.y + 2).toFixed(1)}`,
+    `C${(n.x - hb).toFixed(1)} ${(n.y - 6).toFixed(1)} ${(n.x - ht + lean).toFixed(1)} ${(my + 10).toFixed(1)} ${(n.x - ht + lean * 0.4).toFixed(1)} ${my.toFixed(1)}`,
+    `S${(n.x2 - ht).toFixed(1)} ${(n.y2 + 12).toFixed(1)} ${(n.x2 - ht).toFixed(1)} ${n.y2.toFixed(1)}`,
+    `L${(n.x2 + ht).toFixed(1)} ${n.y2.toFixed(1)}`,
+    `C${(n.x2 + ht).toFixed(1)} ${(n.y2 + 12).toFixed(1)} ${(n.x + ht + lean).toFixed(1)} ${(my - 10).toFixed(1)} ${(n.x + ht + lean * 0.4).toFixed(1)} ${my.toFixed(1)}`,
+    `S${(n.x + hb).toFixed(1)} ${(n.y - 6).toFixed(1)} ${(n.x + hb * 1.6).toFixed(1)} ${(n.y + 2).toFixed(1)}`,
+    'Z',
+  ].join(' ');
 }
 
 /** how much each limb sways, in degrees: trunk still, twigs freer */
@@ -87,8 +104,9 @@ function Tree({ memories, threads, selected, onSelect }: Props) {
     const m = memories[i];
     const isSel = selected === i;
     const wait = waits.current.get(i) ?? 0;
-    const size = m.weight === 'heavy' ? 1.04 : m.weight === 'tender' ? 1 : 0.94;
-    const tint = m.weight === 'heavy' ? 'url(#pCherry)' : m.weight === 'tender' ? 'url(#pRose)' : 'url(#pBlush)';
+    // small and varied: no two quite alike
+    const size = (m.weight === 'heavy' ? 1.06 : m.weight === 'tender' ? 1 : 0.92) * (0.86 + hash(i + 11) * 0.28);
+    const tint = m.weight === 'heavy' ? 'url(#pMeaning)' : m.weight === 'tender' ? 'url(#pMist)' : 'url(#pWhite)';
     const tilt = (angle * 180) / Math.PI + 90 + (hash(i + 3) - 0.5) * 40;
     return (
       <g
@@ -108,10 +126,11 @@ function Tree({ memories, threads, selected, onSelect }: Props) {
         }}
         style={{ '--wait': `${wait.toFixed(2)}s` } as CSSProperties}
       >
-        <circle className="hit" r="28" />
+        <circle className="hit" r="34" />
         <circle data-anchor={i} r="0.1" fill="none" />
+        <circle className="glow" r="30" fill="url(#bGlow)" />
         {PETALS.map((a, k) => (
-          <g key={a} transform={`rotate(${a + (hash(i * 5 + k) - 0.5) * 10})`}>
+          <g key={a} transform={`rotate(${a + (hash(i * 5 + k) - 0.5) * 14}) scale(${(0.84 + hash(i * 7 + k) * 0.3).toFixed(2)} ${(0.88 + hash(i * 3 + k) * 0.24).toFixed(2)})`}>
             <path
               className="petal"
               d="M0 0 C -11 -6, -14 -22, -6 -30 Q 0 -27 0 -29 Q 0 -27 6 -30 C 14 -22, 11 -6, 0 0 Z"
@@ -145,8 +164,24 @@ function Tree({ memories, threads, selected, onSelect }: Props) {
         } as CSSProperties)
       : undefined;
     const carries = byLimb.get(n.id);
+    if (n.later !== undefined) {
+      return (
+        <path
+          key={n.id}
+          className={`twiglet${memories.length >= n.later ? ' grown' : ''}`}
+          d={n.d}
+          pathLength={1}
+          stroke={branchColor(7)}
+          strokeWidth={n.w}
+          style={{ transitionDelay: `${(hash(n.id) * 1.6).toFixed(2)}s` }}
+        />
+      );
+    }
     return (
       <g key={n.id} className={sways ? 'limb' : undefined} style={style}>
+        {n.depth === 0 ? (
+          <path className="trunk" d={trunkPath(n)} fill={branchColor(0)} />
+        ) : (
         <path
           className="br"
           d={n.d}
@@ -158,9 +193,23 @@ function Tree({ memories, threads, selected, onSelect }: Props) {
             animationDuration: `${(n.depth === 0 ? 0.9 : 0.8 - n.depth * 0.05).toFixed(2)}s`,
           }}
         />
+        )}
+        {n.depth >= 1 && n.depth <= 3 && (
+          <path className="br-light" d={n.d} pathLength={1} strokeWidth={Math.max(0.4, n.w * 0.32)} style={{ animationDelay: `${(0.5 + n.depth * 0.27).toFixed(2)}s` }} />
+        )}
         {n.kids.map((k) => limb(k))}
-        {!n.kids.length && !carries && (
-          <circle className="bud" cx={n.x2} cy={n.y2} r={1.5} style={{ animationDelay: `${(2.2 + hash(n.id) * 0.6).toFixed(2)}s` }} />
+        {!n.kids.some((k) => k.later === undefined) && !carries && hash(n.id + 21) < 0.55 && (
+          // a pale leaf, each on its own breath
+          <path
+            className="leaf"
+            d={`M${n.x2.toFixed(1)} ${n.y2.toFixed(1)} q 3.2 -4.6 0 -9.4 q -3.2 4.8 0 9.4 Z`}
+            style={{
+              transformOrigin: `${n.x2.toFixed(1)}px ${n.y2.toFixed(1)}px`,
+              rotate: `${((n.angle * 180) / Math.PI + 90 + (hash(n.id + 4) - 0.5) * 70).toFixed(0)}deg`,
+              animationDelay: `${(2.2 + hash(n.id) * 0.8).toFixed(2)}s, ${(-hash(n.id + 5) * 6).toFixed(2)}s`,
+              animationDuration: `.9s, ${(3.6 + hash(n.id + 6) * 3.4).toFixed(2)}s`,
+            }}
+          />
         )}
         {carries?.map((i, k) => blossom(i, n.x2 + k * 10, n.y2 - k * 8, n.angle))}
       </g>
@@ -176,29 +225,34 @@ function Tree({ memories, threads, selected, onSelect }: Props) {
       aria-label={`A tree with ${memories.length} ${memories.length === 1 ? 'blossom' : 'blossoms'}`}
     >
       <defs>
-        <radialGradient id="pBlush" cx="50%" cy="100%" r="100%">
-          <stop offset="0" stopColor="#efc9cf" />
-          <stop offset=".55" stopColor="#f8e7e8" />
-          <stop offset="1" stopColor="#fdf8f6" />
+        {/* almost-white, translucent petals; only a meaningful (heavy) memory carries a breath of the red */}
+        <radialGradient id="pWhite" cx="50%" cy="100%" r="100%">
+          <stop offset="0" stopColor="#e3e5df" stopOpacity=".95" />
+          <stop offset=".5" stopColor="#f6f6f2" stopOpacity=".86" />
+          <stop offset="1" stopColor="#ffffff" stopOpacity=".78" />
         </radialGradient>
-        <radialGradient id="pRose" cx="50%" cy="100%" r="100%">
-          <stop offset="0" stopColor="#c98a95" />
-          <stop offset=".5" stopColor="#e6c2c6" />
-          <stop offset="1" stopColor="#f8eceb" />
+        <radialGradient id="pMist" cx="50%" cy="100%" r="100%">
+          <stop offset="0" stopColor="#cfd2cc" stopOpacity=".95" />
+          <stop offset=".5" stopColor="#eeefeb" stopOpacity=".88" />
+          <stop offset="1" stopColor="#ffffff" stopOpacity=".8" />
         </radialGradient>
-        <radialGradient id="pCherry" cx="50%" cy="100%" r="100%">
-          <stop offset="0" stopColor="#8f3a48" />
-          <stop offset=".45" stopColor="#c27f88" />
-          <stop offset="1" stopColor="#efdcdc" />
+        <radialGradient id="pMeaning" cx="50%" cy="100%" r="100%">
+          <stop offset="0" stopColor="#b88f90" stopOpacity=".95" />
+          <stop offset=".42" stopColor="#ece2df" stopOpacity=".88" />
+          <stop offset="1" stopColor="#ffffff" stopOpacity=".8" />
+        </radialGradient>
+        <radialGradient id="bGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stopColor="#ffffff" stopOpacity=".9" />
+          <stop offset="1" stopColor="#ffffff" stopOpacity="0" />
         </radialGradient>
         <radialGradient id="mist" cx="50%" cy="50%" r="50%">
-          <stop offset="0" stopColor="#e7e5df" stopOpacity=".95" />
-          <stop offset="1" stopColor="#e7e5df" stopOpacity="0" />
+          <stop offset="0" stopColor="#e8e8e2" stopOpacity=".9" />
+          <stop offset="1" stopColor="#e8e8e2" stopOpacity="0" />
         </radialGradient>
         <radialGradient id="halo" cx="50%" cy="50%" r="50%">
-          <stop offset="0" stopColor="#f6e9e8" stopOpacity=".8" />
-          <stop offset=".6" stopColor="#f6f2ee" stopOpacity=".35" />
-          <stop offset="1" stopColor="#f8f7f3" stopOpacity="0" />
+          <stop offset="0" stopColor="#ffffff" stopOpacity=".95" />
+          <stop offset=".6" stopColor="#fbfbf8" stopOpacity=".5" />
+          <stop offset="1" stopColor="#f8f7f2" stopOpacity="0" />
         </radialGradient>
       </defs>
 

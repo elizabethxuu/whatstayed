@@ -2,6 +2,10 @@
 
 import { FormEvent, useState } from 'react';
 import { api } from '@/lib/store';
+import Tree from './Tree';
+
+const NONE: never[] = [];
+const noop = () => {};
 
 /** Sign in, or begin a garden. Quiet, two fields, no clutter. */
 export default function Welcome() {
@@ -29,6 +33,9 @@ export default function Welcome() {
 
   return (
     <main className="welcome">
+      <div className="welcome-tree" aria-hidden="true">
+        <Tree memories={NONE} threads={NONE} selected={null} onSelect={noop} />
+      </div>
       <div className="welcome-card">
         <p className="mark">What Stayed</p>
         <h1 className="welcome-title">{mode === 'in' ? 'Welcome back.' : 'Begin a garden.'}</h1>

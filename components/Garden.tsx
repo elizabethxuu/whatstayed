@@ -189,7 +189,7 @@ export default function Garden({ initial }: { initial: UIMessage[] }) {
   }, [memories, selected, sel, places.store]);
 
   return (
-    <main className="garden">
+    <main className={`garden${busy ? ' listening' : ''}`}>
       <h1 className="sr">What Stayed, the garden</h1>
       <Masthead room="garden">
         <button type="button" className="quiet" onClick={() => setEditing('new')}>
