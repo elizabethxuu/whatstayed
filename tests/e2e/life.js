@@ -50,7 +50,7 @@ const PW = 'quiet-garden-27';
     if (date) await p.fill('.add input[type=date]', date);
     await p.click('.add button:has-text("Continue")');
     await p.fill('.add label:has-text("Mood") input', feeling);
-    await p.click('.add button:has-text("Plant it now")');
+    await p.click('.add button:has-text("Save it now")');
     await p.waitForSelector('.add', { state: 'detached' });
     await p.waitForTimeout(700);
   };
@@ -109,7 +109,7 @@ const PW = 'quiet-garden-27';
 
   // Archives: page with place, person, and a red thread to a memory
   await p.goto(B + '/archives');
-  await p.click('text=Write something…');
+  await p.click('text=Preserve a moment…');
   await p.fill('#page', 'Dreamt of the courtyard again, and her radio.');
   await p.waitForSelector('.saved.s-saved', { timeout: 8000 });
   await p.click('.page-ties >> text=Add a place');

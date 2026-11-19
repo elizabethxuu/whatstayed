@@ -118,7 +118,7 @@ function PersonEditor({ person, onSave, onClose }: { person?: Person; onSave: (p
             Cancel
           </button>
           <button type="submit" className="quiet strong" disabled={busy}>
-            {busy ? 'Saving…' : person ? 'Save' : 'Add them'}
+            {busy ? 'Saving…' : person ? 'Save changes' : 'Add them'}
           </button>
         </div>
       </form>

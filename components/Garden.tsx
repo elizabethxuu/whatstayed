@@ -526,7 +526,7 @@ export default function Garden({ open }: { open: Open }) {
               </>
             ) : (
               <>
-                <p className="voice-line">{mode === 'remember' ? 'You talk. It remembers.' : mode === 'ask' ? 'Ask your garden' : 'Reflect'}</p>
+                <p className="voice-line">{mode === 'remember' ? (memories.length ? 'You talk. It remembers.' : 'Your garden is waiting.') : mode === 'ask' ? 'Ask your garden' : 'Reflect'}</p>
                 <p className="voice-sub">
                   {mode === 'remember'
                     ? 'Tell it about a place, a person or a day, in your own words. It drafts the memories, and nothing is kept until you review it.'

@@ -119,7 +119,7 @@ function Collection({
         <h1 className="arc-title">The Archives</h1>
         <p className="arc-sub">Pages and notes.</p>
         <button type="button" className="invite" onClick={() => onOpen(newId())}>
-          Write something…
+          Preserve a moment…
         </button>
       </section>
 
@@ -130,7 +130,7 @@ function Collection({
             <input
               type="search"
               value={query}
-              placeholder="Search"
+              placeholder="Look through what stayed…"
               onChange={(e) => setQuery(e.target.value)}
               spellCheck={false}
             />
@@ -168,7 +168,7 @@ function Collection({
       )}
 
       <section className="pages" aria-label="Your pages">
-        {entries.length === 0 && <p className="quiet-note">Nothing here yet. Even the smallest thought deserves a place.</p>}
+        {entries.length === 0 && <p className="quiet-note">Your pages are waiting. Even the smallest thought belongs here.</p>}
         {entries.length > 0 && shown.length === 0 && <p className="quiet-note">{q ? `Nothing you’ve written matches “${q}”.` : 'No pages like that yet.'}</p>}
         {months.map((m) => (
           <div key={m.label} className="month">
@@ -399,7 +399,7 @@ function Page({ id, entry, onClose }: { id: string; entry: Stored | null; onClos
         ref={area}
         className="sheet"
         value={body}
-        placeholder="Write something…"
+        placeholder="Preserve a moment…"
         onChange={(e) => onChange(e.target.value)}
         spellCheck
       />

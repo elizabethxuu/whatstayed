@@ -188,7 +188,7 @@ export default function AddMemory({
           <span className="add-foot-r">
             {step < STEPS.length - 1 && step > 0 && (
               <button type="button" className="quiet" onClick={plant} disabled={!!busy || !dirty}>
-                Plant it now
+                Save it now
               </button>
             )}
             {step < STEPS.length - 1 ? (
@@ -197,7 +197,7 @@ export default function AddMemory({
               </button>
             ) : (
               <button type="button" className="welcome-go" onClick={plant} disabled={!!busy}>
-                {busy || 'Plant it'}
+                {busy || 'Save this memory'}
               </button>
             )}
           </span>

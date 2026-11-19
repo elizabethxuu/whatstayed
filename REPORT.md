@@ -506,3 +506,63 @@ At Liz's direction: navy and cobalt, with much less gradient.
 - **The tree** stays pearl-white with its red heart, on a pale-blue halo.
 
 **Checks:** all nine browser suites and 14 unit tests pass.
+
+## Typography: editorial, airy, beautifully spaced (November 19)
+
+**Two faces.**
+- **Cormorant Garamond** (light and regular only) for everything that is read or felt: page titles, welcome messages, memory titles, the agent's words, today's question, journal pages, reflections and empty states. Instrument Serif was considered; Cormorant was chosen because it has true light weights and holds up for long journal entries at reading sizes, where Instrument Serif's single weight tires the eye.
+- **The system sans** (SF Pro on Apple devices, Inter elsewhere) for everything that is used: navigation, buttons, fields, settings, dates and labels.
+- Bodoni, EB Garamond and the monospace labels are gone.
+
+**One scale, in one place** (the final "TYPE" block in `globals.css`):
+
+| Use | Desktop | Phone |
+|---|---|---|
+| Hero titles (welcome, greeting, onboarding) | 40–60px | 36–44px |
+| Page titles | 32–42px | 30–36px |
+| Memory titles | 28–34px | 27–31px |
+| The agent's questions and today's question | 26–34px | 25–29px |
+| Section headings | 23–28px | 22–25px |
+| Reading text (Cormorant) | 20–22px, leading 1.78 | 20px |
+| Interface body (sans) | 15.5px, leading 1.68 | 15.5px |
+| Metadata | 12.5px | 12.5px |
+| Labels (quiet capitals) | 11px | 11px |
+
+Fields are 16px, so phones don't zoom into them.
+
+**Room to breathe.**
+- Reading width is held to about 32em.
+- Journal pages are set at 21–23px with 1.85 leading.
+- Sections sit 64–96px apart, and cards have 26–40px of padding.
+- There is more space between titles and their descriptions, and between entries in the Archives (40px each).
+
+**The agent's voice.**
+- Its words are set in light serif at question size, with wide margins and a short measure, so they read like a letter.
+- The person's own line above is a quiet serif italic.
+- The conversation history is spaced like correspondence.
+
+**Archives and memories.**
+- Month headings are in serif italic ("November 2026").
+- Dates are in quiet sans.
+- A memory's remembered line is set apart as a quotation, with a fine cobalt rule.
+- Search matches get a soft underline highlight.
+- The writing always leads; controls are small and quiet.
+
+**Microcopy.**
+
+| Was | Now |
+|---|---|
+| "Write something…" (new page) | "Preserve a moment…" |
+| "Search" | "Look through what stayed…" |
+| Empty garden | "Your garden is waiting." |
+| Save / Plant (memory editor and add-a-memory flow) | "Save this memory" |
+| "Plant it now" | "Save it now" |
+| Save (people, collections, timeline) | "Save changes", "Start the collection", "Save this date" |
+
+Empty Archives and empty collections were reworded too. Functional controls stay plain.
+
+**QA.**
+- Every screen was checked on a phone and on desktop with a long, three-paragraph journal entry: welcome, onboarding, garden with a conversation, Today, Archives, a page, a memory, People, Timeline, Collections, Letters, Search and You.
+- An automatic scan looked for clipped, off-screen or undersized text. It found one tiny note (9.5px), now fixed. Everything else it flagged is screen-reader-only text that is hidden on purpose.
+- Fixed by eye: the Archives search box cut its placeholder short on phones; the filter menus were in the serif; the found-memory chips cut titles off instead of wrapping.
+- **Checks:** all nine browser suites and 14 unit tests pass. The intermittent React hydration warning (#418) is still open and appeared once more, in the life suite.

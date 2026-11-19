@@ -136,7 +136,7 @@ function CollectionEditor({ c, photos, onSave, onClose }: { c?: Collection; phot
             Cancel
           </button>
           <button type="submit" className="quiet strong" disabled={busy}>
-            {busy ? 'Saving…' : c ? 'Save' : 'Make it'}
+            {busy ? 'Saving…' : c ? 'Save changes' : 'Start the collection'}
           </button>
         </div>
       </form>
@@ -186,7 +186,7 @@ function CollectionPage({ c, onGone }: { c: Collection; onGone: () => void }) {
         </header>
 
         {items.length === 0 ? (
-          <p className="quiet-note">Nothing here yet.</p>
+          <p className="quiet-note">This collection is waiting for its first memory.</p>
         ) : (
           <ol className="pl-mems coll-items">
             {items.map((it) =>

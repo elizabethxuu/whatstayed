@@ -96,7 +96,7 @@ export default function Search() {
           className="search-big"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="A place, a person, a word…"
+          placeholder="Look through what stayed…"
           spellCheck={false}
           autoComplete="off"
         />

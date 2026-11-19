@@ -132,7 +132,7 @@ export default function MemoryEditor({ memory, onSave, onClose }: Props) {
             Cancel
           </button>
           <button type="submit" className="quiet strong" disabled={busy}>
-            {busy ? 'Saving…' : memory ? 'Save' : 'Plant'}
+            {busy ? 'Saving…' : 'Save this memory'}
           </button>
         </div>
       </form>

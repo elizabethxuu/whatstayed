@@ -2082,3 +2082,216 @@ html::after { display: none; }
 .quiet.strong { text-decoration-color: rgb(31 79 191 / .4); }
 .today-date, .today-k, .today-block h2, .you-block h2, .mem-section h2, .agent-k, .mem-place, .card-place, .month-label { color: var(--navy); }
 .you-count { color: var(--navy); }
+
+/* =====================================================================
+   TYPE: an editorial journal inside a quiet blue glass app.
+   Two faces: Cormorant Garamond for everything that is read or felt (titles, questions, writing);
+   the system sans (SF Pro on Apple, Inter elsewhere) for everything that is used (controls, labels, dates).
+   Light and regular weights only. Generous leading, short measures, room around everything.
+   This block is the final word on type; it overrides the earlier layers.
+   ===================================================================== */
+:root {
+  --serif: 'Cormorant Garamond', 'Iowan Old Style', 'Palatino', Georgia, serif;
+  --display: var(--serif);
+  --sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --mono: var(--sans);
+
+  /* the scale */
+  --t-hero: clamp(40px, 3.4vw + 16px, 60px);
+  --t-page: clamp(32px, 1.6vw + 22px, 42px);
+  --t-memory: clamp(28px, 1.2vw + 20px, 34px);
+  --t-question: clamp(26px, 1.4vw + 18px, 34px);
+  --t-section: clamp(23px, .6vw + 19px, 28px);
+  --t-read: clamp(20px, .4vw + 17px, 22px);      /* Cormorant runs small: this reads like 17px */
+  --t-body: 15.5px;
+  --t-meta: 12.5px;
+  --t-label: 11px;
+
+  --measure: 32em;            /* comfortable reading width */
+  --lead-read: 1.78;
+  --lead-body: 1.68;
+}
+
+/* ---------- serif: what is read or felt ---------- */
+.welcome-title, .ob-title, .today-greet, .ob-hello .ob-title, .ob-final .ob-title {
+  font-family: var(--serif); font-weight: 300; font-style: normal; font-size: var(--t-hero);
+  line-height: 1.08; letter-spacing: -.012em; text-wrap: balance;
+}
+.arc-title, .rv-title, .you-name, .mem-title, .tl-y {
+  font-family: var(--serif); font-weight: 300; font-style: normal; font-size: var(--t-page);
+  line-height: 1.12; letter-spacing: -.01em; text-wrap: balance;
+}
+.mem-title { font-size: var(--t-memory); }
+.tl-y { font-size: clamp(44px, 4vw + 20px, 64px); line-height: .95; }
+.loc-t, .add-title, .confirm-sheet h2, .today-step-t, .pl-peek-t, .rd-t, .agent-summary, .you-block h3, .today-q, .page-prompt, .card-moment, .mem-moment, h1.mem-moment {
+  font-family: var(--serif); font-weight: 400; font-style: normal; font-size: var(--t-section);
+  line-height: 1.3; letter-spacing: -.004em; text-wrap: balance;
+}
+.card-moment, .mem-moment { font-style: italic; font-weight: 400; }
+h1.mem-moment { font-style: normal; font-weight: 300; font-size: var(--t-memory); line-height: 1.18; }
+.you-block h3 { font-size: 21px; margin: 34px 0 6px; }
+
+/* the agent's voice and today's question: a letter, not a chat */
+.voice-line, .today-prompt {
+  font-family: var(--serif); font-weight: 300; font-style: normal; font-size: var(--t-question);
+  line-height: 1.32; letter-spacing: -.006em; text-wrap: balance; max-width: 19em; margin-left: auto; margin-right: auto;
+}
+.today-prompt { margin-left: 0; max-width: 20em; }
+.voice-line.rest { font-size: 22px; font-style: italic; }
+.voice { gap: 26px; max-width: 30em; }
+.you { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 20px; line-height: 1.6; color: var(--ink-soft); margin: 0 auto 4px; max-width: 26em; }
+.you::before { margin-bottom: 18px; }
+.log-line { margin-bottom: 40px; max-width: var(--measure); }
+.log-line p { line-height: 1.7; }
+.log-line.assistant p { font-family: var(--serif); font-size: 21px; font-weight: 400; }
+.log-line.user p { font-family: var(--serif); font-style: italic; font-size: 19px; color: var(--ink-soft); }
+
+/* writing: the person's own words come first */
+.sheet {
+  font-family: var(--serif); font-weight: 400; font-size: clamp(21px, .5vw + 18px, 23px); line-height: 1.85;
+  max-width: var(--measure); letter-spacing: .002em;
+}
+.leaf-body { font-family: var(--serif); font-weight: 400; font-size: var(--t-read); line-height: var(--lead-read); max-width: var(--measure); }
+.mem-narrative, .letter-body, .agent-reflection, .card-narrative {
+  font-family: var(--serif); font-weight: 400; font-size: var(--t-read); line-height: var(--lead-read); color: var(--ink);
+  max-width: var(--measure); white-space: pre-wrap;
+}
+.card-narrative { font-size: 18px; line-height: 1.7; }
+.agent-reflection { font-size: 19px; color: var(--ink-soft); }
+.today-reflect-form textarea, .today-ask textarea, .say textarea {
+  font-family: var(--serif); font-size: 21px; line-height: 1.6; font-weight: 400;
+}
+.say textarea::placeholder, .today-ask textarea::placeholder, .today-reflect-form textarea::placeholder, .sheet::placeholder { font-style: italic; color: var(--ink-faint); }
+.you-intention, .today-intention { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 20px; line-height: 1.55; }
+.quiet-note, .empty-room .quiet-note { font-family: var(--serif); font-style: italic; font-size: 22px; line-height: 1.5; color: var(--ink-soft); max-width: 22em; margin-left: auto; margin-right: auto; }
+.you-count { font-family: var(--serif); font-weight: 300; font-size: 40px; line-height: 1; }
+
+/* a remembered line, set apart like a quotation */
+.mem-title + .mem-moment {
+  margin: 26px 0 0; padding: 4px 0 4px 22px; border-left: 1px solid rgb(31 79 191 / .35);
+  font-size: var(--t-section); line-height: 1.45; color: var(--ink-soft);
+}
+mark, .leaf-body mark { background: linear-gradient(transparent 60%, rgb(201 215 251 / .7) 60%); color: inherit; padding: 0 .05em; }
+
+/* ---------- sans: what is used ---------- */
+body, button, input, select, textarea { font-family: var(--sans); }
+.arc-sub, .welcome-sub, .voice-sub, .ob-sub, .rv-sub, .today-step-b, .you-note, .ob-note, .loc-note {
+  font-family: var(--sans); font-style: normal; font-weight: 400; font-size: var(--t-body); line-height: var(--lead-body);
+  letter-spacing: 0; color: var(--ink-soft); max-width: 34em; text-wrap: pretty;
+}
+.ob-sub-big { font-family: var(--serif); font-style: italic; font-size: 24px; line-height: 1.5; }
+.arc-sub, .welcome-sub, .ob-sub { margin-top: 20px; }
+.arc-head .arc-sub { margin-left: auto; margin-right: auto; }
+
+/* small labels: quiet capitals, lightly spaced */
+.today-date, .today-k, .today-block h2, .you-block h2, .mem-section h2, .agent-k, .mem-place, .card-place, .card-no,
+.rd-e, .ob-hint, .today-mem-place, .agent-found-place, .mem-facts dt, .page-k, .today-about, .you-counts a span:last-child, .sub {
+  font-family: var(--sans); font-weight: 500; font-size: var(--t-label); letter-spacing: .12em; text-transform: uppercase; line-height: 1.5;
+}
+.rd-e, .ob-hint { text-transform: none; letter-spacing: 0; font-weight: 400; font-size: var(--t-meta); }
+.today-about { margin: 14px 0 0; }
+.fig { font-family: var(--sans); font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; }
+
+/* dates and metadata: written like dates in a journal */
+.month-label { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 24px; letter-spacing: 0; text-transform: none; color: var(--ink-soft); margin: 0 0 4px; }
+.leaf-date, .page-meta, .page-date, .today-item-m, .mem-facts dd, .you-row em, .leaf-date em, .leaf-date i {
+  font-family: var(--sans); font-style: normal; font-size: var(--t-meta); letter-spacing: .01em; text-transform: none;
+}
+.leaf-date { margin-bottom: 14px; color: var(--ink-faint); }
+.page-date { font-size: 13px; color: var(--ink-soft); }
+.mem-facts dd { font-size: 15px; line-height: 1.6; color: var(--ink); }
+
+/* navigation, buttons and fields: clean, understated, sentence case */
+.rooms a { font-family: var(--sans); font-size: 13px; font-weight: 400; letter-spacing: .01em; text-transform: none; }
+.tab span { font-family: var(--sans); font-size: 10.5px; font-weight: 500; letter-spacing: .01em; text-transform: none; }
+.welcome-go, .confirm-yes, .confirm-no, .agent-yes, .seg button, .agent-mode {
+  font-family: var(--sans); font-size: 14px; font-weight: 500; letter-spacing: .005em; text-transform: none;
+}
+.welcome-go { padding: 14px 28px; }
+.seg button, .agent-mode { font-size: 13px; font-weight: 400; padding: 8px 16px; }
+.quiet, .untie { font-family: var(--sans); font-size: 14px; letter-spacing: .005em; }
+.agent-prompt { font-family: var(--serif); font-style: italic; font-size: 18px; padding: 9px 18px; }
+.ob-choice { font-family: var(--sans); font-size: 15.5px; font-weight: 400; line-height: 1.45; padding: 17px 20px; }
+.ob-choice.small { font-size: 13.5px; padding: 8px 15px; }
+.chip { font-family: var(--sans); font-size: 13px; }
+/* 16px fields: comfortable, and phones don't zoom into them */
+input, select, .rv-field input, .rv-field textarea, .welcome-form input, .ob-fields input, .ob-fields textarea, .chip-add, .search input, .search-big {
+  font-family: var(--sans); font-size: 16px; font-weight: 400; letter-spacing: 0;
+}
+.ob-fields input, .ob-fields textarea { font-family: var(--serif); font-size: 22px; }
+.rv-field > span, .welcome-form label > span, .ob-fields label > span, .you-chips legend { font-family: var(--sans); font-size: var(--t-meta); letter-spacing: .01em; color: var(--ink-soft); }
+.you-row { font-size: 15.5px; }
+.toast { font-family: var(--sans); font-style: normal; font-size: 14px; line-height: 1.5; padding: 12px 20px; }
+
+/* ---------- room to breathe ---------- */
+.today-page, .you-page, .mem-page { max-width: 680px; }
+.today-hello { margin-bottom: 8px; }
+.today-greet { margin-top: 14px; }
+.today-intention, .you-intention { margin-top: 18px; max-width: 26em; }
+.today-block, .today-reflect { margin-top: clamp(64px, 9vh, 96px); }
+.today-block h2, .you-block h2, .mem-section h2 { margin-bottom: 22px; }
+.today-reflect { padding: clamp(28px, 4vw, 40px); }
+.today-reflect-form textarea { margin-top: 26px; }
+.today-prompt { margin-top: 18px; }
+.today-step { padding: 26px 28px; }
+.today-step-b { margin: 10px 0 18px; }
+.today-steps ul, .rediscover ul { gap: 16px; }
+.you-block { margin-top: clamp(48px, 7vh, 72px); padding: clamp(26px, 3.6vw, 36px); }
+.you-row { padding: 20px 0; }
+.you-head { gap: 28px; }
+.mem-facts div { padding: 18px 0; }
+.mem-section { margin-top: 64px; }
+.mem-narrative { margin-top: 30px; }
+.mem-acts { margin-top: 64px; }
+.card { padding: 26px 28px 22px; }
+.card-moment { margin-bottom: 20px; }
+.arc-head { margin-top: clamp(64px, 12vh, 132px); }
+.pages { margin-top: 56px; }
+.leaf { padding: 40px 0 42px; }
+.month { margin-top: 36px; }
+.rd { padding: 22px 26px 18px; }
+.rd-acts { margin-top: 14px; }
+.agent-action { padding: 22px 26px 18px; }
+.agent-acts { margin-top: 18px; }
+.agent-found { margin-top: 26px; }
+.agent-modes { margin: 30px 0 16px; }
+.ob-body { padding: 24px 0; }
+.ob-choices { gap: 12px; margin-top: 36px; }
+.ob-fields { gap: 28px; margin-top: 36px; }
+.ob-nav { margin-top: 48px; }
+.welcome-form { gap: 26px; }
+.add-step { padding-top: 26px; }
+.add-title { margin-bottom: 22px; }
+.confirm-sheet { padding: 16px 22px 18px; }
+.confirm-sheet p { font-size: 14.5px; line-height: 1.65; margin-top: 12px; }
+
+@media (max-width: 760px) {
+  :root {
+    --t-hero: clamp(36px, 9vw, 44px);
+    --t-page: clamp(30px, 7.4vw, 36px);
+    --t-memory: clamp(27px, 6.6vw, 31px);
+    --t-question: clamp(25px, 6.4vw, 29px);
+    --t-section: clamp(22px, 5.4vw, 25px);
+    --t-read: 20px;
+    --t-body: 15.5px;
+  }
+  .voice-line { max-width: 16em; }
+  .sheet { font-size: 21px; line-height: 1.8; }
+  .today-step, .rd, .agent-action { padding: 22px 22px 18px; }
+  .card { padding: 22px 22px 18px; }
+  .you-count { font-size: 34px; }
+  .month-label { font-size: 22px; }
+  .tab span { font-size: 10px; }
+}
+.privacy { font-size: 11.5px; letter-spacing: .02em; }
+/* controls stay in the sans, even the quiet ones */
+.arc-filter select { font-family: var(--sans); font-size: 14px; letter-spacing: .005em; color: var(--ink-soft); }
+.search input { font-family: var(--sans); font-size: 15px; width: 240px; }
+.search input:focus { width: 280px; }
+.search-big { font-family: var(--serif); font-style: italic; font-size: clamp(26px, 2vw + 16px, 34px); }
+.agent-found button { max-width: 280px; }
+.agent-found-moment { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.35; font-size: 17px; }
+@media (max-width: 760px) {
+  .arc-tools .search { flex: 1 1 100%; }
+  .search input, .search input:focus { width: 100%; }
+}

@@ -334,7 +334,7 @@ function DayEditor({ day, onSave, onClose }: { day?: Milestone; onSave: (m: { ti
             Cancel
           </button>
           <button type="submit" className="quiet strong" disabled={busy}>
-            {busy ? 'Saving…' : 'Keep it'}
+            {busy ? 'Saving…' : 'Save this date'}
           </button>
         </div>
       </form>

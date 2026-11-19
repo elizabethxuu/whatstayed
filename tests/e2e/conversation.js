@@ -57,7 +57,7 @@ const fakeSpeech = () => {
   await p.fill('input[type=password]', 'garden-talk-1');
   await p.click('button[type=submit]');
   await p.waitForURL(/\/begin/); await p.click('text=Skip for now'); await p.waitForURL(B + '/');
-  ok('1. opens on an inviting, empty garden', await p.isVisible('text=You talk. It remembers.'));
+  ok('1. opens on an inviting, empty garden', await p.isVisible('text=Your garden is waiting.'));
   await p.evaluate(() =>
     fetch('/api/memories', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ place: 'Edinburgh', moment: 'Fireworks over the castle at Hogmanay', feeling: 'bright', weight: 'light' }) }),
   );
