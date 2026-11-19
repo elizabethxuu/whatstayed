@@ -326,3 +326,18 @@ Recommendation: use the home-screen web app first. It already opens full screen 
 
 - Screens were checked by eye on a phone (iPhone 13 size) and on desktop, in light and dark.
 - These checks ran locally, not against the deployed site.
+
+## Design update: the Glass Garden (November 19)
+
+The White Garden felt too still, so colour was added without losing the white:
+
+- **The air:** soft sage and pale-blue washes in the corners of every screen, plus a very slow drifting light behind everything. Reduced-motion settings turn the drift off.
+- **Glass:** frosted, translucent panels with a bright edge for the garden card, the Today panels, the You sections, the memory facts and the review. On phones the tab bar is a floating glass bar, and the current tab sits in a sage-and-blue pill. Sheets you write in stay solid, so the page behind never shows through the words.
+- **Colour in the details:**
+  - Main buttons are sage-to-blue pills; choices fill with the same gradient when picked.
+  - Toggles, the progress line and step dots use sage and blue.
+  - Dates and section labels are in sage; tags are sage chips; counts are in the gradient.
+  - Leaves are sage, the tree's light is pale sky, and the "mist" blossom heart is blue. Blossoms stay white, and the one marked memory keeps its red.
+- **Dark mode** uses the same palette in deeper tones.
+- The phone tab-bar test now expects a floating bar. All suites pass.
+- **Known issue:** a hydration warning (React error #418) showed up twice in about ten runs of the app suite and couldn't be reproduced on demand. The suite now logs the page address when it happens.

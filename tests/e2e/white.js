@@ -93,7 +93,7 @@ async function whiteness(page) {
   ok('phone: a tab bar instead of the row of rooms', (await q.isVisible('.tabbar')) && !(await q.isVisible('.top .rooms')));
   ok('phone: five tabs, Garden marked', (await q.$$('.tabbar .tab')).length === 5 && (await q.getAttribute('.tabbar a[href="/"]', 'aria-current')) === 'page');
   const bar = await q.$eval('.tabbar', (e) => { const r = e.getBoundingClientRect(); return { bottom: Math.round(r.bottom), h: innerHeight }; });
-  ok('phone: the bar sits at the bottom edge', bar.bottom === bar.h, JSON.stringify(bar));
+  ok('phone: the bar floats just above the bottom edge', bar.h - bar.bottom >= 0 && bar.h - bar.bottom <= 24, JSON.stringify(bar));
   const input = await q.$eval('#say', (e) => e.getBoundingClientRect().bottom);
   const barTop = await q.$eval('.tabbar', (e) => e.getBoundingClientRect().top);
   ok('phone: the garden’s input is above the bar, not under it', input <= barTop, `${input} vs ${barTop}`);
