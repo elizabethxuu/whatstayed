@@ -14,7 +14,7 @@ import type { Loc, Thread } from './places';
 import type { Entry } from './archive';
 
 export type Stored = Kept & { origin: 'agent' | 'you'; createdAt: number; updatedAt: number; date?: string; extra?: MemoryExtra };
-export type Page = Entry & { location?: Loc; meta?: { favorite?: boolean; draft?: boolean; prompt?: string } };
+export type Page = Entry & { location?: Loc; meta?: { favorite?: boolean; draft?: boolean; prompt?: string; ai?: boolean } };
 export type Person = { id: string; name: string; relation?: string; description?: string; notes?: string; createdAt: number; updatedAt: number };
 export type PersonInput = { name: string; relation?: string; description?: string; notes?: string };
 export type LinkKind = 'memory-person' | 'entry-person' | 'entry-memory';

@@ -81,6 +81,7 @@ export async function deleteTalk(user: string, tid: string) {
   const r = await q('delete from talks where user_id=$1 and id=$2 returning id', [user, tid]);
   if (!r.length) throw new HttpError(404, 'That conversation isn’t here any more.');
   await q(`delete from drafts where user_id=$1 and talk_id=$2`, [user, tid]);
+  await q(`delete from actions where user_id=$1 and talk_id=$2 and status='pending'`, [user, tid]);
 }
 
 /* ---------- drafts ---------- */
@@ -246,19 +247,25 @@ export async function reviewSave(user: string, tid: string, input: z.infer<typeo
 
 /** Fixed-window counter in Postgres. Returns false once `limit` is reached inside the window. */
 export async function allow(key: string, limit: number, windowSec: number, count = true) {
+  // a sliding window: this window's count plus the share of the last one that still overlaps
   const q = await db();
-  const bucket = Math.floor(Date.now() / 1000 / windowSec);
+  const now = Date.now() / 1000;
+  const bucket = Math.floor(now / windowSec);
+  const overlap = 1 - (now / windowSec - bucket);
+  const prev = (await q<{ count: number }>('select count from rate_hits where key=$1 and bucket=$2', [key, bucket - 1]))[0]?.count ?? 0;
+  let cur: number;
   if (!count) {
-    const r = await q<{ count: number }>('select count from rate_hits where key=$1 and bucket=$2', [key, bucket]);
-    return (r[0]?.count ?? 0) < limit;
+    cur = (await q<{ count: number }>('select count from rate_hits where key=$1 and bucket=$2', [key, bucket]))[0]?.count ?? 0;
+    return cur + prev * overlap < limit;
   }
   const r = await q<{ count: number }>(
     `insert into rate_hits (key, bucket, count) values ($1,$2,1)
      on conflict (key, bucket) do update set count = rate_hits.count + 1 returning count`,
     [key, bucket],
   );
+  cur = r[0].count;
   if (Math.random() < 0.05) await q('delete from rate_hits where key=$1 and bucket < $2', [key, bucket - 2]);
-  return r[0].count <= limit;
+  return cur + Math.floor(prev * overlap) <= limit;
 }
 
 /* ---------- memories being added by hand: drafts kept under the reserved conversation id "by-hand" ---------- */

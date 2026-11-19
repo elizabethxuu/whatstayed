@@ -52,12 +52,12 @@ const fakeSpeech = () => {
 
   // 1. open What Stayed (a fresh account), with one memory already in Edinburgh
   await p.goto(B + '/welcome');
-  await p.click('text=Begin your story'); await p.click('text=Skip for now');
+  await p.click('text=Begin a garden');
   await p.fill('input[type=email]', 'talker@example.com');
   await p.fill('input[type=password]', 'garden-talk-1');
   await p.click('button[type=submit]');
-  await p.click('text=Enter your garden'); await p.waitForURL(/\/today/); await p.goto(B + '/');
-  ok('1. opens on an inviting, empty garden', await p.isVisible('text=Add a memory'));
+  await p.waitForURL(/\/begin/); await p.click('text=Skip for now'); await p.waitForURL(B + '/');
+  ok('1. opens on an inviting, empty garden', await p.isVisible('text=You talk. It remembers.'));
   await p.evaluate(() =>
     fetch('/api/memories', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ place: 'Edinburgh', moment: 'Fireworks over the castle at Hogmanay', feeling: 'bright', weight: 'light' }) }),
   );
@@ -229,7 +229,7 @@ const fakeSpeech = () => {
   await p.fill('input[type=email]', 'talker@example.com');
   await p.fill('input[type=password]', 'garden-talk-1');
   await p.click('button[type=submit]');
-  await p.waitForURL(/\/today/); await p.goto(B + '/');
+  await p.waitForURL(B + '/');
   await p.waitForSelector('.you');
   const v13 = await p.textContent('.voice');
   ok('13. after signing in again, the latest conversation is open', /peaches|swimming/.test(v13), v13 + ' | ' + p.url());
@@ -240,11 +240,11 @@ const fakeSpeech = () => {
   await routes(c2);
   const q = await c2.newPage();
   await q.goto(B + '/welcome');
-  await q.click('text=Begin your story'); await q.click('text=Skip for now');
+  await q.click('text=Begin a garden');
   await q.fill('input[type=email]', 'stranger@example.com');
   await q.fill('input[type=password]', 'stranger-garden-1');
   await q.click('button[type=submit]');
-  await q.click('text=Enter your garden'); await q.waitForURL(/\/today/); await q.goto(B + '/');
+  await q.waitForURL(/\/begin/); await q.click('text=Skip for now'); await q.waitForURL(B + '/');
   const mine = (await state()).talks[0].id;
   const iso = await q.evaluate(async (id) => {
     const a = (await fetch('/api/talks/' + id)).status;
@@ -283,11 +283,11 @@ const fakeSpeech = () => {
   await routes(m);
   const mp = await m.newPage();
   await mp.goto(B + '/welcome');
-  await mp.click('text=Begin your story'); await mp.click('text=Skip for now');
+  await mp.click('text=Begin a garden');
   await mp.fill('input[type=email]', 'phone@example.com');
   await mp.fill('input[type=password]', 'phone-garden-1');
   await mp.click('button[type=submit]');
-  await mp.click('text=Enter your garden'); await mp.waitForURL(/\/today/); await mp.goto(B + '/');
+  await mp.waitForURL(/\/begin/); await mp.click('text=Skip for now'); await mp.waitForURL(B + '/');
   await mp.click('text=Tell it about a trip');
   await mp.waitForURL(/\?c=/);
   await mp.fill('#say', 'I went to Paris in June 2024. We spent the morning walking along the Seine, and then ate crêpes in the rain.');

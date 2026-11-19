@@ -6,8 +6,8 @@ import TabBar from './TabBar';
 export type Room = 'today' | 'garden' | 'archives' | 'places' | 'people' | 'timeline' | 'collections' | 'letters' | 'search' | 'you';
 
 const ROOMS: [Room, string, string][] = [
-  ['today', '/today', 'Today'],
   ['garden', '/', 'The Garden'],
+  ['today', '/today', 'Today'],
   ['archives', '/archives', 'The Archives'],
   ['places', '/places', 'Places'],
   ['people', '/people', 'People'],
@@ -21,7 +21,7 @@ export default function Masthead({ room, children }: { room: Room; children?: Re
   return (
     <header className="top">
       <div className="brand">
-        <Link href="/today" className="mark-link">
+        <Link href="/" className="mark-link">
           <span className="mark">What Stayed</span>
         </Link>
         <p className="sub">An archive of places and memories</p>

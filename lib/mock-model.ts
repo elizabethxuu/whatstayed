@@ -10,9 +10,16 @@ import type { LanguageModelV2StreamPart } from '@ai-sdk/provider';
  * - "Actually…" corrects the most recent draft;
  * - a place already in the garden is suggested as a connection;
  * - "that's all" / "I'm done" ends with a pointer to the review.
+ * And, to exercise the agent's other tools for real:
+ * - "what do you remember about X" / "memories with X" searches the garden and answers only from the results;
+ * - "connect this to my X memories" searches, then proposes a red thread (confirmed by the person later);
+ * - "delete my memory about X" searches, then proposes the deletion; with nothing to go on, it asks which;
+ * - "what did I tell you about X" searches earlier conversations;
+ * - "reflect…" counts themes, gathers memories and offers a reflection to keep;
+ * - a tool error is reported as an error, never as success.
  * Real conversations use Claude with the same tools.
  */
-type Part = { type: string; text?: string; toolName?: string; input?: unknown };
+type Part = { type: string; text?: string; toolName?: string; input?: unknown; output?: { type?: string; value?: unknown } | unknown };
 type Prompt = { role: string; content: string | Part[] }[];
 
 const usage = { inputTokens: 10, outputTokens: 10, totalTokens: 20 };
@@ -53,6 +60,73 @@ function dateOf(when: string | undefined, today: string): { date?: string; unsur
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
+type Result = { name: string; value: Record<string, unknown> };
+const valueOf = (o: Part['output']): Record<string, unknown> => {
+  const v = o && typeof o === 'object' && 'value' in (o as object) ? (o as { value: unknown }).value : o;
+  return (typeof v === 'string' ? (() => { try { return JSON.parse(v); } catch { return { text: v }; } })() : v ?? {}) as Record<string, unknown>;
+};
+function topicOf(s: string) {
+  const m = s.match(/\b(?:about|with|of|from|mentions?|mentioning|to)\s+(?:my\s+|the\s+)?(.+?)(?:\s+memories|\s+memory)?\s*[?.!]*$/i);
+  return m ? m[1].trim().replace(/^(my|the)\s+/i, '') : '';
+}
+const call = (name: string, input: unknown, n: number): LanguageModelV2StreamPart => ({ type: 'tool-call', toolCallId: `${name}${n}${Date.now() % 100000}`, toolName: name, input: JSON.stringify(input) });
+const callsDone = (parts: LanguageModelV2StreamPart[]): LanguageModelV2StreamPart[] => [...parts, { type: 'finish', finishReason: 'tool-calls', usage }];
+const quoteMems = (ms: { moment: string; place: string; when?: string }[]) => ms.slice(0, 3).map((m) => `“${m.moment}” (${m.place}${m.when ? `, ${m.when}` : ''})`).join('; ');
+
+/** The agent's non-capture intents, planned one step at a time from the tool results so far. */
+function plan(said: string, results: Result[], focus: string | undefined, n: number): LanguageModelV2StreamPart[] | null {
+  const got = (name: string) => results.find((r) => r.name === name)?.value;
+  const failed = results.find((r) => r.value?.error);
+  if (failed) return say(`That didn’t work: ${failed.value.error} Nothing was changed.`);
+  const proposed = results.find((r) => r.name.startsWith('propose'))?.value;
+  if (proposed) return say(`I’ve suggested it below: ${proposed.summary}. Nothing changes until you confirm.`);
+  const topic = topicOf(said);
+
+  if (/\b(what did i (tell|say)|i told you|i mentioned)\b/i.test(said)) {
+    const r = got('recallConversations') as { found: number; excerpts: { date: string; theySaid: string }[] } | undefined;
+    if (!r) return callsDone([call('recallConversations', { query: topic || said }, n)]);
+    return say(r.found ? `On ${r.excerpts[0].date} you told me: “${r.excerpts[0].theySaid}”` : `I can’t find anything about ${topic || 'that'} in our earlier conversations.`);
+  }
+  if (/\b(delete|remove)\b/i.test(said)) {
+    if (/\b(this|it)\b/i.test(said) && focus && !topic) return callsDone([call('proposeMemoryDeletion', { id: focus }, n)]);
+    if (!topic) return say('Which memory do you mean? Tell me the place or a few words from it.');
+    const r = got('searchMemories') as { memories: { id: string }[] } | undefined;
+    if (!r) return callsDone([call('searchMemories', { query: topic }, n)]);
+    if (!r.memories.length) return say(`I couldn’t find a memory about ${topic}, so nothing was deleted.`);
+    return callsDone([call('proposeMemoryDeletion', { id: r.memories[0].id }, n)]);
+  }
+  if (/\b(connect|tie|link)\b.*\b(to|with|and)\b/i.test(said)) {
+    const ids = said.match(/\bm[a-z0-9]{10,}\b/g) ?? []; // memory ids are long; "memories" is not one
+    if (ids.length >= 1 && (ids.length >= 2 || focus)) return callsDone([call('proposeConnection', { a: ids.length >= 2 ? ids[0] : focus, b: ids[ids.length - 1], reason: 'You asked to tie them' }, n)]);
+    if (!focus) return say('Which memory would you like to connect? Open it on the tree, then ask again.');
+    if (!topic) return say('What should I connect it to? A place, a person or a trip.');
+    const r = got('searchMemories') as { memories: { id: string; place: string }[] } | undefined;
+    if (!r) return callsDone([call('searchMemories', { query: topic }, n)]);
+    const other = r.memories.find((m) => m.id !== focus);
+    if (!other) return say(`I couldn’t find another memory about ${topic} to connect it to.`);
+    return callsDone([call('proposeConnection', { a: focus, b: other.id, reason: `You asked to connect it to ${topic}` }, n)]);
+  }
+  if (/\b(reflect|reflection|summari[sz]e)\b|\bthemes\b/i.test(said)) {
+    const t = got('findThemes') as { memories: number; places: { name: string; count: number }[]; people: { name: string; count: number }[] } | undefined;
+    const r = got('searchMemories') as { memories: { id: string; moment: string; place: string }[] } | undefined;
+    if (!t || !r) return callsDone([call('findThemes', {}, n), call('searchMemories', { limit: 12 }, n + 1)]);
+    if (!r.memories.length) return say('There’s nothing in the garden to reflect on yet. Tell me about a place first.');
+    const body = [
+      `${t.memories === 1 ? 'One memory is' : `${t.memories} memories are`} kept here.`,
+      t.places.length ? `${t.places.map((p) => `${p.name} appears ${p.count} times`).join(', ')}.` : '',
+      t.people.length ? `${t.people.map((p) => `${p.name} is in ${p.count}`).join(', ')}.` : '',
+      `Among them: ${quoteMems(r.memories)}.`,
+    ].filter(Boolean).join(' ');
+    return callsDone([call('proposeReflection', { title: 'What the garden holds', body, memoryIds: r.memories.map((m) => m.id) }, n)]);
+  }
+  if (/\b(what do (you|i) remember|do i have|find|show me|memories (with|of|about|from)|anything about)\b/i.test(said)) {
+    const r = got('searchMemories') as { total: number; memories: { moment: string; place: string; when?: string }[] } | undefined;
+    if (!r) return callsDone([call('searchMemories', { query: topic || said }, n)]);
+    return say(r.total ? `In your garden, ${topic}: ${quoteMems(r.memories)}. Would you like to open one?` : `I don’t have anything about ${topic || 'that'} in your garden yet. Would you like to tell me about it?`);
+  }
+  return null;
+}
+
 export function mockModel() {
   let n = 0;
   return new MockLanguageModelV2({
@@ -66,9 +140,19 @@ export function mockModel() {
       const garden = [...system.matchAll(/^- (m\S+) \| ([^|]+) \|/gm)].map((m) => ({ id: m[1], place: m[2].trim() }));
       const last = p[p.length - 1];
       const said = textOf([...p].reverse().find((m) => m.role === 'user'));
+      const focus = system.match(/They have this memory open right now \("this memory"\): (\S+) \|/)?.[1];
+      const lastUser = p.map((m) => m.role).lastIndexOf('user');
+      const results: Result[] = p
+        .slice(lastUser + 1)
+        .filter((m) => m.role === 'tool')
+        .flatMap((m) => (m.content as Part[]).map((c) => ({ name: c.toolName ?? '', value: valueOf(c.output) })));
+      const capturing = results.some((r) => r.name === 'draftMemory' || r.name === 'nameTrip');
+      const planned = capturing ? null : plan(said, results, focus, ++n);
       let chunks: LanguageModelV2StreamPart[];
 
-      if (last?.role === 'tool') {
+      if (planned) {
+        chunks = planned;
+      } else if (last?.role === 'tool') {
         const results = (last.content as Part[]).map((c) => c.toolName);
         const made = results.filter((t) => t === 'draftMemory').length;
         const onlyNamed = made === 0;

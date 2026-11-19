@@ -1,29 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import type { Room } from './Masthead';
 
-const haptic = () => {
-  try {
-    navigator.vibrate?.(6);
-  } catch {
-    /* not supported */
-  }
-};
-
-/** Phones: five destinations, fine-line icons, one subtle mark for where you are. */
-const TABS: { room: Room; also?: Room[]; href: string; label: string; icon: React.ReactNode }[] = [
-  {
-    room: 'today',
-    href: '/today',
-    label: 'Today',
-    icon: (
-      <>
-        <circle cx="12" cy="12" r="3.6" />
-        <path d="M12 3.6v2.2M12 18.2v2.2M3.6 12h2.2M18.2 12h2.2M6.1 6.1l1.5 1.5M16.4 16.4l1.5 1.5M6.1 17.9l1.5-1.5M16.4 7.6l1.5-1.5" />
-      </>
-    ),
-  },
+/** Phones: a quiet bottom bar, fine-line icons, one subtle mark for where you are. */
+const TABS: { room: Room; href: string; label: string; icon: React.ReactNode }[] = [
   {
     room: 'garden',
     href: '/',
@@ -35,6 +17,17 @@ const TABS: { room: Room; also?: Room[]; href: string; label: string; icon: Reac
         <circle cx="7.1" cy="7.3" r="1.1" />
         <circle cx="17" cy="9.5" r="1.1" />
         <circle cx="14.6" cy="4.3" r="1.1" />
+      </>
+    ),
+  },
+  {
+    room: 'today',
+    href: '/today',
+    label: 'Today',
+    icon: (
+      <>
+        <circle cx="12" cy="12" r="3.6" />
+        <path d="M12 3.6v2.2M12 18.2v2.2M3.6 12h2.2M18.2 12h2.2M6.1 6.1l1.5 1.5M16.4 16.4l1.5 1.5M6.1 17.9l1.5-1.5M16.4 7.6l1.5-1.5" />
       </>
     ),
   },
@@ -60,32 +53,57 @@ const TABS: { room: Room; also?: Room[]; href: string; label: string; icon: Reac
       </>
     ),
   },
-  {
-    room: 'you',
-    also: ['people', 'timeline', 'collections', 'letters', 'search'],
-    href: '/you',
-    label: 'You',
-    icon: (
-      <>
-        <circle cx="12" cy="8.4" r="3.6" />
-        <path d="M5 20c1-3.7 3.8-5.7 7-5.7s6 2 7 5.7" />
-      </>
-    ),
-  },
+];
+
+const MORE: { room: Room; href: string; label: string }[] = [
+  { room: 'people', href: '/people', label: 'People' },
+  { room: 'timeline', href: '/timeline', label: 'Timeline' },
+  { room: 'collections', href: '/collections', label: 'Collections' },
+  { room: 'letters', href: '/letters', label: 'Letters' },
+  { room: 'search', href: '/search', label: 'Search' },
+  { room: 'you', href: '/you', label: 'You' },
 ];
 
 export default function TabBar({ room }: { room: Room }) {
+  const [open, setOpen] = useState(false);
+  const inMore = MORE.some((m) => m.room === room);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open]);
+
   return (
-    <nav className="tabbar" aria-label="Destinations">
-      {TABS.map((t) => {
-        const here = room === t.room || !!t.also?.includes(room);
-        return (
-          <Link key={t.room} href={t.href} className="tab" aria-current={here ? 'page' : undefined} onClick={haptic}>
+    <>
+      <nav className="tabbar" aria-label="Rooms">
+        {TABS.map((t) => (
+          <Link key={t.room} href={t.href} className="tab" aria-current={room === t.room ? 'page' : undefined}>
             <svg viewBox="0 0 24 24" aria-hidden="true">{t.icon}</svg>
             <span>{t.label}</span>
           </Link>
-        );
-      })}
-    </nav>
+        ))}
+        <button type="button" className="tab" aria-expanded={open} aria-haspopup="dialog" aria-current={inMore ? 'page' : undefined} onClick={() => setOpen((v) => !v)}>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="6" cy="12" r="1.1" />
+            <circle cx="12" cy="12" r="1.1" />
+            <circle cx="18" cy="12" r="1.1" />
+          </svg>
+          <span>More</span>
+        </button>
+      </nav>
+      {open && (
+        <div className="tab-veil" onClick={() => setOpen(false)}>
+          <div className="tab-sheet" role="dialog" aria-modal="true" aria-label="More rooms" onClick={(e) => e.stopPropagation()}>
+            {MORE.map((m) => (
+              <Link key={m.room} href={m.href} aria-current={room === m.room ? 'page' : undefined} onClick={() => setOpen(false)} autoFocus={m === MORE[0]}>
+                {m.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+    </>
   );
 }

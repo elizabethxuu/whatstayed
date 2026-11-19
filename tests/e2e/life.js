@@ -34,11 +34,11 @@ const PW = 'quiet-garden-27';
   fs.writeFileSync(PHOTO, Buffer.from(jpg, 'base64'));
 
   // sign up
-  await p.click('text=Begin your story'); await p.click('text=Skip for now');
+  await p.click('text=Begin a garden');
   await p.fill('input[type=email]', 'liz2@example.com');
   await p.fill('input[type=password]', PW);
   await p.click('button[type=submit]');
-  await p.click('text=Enter your garden'); await p.waitForURL(/\/today/); await p.goto(B + '/');
+  await p.waitForURL(/\/begin/); await p.click('text=Skip for now'); await p.waitForURL(B + '/');
   await p.screenshot({ path: OUT + '/masthead.png' });
 
   // two memories by hand, one dated three years ago today
@@ -338,7 +338,7 @@ const PW = 'quiet-garden-27';
   await p.fill('input[type=email]', 'liz2@example.com');
   await p.fill('input[type=password]', PW);
   await p.click('button[type=submit]');
-  await p.waitForURL(/\/today/); await p.goto(B + '/');
+  await p.waitForURL(B + '/');
   const s3 = await st();
   ok('after signing back in, everything is intact', s3.memories.length === 2 && s3.people.length === 1 && s3.collections.length === 1 && s3.collectionItems.length === 2 && s3.letters.length === 2 && s3.milestones.length === 1 && s3.entries[0].location?.city === 'Jiangmen');
 

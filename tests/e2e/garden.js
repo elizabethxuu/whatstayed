@@ -59,7 +59,7 @@ const B = 'http://localhost:3100/';
   await p.click('text=Clear the whole garden…');
   await p.click('.confirm-yes');
   await p.waitForTimeout(1500);
-  ok('clearing the garden empties it', (await p.$$eval('.blossom', (x) => x.length)) === 0 && /Add a memory/.test(await p.textContent('.voice')));
+  ok('clearing the garden empties it', (await p.$$eval('.blossom', (x) => x.length)) === 0 && /You talk/.test(await p.textContent('.voice')));
   ok('no errors', errs.length === 0, JSON.stringify(errs));
   const m = await b.newContext({ ...devices['iPhone 13'] });
   await A.share(c, m);

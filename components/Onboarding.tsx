@@ -34,7 +34,11 @@ const vibrate = (ms = 8) => {
 };
 
 /** The first launch: one question at a time, every step skippable, ending at the garden. */
-export default function Onboarding({ resetToken }: { resetToken?: string }) {
+/**
+ * The questions after an account is made (signed in): what to remember, a little about you, how you remember,
+ * where to begin, what to preserve, reminders. Every step can be skipped; answers go to the profile.
+ */
+export default function Onboarding({ resetToken, signedIn = false }: { resetToken?: string; signedIn?: boolean }) {
   const [view, setView] = useState<View>(resetToken ? 'reset' : 'flow');
   const [step, setStep] = useState(0);
   const [a, setA] = useState<Answers>({ remember: [], ways: [] });
@@ -49,14 +53,15 @@ export default function Onboarding({ resetToken }: { resetToken?: string }) {
     } catch {
       /* storage unavailable */
     }
-    if (!resetToken) {
+    if (!resetToken && !signedIn) {
       const params = new URLSearchParams(window.location.search);
       if (params.get('mode') === 'signin' || (returning && saved.step === 0)) setView('signin');
     }
     setA(saved.a);
-    setStep(saved.step >= 8 ? 7 : saved.step); // never resume past account creation
+    if (signedIn) setStep(saved.step >= 1 && saved.step <= 6 ? saved.step : 1);
+    else setStep(saved.step >= 8 ? 7 : saved.step); // never resume past account creation
     setReady(true);
-  }, [resetToken]);
+  }, [resetToken, signedIn]);
 
   useEffect(() => {
     if (!ready) return;
@@ -67,12 +72,42 @@ export default function Onboarding({ resetToken }: { resetToken?: string }) {
     }
   }, [step, a, ready]);
 
+  const finish = async (answers: Answers) => {
+    const { skipped, ...rest } = answers;
+    await api('/api/profile', {
+      method: 'PUT',
+      json: {
+        ...rest,
+        name: rest.name?.trim() || undefined,
+        home: rest.home?.trim() || undefined,
+        intention: rest.intention?.trim() || undefined,
+        showIntention: rest.showIntention ?? true,
+        onboarded: !skipped,
+        skipped: !!skipped,
+      },
+    }).catch(() => {});
+  };
   const go = (n: number) => {
     vibrate();
+    if (signedIn && n === 7) {
+      finish(a);
+      n = 8;
+    }
     setDir(n > step ? 1 : -1);
     setStep(n);
   };
   const skip = () => {
+    if (signedIn) {
+      finish({ ...a, skipped: true }).then(() => {
+        try {
+          localStorage.removeItem(KEY);
+        } catch {
+          /* storage unavailable */
+        }
+        window.location.assign('/');
+      });
+      return;
+    }
     setA((x) => ({ ...x, skipped: true }));
     go(7);
   };
@@ -280,7 +315,7 @@ function Flow({
                 } catch {
                   /* storage unavailable */
                 }
-                window.location.assign('/today');
+                window.location.assign('/');
               }}
             >
               Enter your garden

@@ -52,6 +52,7 @@ export const profileSchema = z.object({
   appearance: z.enum(['system', 'light', 'dark']).optional(),
   reflection: z.object({ enabled: z.boolean() }).partial().optional(),
   locationAsk: z.enum(['ask', 'never']).optional(),
+  proactive: z.boolean().optional(),
   photoId: z.string().max(40).nullable().optional(),
   onboarded: z.boolean().optional(),
   skipped: z.boolean().optional(),

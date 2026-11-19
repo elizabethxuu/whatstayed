@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import Onboarding from '@/components/Onboarding';
+import Welcome from '@/components/Welcome';
 import Unconfigured from '@/components/Unconfigured';
 import { currentUser } from '@/lib/server/auth';
 import { ConfigError } from '@/lib/server/db';
@@ -12,10 +12,10 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ r
   const { reset } = await searchParams;
   const token = reset && /^[\w-]{20,200}$/.test(reset) ? reset : undefined;
   try {
-    if (!token && (await currentUser())) redirect('/today');
+    if (!token && (await currentUser())) redirect('/');
   } catch (e) {
     if (e instanceof ConfigError) return <Unconfigured reason={e.message} />;
     throw e;
   }
-  return <Onboarding resetToken={token} />;
+  return <Welcome resetToken={token} />;
 }

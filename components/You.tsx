@@ -42,6 +42,7 @@ export default function You({ email }: { email: string }) {
         <ProfileForm key={JSON.stringify(p).length} />
         <Preferences />
         <Privacy />
+        <AgentSection />
         <Data />
         <Account email={email} />
       </section>
@@ -431,7 +432,7 @@ function Account({ email }: { email: string }) {
     setLeaving(true);
     try {
       await api('/api/auth/logout', { method: 'POST' });
-      window.location.assign('/welcome?mode=signin');
+      window.location.assign('/welcome');
     } catch (e) {
       store.toast(e instanceof Error ? e.message : 'Couldn’t sign out.', 'error');
       setLeaving(false);
@@ -443,11 +444,6 @@ function Account({ email }: { email: string }) {
     setErr('');
     try {
       await api('/api/account', { method: 'DELETE', json: { password } });
-      try {
-        localStorage.removeItem('whatstayed:has-account');
-      } catch {
-        /* storage unavailable */
-      }
       window.location.assign('/welcome');
     } catch (e2) {
       setErr(e2 instanceof Error ? e2.message : 'That didn’t work.');
@@ -512,6 +508,58 @@ function Account({ email }: { email: string }) {
             </button>
           </div>
         </form>
+      )}
+    </section>
+  );
+}
+
+/** The agent: what it may suggest, and a plain record of what it has done. */
+function AgentSection() {
+  const [snap, store] = useStore();
+  const on = snap.profile.proactive !== false;
+  const [log, setLog] = useState<{ tool: string; ok: boolean; ms: number; error?: string; at: number }[] | null>(null);
+  async function showLog() {
+    try {
+      setLog((await api<{ log: { tool: string; ok: boolean; ms: number; error?: string; at: number }[] }>('/api/agent/log')).log);
+    } catch (e) {
+      store.toast(e instanceof Error ? e.message : 'That couldn’t be loaded.', 'error');
+    }
+  }
+  const name = (t: string) => t.replace(/([A-Z])/g, ' $1').toLowerCase();
+  return (
+    <section className="you-block" aria-labelledby="ygT">
+      <h2 id="ygT">The agent</h2>
+      <label className="ob-toggle">
+        <span>
+          Suggestions for revisiting your memories
+          <em>Places and people that recur, drafts left unfinished, memories that could be tied. Shown on Today, never sent anywhere.</em>
+        </span>
+        <input type="checkbox" role="switch" checked={on} onChange={(e) => store.saveProfile({ proactive: e.target.checked }, true)} />
+        <i aria-hidden="true" />
+      </label>
+      <ul className="acc-facts">
+        <li>It reads only your own archive, and only what a question needs.</li>
+        <li>It drafts memories for you to review, and asks before it ties, changes or deletes anything.</li>
+        <li>Reflections it writes are kept only if you choose, and are marked as written by the agent.</li>
+      </ul>
+      {log === null ? (
+        <p className="you-note">
+          <button type="button" className="quiet strong" onClick={showLog}>
+            What the agent has done
+          </button>
+        </p>
+      ) : log.length === 0 ? (
+        <p className="you-note">Nothing yet.</p>
+      ) : (
+        <ol className="agent-log">
+          {log.map((l, i) => (
+            <li key={i} className={l.ok ? '' : 'failed'}>
+              <span>{name(l.tool)}</span>
+              <span>{l.ok ? 'done' : `didn’t work${l.error ? `: ${l.error}` : ''}`}</span>
+              <time>{new Date(l.at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</time>
+            </li>
+          ))}
+        </ol>
       )}
     </section>
   );

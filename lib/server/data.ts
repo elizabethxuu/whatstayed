@@ -39,7 +39,7 @@ export const entryInput = z.object({
   body: z.string().max(100_000),
   createdAt: z.number().optional(),
   meta: z
-    .object({ favorite: z.boolean().optional(), draft: z.boolean().optional(), prompt: z.string().max(200).optional() })
+    .object({ favorite: z.boolean().optional(), draft: z.boolean().optional(), prompt: z.string().max(200).optional(), ai: z.boolean().optional() })
     .optional(),
 });
 

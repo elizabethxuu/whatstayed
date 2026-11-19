@@ -194,7 +194,32 @@ create table if not exists resets (
   user_id uuid not null references users(id) on delete cascade,
   expires_at timestamptz not null,
   used boolean not null default false
-)
+);
+create table if not exists actions (
+  user_id uuid not null references users(id) on delete cascade,
+  id text not null,
+  talk_id text,
+  kind text not null,
+  payload jsonb not null,
+  summary text not null,
+  status text not null default 'pending',
+  result jsonb,
+  error text,
+  created_at timestamptz not null default now(),
+  decided_at timestamptz,
+  primary key (user_id, id)
+);
+create index if not exists actions_talk on actions(user_id, talk_id);
+create table if not exists tool_log (
+  user_id uuid not null references users(id) on delete cascade,
+  talk_id text,
+  tool text not null,
+  ok boolean not null,
+  ms integer not null,
+  error text,
+  at timestamptz not null default now()
+);
+create index if not exists tool_log_user on tool_log(user_id, at);
 `;
 
 type G = typeof globalThis & { __wsdb?: Promise<Query> };

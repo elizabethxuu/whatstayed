@@ -17,6 +17,8 @@ type Props = {
   marks?: Mark[];
   /** grow memory i near memory anchors[i] (same trip, or tied together) */
   anchors?: (number | null)[];
+  /** memories the agent just found or the person just revisited: gently lit */
+  lit?: number[];
 };
 
 const PETALS = [0, 72, 144, 216, 288];
@@ -54,7 +56,7 @@ function trunkPath(n: LimbT) {
 /** how much each limb sways, in degrees: trunk still, twigs freer */
 const SWAY = [0, 0.22, 0.4, 0.62, 0.9, 1.25, 1.6, 1.9];
 
-function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors }: Props) {
+function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors, lit }: Props) {
   const { root, tips } = useMemo(() => growTree(), []);
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -159,7 +161,7 @@ function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors 
     return (
       <g
         key={`b${i}`}
-        className={`blossom w-${m.weight}${isSel ? ' is-sel' : ''}`}
+        className={`blossom w-${m.weight}${isSel ? ' is-sel' : ''}${lit?.includes(i) ? ' is-lit' : ''}`}
         transform={`translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${tilt.toFixed(0)}) scale(${size})`}
         role="button"
         tabIndex={0}

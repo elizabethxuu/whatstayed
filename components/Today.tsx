@@ -7,6 +7,7 @@ import Masthead from './Masthead';
 import Tree from './Tree';
 import AddMemory from './AddMemory';
 import Revisits from './Revisits';
+import Rediscover from './Rediscover';
 import { mediaFor, mediaUrl, useStore, type Stored } from '@/lib/store';
 import { greeting, promptFor, PROMPTS } from '@/lib/profile';
 import { newId, PREFILL_KEY } from '@/lib/archive';
@@ -118,6 +119,8 @@ export default function Today() {
         {reflectionOn && <Reflection now={now} prominent={!!(writing || (p.reminders?.evening && evening))} />}
 
         <FirstSteps onAdd={() => setAdding({})} />
+
+        <Rediscover />
 
         {snap.handDrafts.length > 0 && (
           <section className="today-block" aria-labelledby="tdT">

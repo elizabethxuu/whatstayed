@@ -191,6 +191,7 @@ function Collection({
                     <span className="leaf-date">
                       {e.meta?.draft ? <em className="unsure">draft</em> : null}
                       {e.meta?.prompt ? <em className="leaf-prompt">{e.meta.prompt}</em> : null}
+                      {e.meta?.ai ? <em className="ai-mark">written by the agent</em> : null}
                       {fmt.short(e.createdAt)} <i>·</i> {fmt.time(e.createdAt)}
                       {e.updatedAt - e.createdAt > 60_000 ? <em> · revised</em> : null}
                       {e.location ? <em> · {placeTitle(e.location)}</em> : null}
@@ -389,6 +390,7 @@ function Page({ id, entry, onClose }: { id: string; entry: Stored | null; onClos
       </header>
 
       {saved?.meta?.prompt && <p className="page-prompt">{saved.meta.prompt}</p>}
+      {saved?.meta?.ai && <p className="ai-note">A reflection written by the agent from your saved memories, kept because you chose to. Edit it freely.</p>}
       <label htmlFor="page" className="sr">
         Write freely
       </label>

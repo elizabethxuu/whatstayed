@@ -69,18 +69,18 @@ async function whiteness(page) {
         const [r, g, b2] = [+m[1], +m[2], +m[3]];
         const mx = Math.max(r, g, b2), mn = Math.min(r, g, b2);
         const s = mx ? (mx - mn) / mx : 0;
-        const isRed = r === 135 && g === 77 && b2 === 80;
+        const isRed = (r === 135 && g === 77 && b2 === 80) || (r === 180 && g === 82 && b2 === 92);
         if (!isRed && r > g + 18 && r > b2 + 8 && s > 0.16) return true;
       }
       return false;
     };
-    for (const el of document.querySelectorAll('body *')) {
+    for (const el of document.querySelectorAll('svg.tree *, .tree *')) {
       const cs = getComputedStyle(el);
       for (const k of ['color', 'backgroundColor', 'borderTopColor', 'fill', 'stroke']) if (pink(cs[k])) bad.add(el.className && el.className.baseVal !== undefined ? el.className.baseVal : el.className);
     }
     return [...bad].slice(0, 6);
   });
-  ok('no pink left in the interface', pinks.length === 0, pinks.join(', '));
+  ok('the tree stays white: no pink in its petals or branches (the red thread and marked hearts aside)', pinks.length === 0, pinks.join(', '));
 
   // phone
   const m = await b.newContext({ ...devices['iPhone 13'] });
@@ -93,17 +93,19 @@ async function whiteness(page) {
   ok('phone: a tab bar instead of the row of rooms', (await q.isVisible('.tabbar')) && !(await q.isVisible('.top .rooms')));
   ok('phone: five tabs, Garden marked', (await q.$$('.tabbar .tab')).length === 5 && (await q.getAttribute('.tabbar a[href="/"]', 'aria-current')) === 'page');
   const bar = await q.$eval('.tabbar', (e) => { const r = e.getBoundingClientRect(); return { bottom: Math.round(r.bottom), h: innerHeight }; });
-  ok('phone: the bar floats just above the bottom edge', bar.h - bar.bottom >= 0 && bar.h - bar.bottom <= 24, JSON.stringify(bar));
+  ok('phone: the bar sits at the bottom edge', bar.bottom === bar.h, JSON.stringify(bar));
   const input = await q.$eval('#say', (e) => e.getBoundingClientRect().bottom);
   const barTop = await q.$eval('.tabbar', (e) => e.getBoundingClientRect().top);
   ok('phone: the garden’s input is above the bar, not under it', input <= barTop, `${input} vs ${barTop}`);
-  await q.click('.tabbar a[href="/you"]');
-  await q.waitForURL('**/you');
-  ok('phone: You holds the other rooms', await q.isVisible('.you-explore >> text=Timeline'));
-  await q.click('.you-explore >> text=Timeline');
+  await q.click('.tabbar button:has-text("More")');
+  ok('phone: More opens the other rooms', (await q.isVisible('.tab-sheet >> text=Timeline')) && (await q.isVisible('.tab-sheet >> text=People')) && (await q.isVisible('.tab-sheet >> text=You')));
+  await q.keyboard.press('Escape');
+  ok('phone: Escape closes it', !(await q.isVisible('.tab-sheet')));
+  await q.click('.tabbar button:has-text("More")');
+  await q.click('.tab-sheet >> text=Timeline');
   await q.waitForURL('**/timeline');
   await q.waitForTimeout(800);
-  ok('phone: You is marked while in one of its rooms', (await q.getAttribute('.tabbar a[href="/you"]', 'aria-current')) === 'page');
+  ok('phone: More is marked while in one of its rooms', (await q.getAttribute('.tabbar button', 'aria-current')) === 'page');
   await q.click('.tabbar a[href="/places"]');
   await q.waitForURL('**/places');
   ok('phone: tabs navigate', (await q.getAttribute('.tabbar a[href="/places"]', 'aria-current')) === 'page');

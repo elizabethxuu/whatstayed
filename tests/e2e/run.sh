@@ -6,7 +6,7 @@
 set -u
 cd "$(dirname "$0")/../.."
 ROOT=$(pwd); E2E="$ROOT/tests/e2e"; mkdir -p "$E2E/out"
-SUITES=${1:-"accounts.js life.js garden.js archives.js places.js white.js conversation.js app.js"}
+SUITES=${1:-"accounts.js life.js garden.js archives.js places.js white.js conversation.js app.js agent.js"}
 fail=0
 for s in $SUITES; do
   pkill -f "next start -p 3100" 2>/dev/null; fuser -k 3100/tcp >/dev/null 2>&1; sleep 0.5

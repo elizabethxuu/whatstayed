@@ -341,3 +341,104 @@ The White Garden felt too still, so colour was added without losing the white:
 - **Dark mode** uses the same palette in deeper tones.
 - The phone tab-bar test now expects a floating bar. All suites pass.
 - **Known issue:** a hydration warning (React error #418) showed up twice in about ten runs of the app suite and couldn't be reproduced on demand. The suite now logs the page address when it happens.
+
+## The memory agent (November 19, afternoon)
+
+"You talk. It remembers. The tree grows." The conversation is now the main way into the archive: one agent that can find, connect, reflect and organise, as well as capture.
+
+### How it works
+
+- **Tools that do real work.** The agent's tools (`lib/server/agent.ts`) query or change this person's own data in Postgres; none returns canned text.
+  - **Finding:** search memories, one memory's details, search pages and reflections, people, places, related memories (each with its evidence), existing red threads, collections, and earlier conversations (their own words, with dates).
+  - **Reflecting:** themes (counts only: places, people, tags, years, words that recur across pages), a chronological summary, and forgotten details.
+  - **Capturing:** memory drafts, which wait for review as before, and naming a trip.
+  - **Changing anything else:** a red thread, a correction, a deletion, a page, an edit to a page, a person, a collection, or keeping a reflection. For these the agent can only make a **proposal**. A proposal is stored as a pending action with a plain description, and it appears as a card with Confirm and "Not now". Only the person's confirmation runs it.
+  - Proposals are checked against what exists when they are made, and again when confirmed. Something that can no longer be done is recorded as failed and shown that way.
+- **Truthfulness rules** in the system prompt:
+  - Answer only from what the tools returned.
+  - Keep what the person said, what was extracted, what was inferred and what was confirmed apart.
+  - Patterns are counts, not interpretations.
+  - Ask one question when a request is ambiguous.
+  - Never say something was done unless a tool said so.
+- **Retrieval instead of the whole archive.** The prompt carries counts, the 12 most recent memories, people's names, the memory open on screen, and the person's own profile answers. Everything else is fetched with tools.
+- **Separate records:**
+
+  | Record | Stored as |
+  |---|---|
+  | Raw conversations | `talks` |
+  | Extracted drafts | `drafts` |
+  | Confirmed memories | `memories` |
+  | People, places, collections | their own tables |
+  | Suggested changes | `actions`, pending |
+  | Confirmed changes | `actions`, done, plus the real rows |
+  | Agent-written reflections | pages marked `ai`, shown as "written by the agent" |
+  | User-approved personal context | the profile, which the person edits in You |
+
+- **Tool log.** Every tool call is recorded with its outcome and time taken (`tool_log`, visible in You). Reads retry once on a passing database error. Every failure becomes an error result that the agent must report.
+- Authentication and per-user scoping on every query, rate limiting (now a sliding window), streaming replies, and two retries on model errors.
+
+### The experience
+
+- **The garden is home.** Under the tree are three modes, Remember, Ask and Reflect, with suggested prompts built only from what is saved (a place or person that is actually in the garden). Text and voice both work.
+- **Activity is shown in words, not a spinner:** Listening, Understanding, Searching the archive, Connecting memories, Preparing a reflection, Growing a new blossom.
+- **The tree shows what the agent did:**
+  - memories it finds light up softly and are listed to open;
+  - a confirmed connection draws the red thread;
+  - a confirmed memory grows a blossom.
+- **Today has gentle rediscovery suggestions, each with its evidence:**
+  - memories waiting for review;
+  - unfinished drafts;
+  - two memories sharing a place or person that aren't tied;
+  - places and people that recur;
+  - memories from this date in earlier years.
+  Each can be dismissed, and You has a switch to turn them off. Nothing is sent as a notification.
+
+### Look and layout (Liz's direction)
+
+- **Kept from before:** the original white tree, the original sign-in / begin-a-garden page, and the original full-width phone bar (Garden, Today, Archives, Places, More).
+- **Combined with the app work:** a new account goes on to the questions (all skippable) at `/begin`. Today and You are still there; You is under More.
+- **Glass, in purple and sage:** frosted panels, cards and the bar, with lilac, lavender and sage light in the background. Main buttons are purple-to-sage pills. The deep red is kept for red threads and anything that can't be undone.
+- **Phones:** the conversation's input stays above the tab bar, and the suggested prompts swipe sideways.
+
+### Tested (scripted model, real tools, real database)
+
+`tests/e2e/agent.js` checks what the tools did (stored rows, proposals, the log), not only the words:
+
+1. retrieving Paris returns exactly the Paris memories;
+2. it says it has nothing about a place that isn't there;
+3. it follows a story with a question;
+4. one story becomes several stored drafts;
+5. only the approved drafts become memories;
+6. a connection request searches;
+7. it proposes the right red thread and changes nothing until confirmed;
+8. confirming creates exactly one thread;
+9. it recalls the person's words from an earlier conversation;
+10. another account can't find, propose changes to, confirm, or recall any of it;
+11. unclear requests ("delete it", "connect this") get a question and no action;
+12. a failing tool returns an error instead of crashing, and the failure is logged;
+13. the reply says it didn't work and nothing is stored; confirming something that no longer exists is recorded as failed.
+
+Also checked: reflections are built only from stored memories, are offered not saved, and are kept marked as written by the agent; suggestions are evidence-based, dismissable and can be switched off; the phone screen shows modes, prompts, found memories lit on the tree, and proposal cards.
+
+**Limits, honestly:**
+- These tests use the scripted model, so they prove the tools, proposals, logging and isolation, not Claude's judgement. The rules for Claude are in the system prompt.
+- The real model needs `ANTHROPIC_API_KEY`, which isn't available here.
+- The retry on a passing database error isn't exercised by a test.
+
+**Checks run (final):**
+- Typecheck, lint and build are clean; unit tests pass 10 of 10.
+- End-to-end, 383 checks across nine suites:
+
+  | Suite | Checks passed |
+  |---|---|
+  | accounts | 60/60 |
+  | life | 60/60 |
+  | garden | 10/10 |
+  | archives | 23/23 |
+  | places | 36/36 |
+  | white | 26/26 |
+  | conversation | 52/52 |
+  | app | 68/68 |
+  | agent | 48/48 |
+
+- The intermittent React hydration warning (#418) is still open. It appeared in about one run in five of the app suite, on different pages, and not in a development build.

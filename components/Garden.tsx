@@ -17,6 +17,7 @@ import { locLine, placeKey as placeKeyOf, placeTitle, suggestionKey, usePlaces }
 import { api, pagesOfMemory, peopleOf, useStore, type Stored } from '@/lib/store';
 import { CollectionPicker, Names, PeoplePicker, pageTitle } from './Pickers';
 import Revisits from './Revisits';
+import { activityOf, AgentState, foundIn, FoundMemories, Proposals, usePrompts, type Action, type Mode } from './Agent';
 import LocationEditor from './LocationEditor';
 import ThreadPicker from './ThreadPicker';
 import MemoryEditor from './MemoryEditor';
@@ -53,6 +54,7 @@ function reason(e?: Error) {
 export default function Garden({ open }: { open: Open }) {
   const [talk, setTalk] = useState<TalkSummary | null>(open?.talk ?? null);
   const talkRef = useRef<string | null>(open?.talk.id ?? null);
+  const focusRef = useRef<string | null>(null);
   const [drafts, setDrafts] = useState<StoredDraft[]>(open?.drafts ?? []);
   const initial = useMemo(() => (open?.messages ?? []) as UIMessage[], [open]);
   const { messages, sendMessage, status, error, clearError, regenerate } = useChat({
@@ -60,7 +62,7 @@ export default function Garden({ open }: { open: Open }) {
     messages: initial,
     transport: new DefaultChatTransport({
       api: '/api/remember',
-      prepareSendMessagesRequest: ({ messages: ms }) => ({ body: { messages: ms, talkId: talkRef.current } }),
+      prepareSendMessagesRequest: ({ messages: ms }) => ({ body: { messages: ms, talkId: talkRef.current, focus: focusRef.current } }),
     }),
   });
   const [draft, setDraft] = useState('');
@@ -71,6 +73,8 @@ export default function Garden({ open }: { open: Open }) {
   const [reviewing, setReviewing] = useState(false);
   const [hint, setHint] = useState('');
   const [voiceAsk, setVoiceAsk] = useState(false);
+  const [actions, setActions] = useState<Action[]>([]);
+  const [mode, setMode] = useState<Mode>('remember');
   const justSaved = useRef<string[]>([]);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const busy = status === 'submitted' || status === 'streaming';
@@ -87,9 +91,13 @@ export default function Garden({ open }: { open: Open }) {
           await api(`/api/talks/${encodeURIComponent(id)}`, { method: 'PUT', json: { messages: msgs.slice(-400) } });
           savedCount.current = msgs.length;
         }
-        const r = await api<{ talk: TalkSummary; drafts: StoredDraft[] }>(`/api/talks/${encodeURIComponent(id)}`);
+        const [r, a] = await Promise.all([
+          api<{ talk: TalkSummary; drafts: StoredDraft[] }>(`/api/talks/${encodeURIComponent(id)}`),
+          api<{ actions: Action[] }>(`/api/actions?talk=${encodeURIComponent(id)}`),
+        ]);
         setDrafts(r.drafts);
         setTalk(r.talk);
+        setActions(a.actions);
       } catch (e) {
         store.toast(e instanceof Error ? e.message : 'The conversation couldn’t be saved.', 'error');
       }
@@ -99,6 +107,14 @@ export default function Garden({ open }: { open: Open }) {
   useEffect(() => {
     if (status === 'ready' && messages.length && messages.length !== savedCount.current) syncTalk(messages);
   }, [messages, status, syncTalk]);
+  // a reply that proposed something: fetch the proposal so its card appears
+  const lastId = messages[messages.length - 1]?.id;
+  useEffect(() => {
+    if (status !== 'ready' || !talkRef.current) return;
+    api<{ actions: Action[] }>(`/api/actions?talk=${encodeURIComponent(talkRef.current)}`)
+      .then((a) => setActions(a.actions))
+      .catch(() => {});
+  }, [status, lastId]);
 
   const dictation = useDictation(
     (text) => setDraft(text.slice(0, 2000)),
@@ -111,6 +127,23 @@ export default function Garden({ open }: { open: Open }) {
       window.history.replaceState(null, '', '/');
       startTalk('trip');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // /?ask=<question> asks the agent straight away (from a suggestion on Today)
+  useEffect(() => {
+    const ask = new URLSearchParams(window.location.search).get('ask');
+    if (!ask) return;
+    window.history.replaceState(null, '', '/');
+    (async () => {
+      const made = await store.newTalk('free');
+      if (!made) return;
+      talkRef.current = made.id;
+      setTalk(made);
+      window.history.replaceState(null, '', `/?c=${encodeURIComponent(made.id)}`);
+      setMode('ask');
+      sendMessage({ text: ask.slice(0, 400) });
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -274,6 +307,11 @@ export default function Garden({ open }: { open: Open }) {
   }
 
   const sel = selected >= 0 ? memories[selected] : null;
+  focusRef.current = sel?.id ?? null;
+  const prompts = usePrompts(mode, sel ? (places.store.locations[sel.id]?.city || sel.place) : undefined);
+  const found = useMemo(() => (busy ? [] : foundIn([...messages].reverse().find((m) => m.role === 'assistant'))), [messages, busy]);
+  const lit = useMemo(() => found.map((f) => memories.findIndex((m) => m.id === f.id)).filter((i) => i >= 0), [found, memories]);
+  const activity = activityOf(messages, status, dictation.listening);
   const selPeople = sel ? peopleOf(snap, 'memory-person', sel.id) : [];
   const selPages = sel ? pagesOfMemory(snap, sel.id) : [];
   const selLoc = sel ? places.store.locations[sel.id] : undefined;
@@ -323,7 +361,7 @@ export default function Garden({ open }: { open: Open }) {
       </Masthead>
 
       <section className="stage">
-        <Tree memories={memories} threads={threads} selected={selected >= 0 ? selected : null} onSelect={setSelected} buds={pending.length} marks={marks} anchors={anchors} />
+        <Tree memories={memories} threads={threads} selected={selected >= 0 ? selected : null} onSelect={setSelected} buds={pending.length} marks={marks} anchors={anchors} lit={lit} />
         {memories.length > 0 && (
           <p className="fig" aria-hidden="true">
             Fig. {memories.length} · {memories.length === 1 ? 'one memory, kept' : `${memories.length} memories, kept`}
@@ -488,8 +526,14 @@ export default function Garden({ open }: { open: Open }) {
               </>
             ) : (
               <>
-                <p className="voice-line">Add a memory</p>
-                <p className="voice-sub">Tell it about a place you’ve been, in your own words. Memories are drafted as you talk, and nothing is kept until you review it.</p>
+                <p className="voice-line">{mode === 'remember' ? 'You talk. It remembers.' : mode === 'ask' ? 'Ask your garden' : 'Reflect'}</p>
+                <p className="voice-sub">
+                  {mode === 'remember'
+                    ? 'Tell it about a place, a person or a day, in your own words. It drafts the memories, and nothing is kept until you review it.'
+                    : mode === 'ask'
+                      ? 'Ask what you remember about a place or a person, or ask it to connect memories. It answers only from what you’ve kept.'
+                      : 'Ask for a reflection or a summary of a time. It is built only from your saved memories, and kept only if you choose.'}
+                </p>
               </>
             )}
           </div>
@@ -508,12 +552,8 @@ export default function Garden({ open }: { open: Open }) {
                   </button>
                 </p>
               </div>
-            ) : busy && latestIsUser ? (
-              <p className="listening" aria-label="Listening">
-                <i />
-                <i />
-                <i />
-              </p>
+            ) : activity && (latestIsUser || !voice || busy) && activity !== 'Listening' ? (
+              <AgentState label={activity} />
             ) : (
               <p className="voice-line" key={lastAssistant?.id}>
                 {voice}
@@ -522,6 +562,54 @@ export default function Garden({ open }: { open: Open }) {
           </div>
         )}
 
+        {!busy && <FoundMemories found={found} onOpen={(id) => setSelectedId(id)} />}
+        <Proposals
+          actions={actions}
+          onDecided={(a) => {
+            setActions((xs) => xs.map((x) => (x.id === a.id ? { ...x, status: a.status, error: a.error } : x)));
+            if (a.status === 'done' && a.kind === 'delete-memory') setSelectedId(null);
+          }}
+        />
+        {dictation.listening && <AgentState label="Listening" />}
+        {!busy && (
+          <div className="agent-modes">
+            <p className="agent-mode-row" role="radiogroup" aria-label="What would you like to do?">
+              {(
+                [
+                  ['remember', 'Remember'],
+                  ['ask', 'Ask'],
+                  ['reflect', 'Reflect'],
+                ] as const
+              ).map(([k, label]) => (
+                <button key={k} type="button" role="radio" aria-checked={mode === k} className="agent-mode" onClick={() => setMode(k)}>
+                  {label}
+                </button>
+              ))}
+            </p>
+            {prompts.length > 0 && (
+              <p className="agent-prompts">
+                {prompts.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    className="agent-prompt"
+                    onClick={() => {
+                      if (p.endsWith('…')) {
+                        setDraft(p.replace(/…$/, ' '));
+                        requestAnimationFrame(() => inputRef.current?.focus());
+                      } else {
+                        setDraft(p);
+                        requestAnimationFrame(() => inputRef.current?.form?.requestSubmit());
+                      }
+                    }}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </p>
+            )}
+          </div>
+        )}
         <form className={`say${dictation.listening ? ' hearing' : ''}`} onSubmit={submit} noValidate>
           <label htmlFor="say" className="sr">
             Tell the garden a memory
@@ -532,7 +620,19 @@ export default function Garden({ open }: { open: Open }) {
             rows={1}
             maxLength={2000}
             value={draft}
-            placeholder={dictation.listening ? 'Listening…' : messages.length === 0 ? (talk?.mode === 'trip' ? 'Edinburgh, last October…' : 'The night market in Taipei, the steam…') : 'Say a little more…'}
+            placeholder={
+              dictation.listening
+                ? 'Listening…'
+                : mode === 'ask'
+                  ? 'What do you remember about…'
+                  : mode === 'reflect'
+                    ? 'Reflect on…'
+                    : messages.length === 0
+                      ? talk?.mode === 'trip'
+                        ? 'Edinburgh, last October…'
+                        : 'The night market in Taipei, the steam…'
+                      : 'Say a little more…'
+            }
             required
             minLength={2}
             aria-required="true"
@@ -611,6 +711,13 @@ export default function Garden({ open }: { open: Open }) {
             const drafted = m.parts
               .filter((p) => p.type === 'tool-draftMemory')
               .map((p) => ((p as { input?: { title?: string } }).input?.title ?? 'a memory'));
+            const did = m.parts
+              .filter((p) => p.type.startsWith('tool-') && p.type !== 'tool-draftMemory' && p.type !== 'tool-plantMemory')
+              .map((p) => {
+                const o = (p as { output?: { error?: string; total?: number; found?: number } }).output;
+                const name = p.type.slice(5).replace(/([A-Z])/g, ' $1').toLowerCase();
+                return o?.error ? `${name}: didn’t work` : typeof o?.total === 'number' ? `${name}: ${o.total} found` : name;
+              });
             return (
               <div key={m.id} className={`log-line ${m.role}`}>
                 {t && <p>{t}</p>}
@@ -618,6 +725,11 @@ export default function Garden({ open }: { open: Open }) {
                 {drafted.map((d, k) => (
                   <p key={k} className="log-planted">
                     ✿ drafted: {d}
+                  </p>
+                ))}
+                {did.map((d, k) => (
+                  <p key={`t${k}`} className="log-tool">
+                    · {d}
                   </p>
                 ))}
               </div>
