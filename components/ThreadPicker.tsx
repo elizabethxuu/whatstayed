@@ -48,7 +48,7 @@ export default function ThreadPicker({ from, others, locations, onTie, onClose }
         )}
         <label className="tie-note">
           <span>What connects them? (optional)</span>
-          <input value={note} onChange={(e) => setNote(e.target.value)} maxLength={60} placeholder="Both with my mother" />
+          <input value={note} onChange={(e) => setNote(e.target.value)} maxLength={60} placeholder="Why they belong together" />
         </label>
         <div className="loc-acts">
           <span />

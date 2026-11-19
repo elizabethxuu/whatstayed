@@ -64,15 +64,57 @@ test('a draft needs a title, a moment and a place; dates must be real periods', 
   assert.equal(draftSchema.parse(base).weight, 'light');
 });
 
-import { greeting, profileSchema, promptFor, PROMPTS } from '../lib/profile.ts';
+import { greeting, profileSchema } from '../lib/profile.ts';
+import { questionsFor } from '../lib/questions.ts';
 
-test('the daily reflection is one question per day, and another can be asked for', () => {
-  const d = new Date(2026, 10, 19, 9);
-  assert.equal(promptFor(d), promptFor(new Date(2026, 10, 19, 22)), 'the same all day');
-  assert.notEqual(promptFor(d), promptFor(new Date(2026, 10, 20, 9)), 'a new one tomorrow');
-  assert.notEqual(promptFor(d, 1), promptFor(d));
-  assert.equal(promptFor(d, PROMPTS.length), promptFor(d), 'wraps round');
-  assert.equal(promptFor(d, -1), promptFor(d, PROMPTS.length - 1), 'and backwards');
+const base = { profile: {}, memories: [], people: [], with: {}, city: {}, answered: [] };
+const garden = {
+  ...base,
+  profile: { home: 'Queens', intention: 'The sound of the old house', remember: ['people', 'little'] },
+  memories: [
+    { id: 'm1', place: 'Hanoi', moment: 'Coffee with condensed milk on a tiny stool', date: '2023-11-19', createdAt: 1 },
+    { id: 'm2', place: 'Hanoi', moment: 'The motorbike ride in the rain', createdAt: 2 },
+    { id: 'm3', place: 'Marfa', moment: 'Stars over the desert road', createdAt: 3 },
+  ],
+  people: [{ id: 'p1', name: 'Ama' }],
+  with: { m3: ['Ama'] },
+};
+
+test('questions are built only from what this person kept', () => {
+  const qs = questionsFor({ seed: 'a@x.co', ...garden }, new Date(2026, 10, 19, 9));
+  const all = qs.map((q) => q.text).join(' ');
+  assert.ok(qs.length >= 6);
+  for (const word of ['Paris', 'Taipei', 'Edinburgh', 'grandmother', 'Lisbon']) assert.ok(!all.includes(word), `no stock reference to ${word}`);
+  assert.ok(/Hanoi|Marfa|Ama|Queens|old house/.test(all));
+});
+
+test('a date that comes round again leads', () => {
+  const [first] = questionsFor({ seed: 'a@x.co', ...garden }, new Date(2026, 10, 19, 9));
+  assert.match(first.text, /^3 years ago today: “Coffee with condensed milk on a tiny stool”, in Hanoi\./);
+  assert.equal(first.about?.id, 'm1');
+});
+
+test('the order is stable within a day, and differs between people', () => {
+  const d = new Date(2026, 10, 20, 9);
+  const a = questionsFor({ seed: 'a@x.co', ...garden }, d).map((q) => q.text);
+  assert.deepEqual(a, questionsFor({ seed: 'a@x.co', ...garden }, new Date(2026, 10, 20, 22)).map((q) => q.text));
+  const b = questionsFor({ seed: 'someone-else@x.co', ...garden }, d).map((q) => q.text);
+  assert.notDeepEqual(a, b);
+});
+
+test('a question already answered moves to the back', () => {
+  const d = new Date(2026, 10, 20, 9);
+  const [first] = questionsFor({ seed: 'a@x.co', ...garden }, d);
+  const again = questionsFor({ seed: 'a@x.co', ...garden, answered: [first.text] }, d);
+  assert.notEqual(again[0].text, first.text);
+  assert.equal(again[again.length - 1].text, first.text);
+});
+
+test('a brand-new garden still gets a question, shaped by what they chose', () => {
+  const empty = questionsFor({ seed: 'n@x.co', ...base }, new Date(2026, 0, 1));
+  assert.equal(empty.length, 1);
+  const chose = questionsFor({ seed: 'n@x.co', ...base, profile: { remember: ['little'] } }, new Date(2026, 0, 1));
+  assert.match(chose[0].text, /small thing/);
 });
 
 test('the greeting follows the hour', () => {

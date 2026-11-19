@@ -1,11 +1,14 @@
 'use client';
 
+import { questionsFor } from './questions';
+import { useAccount } from './account';
+
 /**
  * The client's view of one person's garden. The server is the source of truth;
  * this keeps a live copy, sends every change to the API, and says plainly when something fails.
  * One store per page render (React context), so nothing is ever shared between people.
  */
-import { createContext, useContext, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { createContext, useContext, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
 import type { HandDraft, MemoryExtra, StoredDraft, TalkSummary } from './draft';
 import type { Profile } from './profile';
 import type { Memory, Kept } from './memory';
@@ -536,3 +539,22 @@ export const itemsOf = (snap: Snapshot, cid: string) =>
 export const firstPhoto = (snap: Snapshot, type: Media['ownerType'], id: string) => snap.media.find((m) => m.ownerType === type && m.ownerId === id && m.kind === 'photo');
 export const mediaFor = (snap: Snapshot, type: Media['ownerType'], id: string) =>
   snap.media.filter((m) => m.ownerType === type && m.ownerId === id);
+
+/** Questions written for this person, from their own garden (see lib/questions.ts). */
+export function useQuestions(today: Date | null) {
+  const [snap] = useStore();
+  const { email } = useAccount();
+  return useMemo(() => {
+    if (!today) return [];
+    const withPeople: Record<string, string[]> = {};
+    for (const l of snap.links) {
+      if (l.kind !== 'memory-person') continue;
+      const name = snap.people.find((p) => p.id === l.b)?.name;
+      if (name) (withPeople[l.a] ??= []).push(name);
+    }
+    const city: Record<string, string | undefined> = {};
+    for (const m of snap.memories) city[m.id] = snap.locations[m.id]?.city;
+    const answered = [...snap.entries].sort((a, b) => b.createdAt - a.createdAt).map((e) => e.meta?.prompt).filter((x): x is string => !!x);
+    return questionsFor({ seed: email || 'garden', profile: snap.profile ?? {}, memories: snap.memories, people: snap.people, with: withPeople, city, answered }, today);
+  }, [snap, email, today]);
+}

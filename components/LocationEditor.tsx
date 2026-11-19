@@ -180,19 +180,19 @@ export default function LocationEditor({ memory, current, onSave, onRemove, onCl
         <div className="loc-fields">
           <label>
             <span>Landmark or venue</span>
-            <input value={f.name} onChange={set('name')} placeholder="The tram stop, a café, a street" />
+            <input value={f.name} onChange={set('name')} placeholder="The exact spot (optional)" />
           </label>
           <label>
             <span>Neighborhood</span>
-            <input value={f.neighborhood} onChange={set('neighborhood')} placeholder="Alfama" />
+            <input value={f.neighborhood} onChange={set('neighborhood')} placeholder="Neighbourhood" />
           </label>
           <label>
             <span>City</span>
-            <input value={f.city} onChange={set('city')} placeholder="Lisbon" />
+            <input value={f.city} onChange={set('city')} placeholder="City" />
           </label>
           <label>
             <span>Country</span>
-            <input value={f.country} onChange={set('country')} placeholder="Portugal" />
+            <input value={f.country} onChange={set('country')} placeholder="Country" />
           </label>
         </div>
 

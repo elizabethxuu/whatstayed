@@ -257,12 +257,12 @@ export default function Review({
                     </label>
                     <label className="rv-field">
                       <span>When{(unsure('when') || unsure('date')) && <em className="unsure">not sure</em>}</span>
-                      <input value={x.when} maxLength={60} placeholder="October 2025" onChange={(e) => set(i, { when: e.target.value })} />
+                      <input value={x.when} maxLength={60} placeholder="When, in your words" onChange={(e) => set(i, { when: e.target.value })} />
                       <input
                         className="rv-date"
                         value={x.date}
                         maxLength={10}
-                        placeholder="2025-10 (for the Timeline)"
+                        placeholder="Year and month, for the Timeline"
                         aria-label="Date for the Timeline"
                         onChange={(e) => set(i, { date: e.target.value.trim() })}
                         aria-invalid={err('date') ? true : undefined}

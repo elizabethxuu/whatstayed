@@ -456,3 +456,27 @@ The purple-and-sage look was replaced to match the glass on elizabeth-xu.com:
 - **Fixed:** the glow layers had been hidden behind the body's background; the page colour now lives on the root element.
 
 **Checks:** all nine browser suites pass (accounts 60, life 60, garden 10, archives 23, places 36, white 26, conversation 52, app 68, agent 48). Typecheck, lint and build are clean.
+
+## Questions written for each person, and a prettier tree (November 19)
+
+**Example references removed.** The places and people written into the app's text (Taipei, Edinburgh, Lisbon, Paris, Jiangmen, "my grandmother", "Nai Nai", "Moved to New York", "Summer 2019" and the rest) are gone. Every placeholder is now neutral ("A city, a room, a road", "Their name", "When, in your words"), and so are the examples in the agent's instructions.
+
+**Questions tailored to each person (`lib/questions.ts`).** The fixed list of 14 daily prompts is gone. Questions are now written from the person's own records:
+- a memory dated on this day in an earlier year leads;
+- then their memories (preferring older ones and ones with little kept yet), the people tied to them, the places they return to, their home, their own words for what they want to preserve, and the kinds of things they said they want to remember.
+
+Every name, place and phrase in a question comes from their data; questions only ask, never state a feeling. The order is stable for a day, differs from person to person, and questions already answered move to the back. Today shows where each question comes from ("From your memory '…'", "About …").
+
+**Elsewhere:**
+- **Suggested prompts:** the agent's suggestions are built the same way (their places, people, home and own words), with generic starters only as a last resort, shaped by their onboarding choices.
+- **The real agent:** its instructions now require every question to be written for this person alone, never a stock question.
+- **The scripted test agent:** its follow-ups now quote the draft's own place, moment and people.
+
+**The tree:**
+- pearl-white petals with a faint blush at the base and a cool sheen at the tip, a fine vein, and a soft highlight;
+- a shaded trunk, and a pale prism halo behind the crown;
+- light twinkling in the branches, a few petals drifting down, and a few resting on the ground.
+
+It stays white: only the one red heart of a marked memory carries colour. Reduced motion holds everything still.
+
+**Checks:** unit tests 14/14, including five for tailored questions (no stock references, anniversaries first, stable per day and different per person, answered questions move back, an empty garden still gets a question). All nine browser suites pass.

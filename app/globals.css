@@ -1833,3 +1833,45 @@ body::before { left: -12vw; }
   :root[data-theme='dark'] .garden .say { background: rgb(36 36 44 / .97); }
 }
 html { background-color: var(--mist); }
+
+/* ---------- the tree, prettier: pearl petals, a prism halo, light and drifting petals ---------- */
+.petal { stroke: rgb(178 172 190 / .55); stroke-width: .42; }
+.petal-sheen { opacity: 0; mix-blend-mode: screen; animation: appear 1s ease calc(var(--wait) + .5s + var(--k) * .06s) both; pointer-events: none; }
+.petal-vein { fill: none; stroke: rgb(205 196 214 / .7); stroke-width: .35; stroke-linecap: round; opacity: 0; animation: appear 1s ease calc(var(--wait) + .7s + var(--k) * .06s) both; pointer-events: none; }
+.blossom .glow { opacity: .55; }
+.heart { fill: #f1e4ea; }
+.blossom.w-tender .heart { fill: #e3dff3; }
+.stamen line { stroke: rgb(196 186 160 / .75); }
+.stamen circle { fill: #d4c49a; }
+.trunk { filter: drop-shadow(1px 0 0 rgb(255 255 255 / .5)); }
+.halo-prism { opacity: 0; animation: prism-in 3.4s 1s ease both; }
+@keyframes prism-in { to { opacity: .34; } }
+.ground-glow { opacity: .4; }
+.fallen path { opacity: 0; stroke: rgb(205 196 214 / .6); stroke-width: .3; animation: appear 1.2s ease 2.6s both; }
+.fallen path:nth-child(2n) { animation-delay: 3.1s; }
+
+.motes circle { fill: #ffffff; opacity: 0; filter: drop-shadow(0 0 3px rgb(207 225 255 / .95)) drop-shadow(0 0 2px rgb(255 216 230 / .8)); animation: twinkle 4.8s ease-in-out infinite; }
+.motes circle:nth-child(3n) { animation-duration: 6.2s; }
+.motes circle:nth-child(3n + 1) { animation-duration: 5.4s; }
+@keyframes twinkle { 0%, 100% { opacity: 0; } 45%, 60% { opacity: .9; } }
+
+.drift-petal {
+  transform-box: fill-box; transform-origin: center;
+  stroke: rgb(205 196 214 / .55); stroke-width: .3; opacity: 0;
+  animation-name: petal-fall; animation-timing-function: linear; animation-iteration-count: infinite;
+}
+@keyframes petal-fall {
+  0%   { opacity: 0; transform: translate(var(--x), 230px) rotate(0deg) scale(var(--s)); }
+  8%   { opacity: .9; }
+  30%  { transform: translate(calc(var(--x) + 28px), 340px) rotate(80deg) scale(var(--s)); }
+  55%  { transform: translate(calc(var(--x) - 10px), 450px) rotate(170deg) scale(var(--s)); }
+  80%  { opacity: .85; transform: translate(calc(var(--x) + 22px), 580px) rotate(250deg) scale(var(--s)); }
+  100% { opacity: 0; transform: translate(calc(var(--x) + 6px), 672px) rotate(320deg) scale(var(--s)); }
+}
+:root[data-theme='dark'] .motes circle { fill: #e9ecff; }
+@media (prefers-reduced-motion: reduce) {
+  .motes circle { animation: none; opacity: .5; }
+  .drifting { display: none; }
+  .halo-prism, .fallen path, .petal-sheen, .petal-vein { animation: none; opacity: 1; }
+  .halo-prism { opacity: .34; }
+}

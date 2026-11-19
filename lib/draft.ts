@@ -26,7 +26,7 @@ export const draftSchema = z.object({
     .regex(/^\d{4}(-\d{2}(-\d{2})?)?$/)
     .optional()
     .describe('The same time as a date, only if it can be worked out from what they said: "2025", "2025-10" or "2025-10-14". Resolve "last October" using today’s date and mark "date" as unsure. Omit if unknown.'),
-  people: z.array(z.string().min(1).max(60)).max(10).optional().describe('Names or roles of people who were there, as they said them: "my sister", "Mei".'),
+  people: z.array(z.string().min(1).max(60)).max(10).optional().describe('Names or roles of people who were there, exactly as they said them (a name or a role).'),
   senses: z.array(z.string().min(1).max(100)).max(8).optional().describe('Sensory details they mentioned, in their words: "rain on the windows", "old wooden shelves".'),
   objects: z.array(z.string().min(1).max(60)).max(6).optional().describe('Significant objects they mentioned: "a paperback", "a red umbrella".'),
   feeling: z.string().max(40).optional().describe('One plain word for the moment, only if they said it or clearly implied it.'),
@@ -46,7 +46,7 @@ export const draftSchema = z.object({
 export type Draft = z.infer<typeof draftSchema>;
 
 export const tripSchema = z.object({
-  title: z.string().min(1).max(80).describe('A plain title for the whole trip: "Edinburgh, October 2025".'),
+  title: z.string().min(1).max(80).describe('A plain title for the whole trip, in the form "<place>, <month year>".'),
   place: z.string().max(80).optional(),
   when: z.string().max(60).optional(),
 });

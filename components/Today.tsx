@@ -8,8 +8,8 @@ import Tree from './Tree';
 import AddMemory from './AddMemory';
 import Revisits from './Revisits';
 import Rediscover from './Rediscover';
-import { mediaFor, mediaUrl, useStore, type Stored } from '@/lib/store';
-import { greeting, promptFor, PROMPTS } from '@/lib/profile';
+import { mediaFor, mediaUrl, useQuestions, useStore, type Stored } from '@/lib/store';
+import { greeting } from '@/lib/profile';
 import { newId, PREFILL_KEY } from '@/lib/archive';
 import { placeTitle } from '@/lib/places';
 import type { HandDraft } from '@/lib/draft';
@@ -232,7 +232,9 @@ function MemoryRow({ list }: { list: Stored[] }) {
 function Reflection({ now, prominent }: { now: Date; prominent: boolean }) {
   const [snap, store] = useStore();
   const [offset, setOffset] = useState(0);
-  const prompt = promptFor(now, offset);
+  const questions = useQuestions(now);
+  const q = questions.length ? questions[((offset % questions.length) + questions.length) % questions.length] : null;
+  const prompt = q?.text ?? '';
   const [text, setText] = useState('');
   const [link, setLink] = useState('');
   const [busy, setBusy] = useState(false);
@@ -277,11 +279,22 @@ function Reflection({ now, prominent }: { now: Date; prominent: boolean }) {
       }}
     >
       <p className="today-k" id="trfT">
-        A reflection {offset === 0 ? 'for today' : `· ${((offset % PROMPTS.length) + PROMPTS.length) % PROMPTS.length + 1} of ${PROMPTS.length}`}
+        {offset === 0 ? 'A question for you, today' : `A question for you · ${(((offset % questions.length) + questions.length) % questions.length) + 1} of ${questions.length}`}
       </p>
       <p className="today-prompt" key={prompt}>
         {prompt}
       </p>
+      {q?.about && (
+        <p className="today-about">
+          {q.about.kind === 'memory' && q.about.id ? (
+            <Link href={`/memory/${q.about.id}`}>From your memory “{q.about.label}”</Link>
+          ) : q.about.kind === 'person' && q.about.id ? (
+            <Link href={`/people?p=${encodeURIComponent(q.about.id)}`}>About {q.about.label}</Link>
+          ) : (
+            <span>From your memories in {q.about.label}</span>
+          )}
+        </p>
+      )}
       {answered && offset === 0 && !saved ? (
         <p className="you-note">
           You answered this today. <Link href={`/archives?e=${encodeURIComponent(answered.id)}`}>Read it again</Link>

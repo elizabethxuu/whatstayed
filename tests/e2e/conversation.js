@@ -163,7 +163,7 @@ const fakeSpeech = () => {
   await p.waitForSelector('.card');
   ok('12. the memory card shows title and trip', /Old Town in the rain/.test(await p.textContent('.card')) && /Edinburgh, October/.test(await p.textContent('.card')));
   await p.click('.card >> text=Edit');
-  await p.fill('.mem-ed input[placeholder="The night market"]', 'The Old Town, raining');
+  await p.fill('.mem-ed input[placeholder="A few words"]', 'The Old Town, raining');
   await p.click('.mem-ed button[type=submit]');
   await p.waitForTimeout(800);
   await p.reload();

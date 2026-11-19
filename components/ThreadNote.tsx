@@ -26,7 +26,7 @@ export default function ThreadNote({ note, onSave, label }: { note?: string; onS
     <form className="thread-note" onSubmit={submit}>
       <label>
         <span className="sr">What connects them</span>
-        <input autoFocus value={v} maxLength={80} placeholder="Both with my mother" onChange={(e) => setV(e.target.value)} onKeyDown={(e) => e.key === 'Escape' && (e.stopPropagation(), setOpen(false))} />
+        <input autoFocus value={v} maxLength={80} placeholder="Why they belong together" onChange={(e) => setV(e.target.value)} onKeyDown={(e) => e.key === 'Escape' && (e.stopPropagation(), setOpen(false))} />
       </label>
       <button type="submit" className="untie" disabled={busy}>save</button>
       <button type="button" className="untie" onClick={() => setOpen(false)}>cancel</button>

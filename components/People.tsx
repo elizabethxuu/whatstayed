@@ -37,7 +37,7 @@ export default function People() {
 
       {snap.people.length === 0 ? (
         <div className="empty-room">
-          <p className="quiet-note">No one is here yet. A friend, a grandmother, someone you met once on a train.</p>
+          <p className="quiet-note">No one is here yet. Add someone you want to remember.</p>
           <button type="button" className="invite" onClick={() => setAdding(true)}>
             Add the first person…
           </button>
@@ -100,12 +100,12 @@ function PersonEditor({ person, onSave, onClose }: { person?: Person; onSave: (p
         <div className="loc-fields mem-fields">
           <label>
             <span>Name</span>
-            <input autoFocus value={name} maxLength={80} onChange={(e) => { setName(e.target.value); setErr(''); }} aria-invalid={err ? true : undefined} aria-describedby={err ? 'pn-err' : undefined} placeholder="Nai Nai" />
+            <input autoFocus value={name} maxLength={80} onChange={(e) => { setName(e.target.value); setErr(''); }} aria-invalid={err ? true : undefined} aria-describedby={err ? 'pn-err' : undefined} placeholder="Their name" />
             {err && <em id="pn-err" className="field-err">{err}</em>}
           </label>
           <label>
             <span>Who they are to you (optional)</span>
-            <input value={relation} maxLength={60} onChange={(e) => setRelation(e.target.value)} placeholder="My grandmother" />
+            <input value={relation} maxLength={60} onChange={(e) => setRelation(e.target.value)} placeholder="How you know them" />
           </label>
           <label className="wide">
             <span>A few words (optional)</span>

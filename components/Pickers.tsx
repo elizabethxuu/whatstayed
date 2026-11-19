@@ -194,7 +194,7 @@ export function CollectionPicker({ kind, id, onClose }: { kind: CollectionItem['
   return (
     <Sheet title="Keep it in a collection" onClose={onClose}>
       {snap.collections.length === 0 ? (
-        <p className="loc-note">No collections yet. Start one: Childhood, Paris, Summer…</p>
+        <p className="loc-note">No collections yet. Start one, and give it a name.</p>
       ) : (
         <ul className="tie-list pick-list">
           {snap.collections.map((c) => {
@@ -218,7 +218,7 @@ export function CollectionPicker({ kind, id, onClose }: { kind: CollectionItem['
       <form className="tie-note pick-new" onSubmit={make}>
         <label>
           <span>A new collection</span>
-          <input value={name} maxLength={80} onChange={(e) => setName(e.target.value)} placeholder="Paris, 2024" />
+          <input value={name} maxLength={80} onChange={(e) => setName(e.target.value)} placeholder="A name for the collection" />
         </label>
         <button type="submit" className="quiet strong" disabled={busy || !name.trim()}>
           Make it

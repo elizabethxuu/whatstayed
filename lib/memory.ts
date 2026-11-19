@@ -11,7 +11,7 @@ export const memorySchema = z.object({
     .string()
     .max(40)
     .optional()
-    .describe('When, only if they said it. "Summer 2019", "the night before I left". Omit if unknown.'),
+    .describe('When, only if they said it, in their words (a season, a year, an occasion). Omit if unknown.'),
   moment: z
     .string()
     .min(3)

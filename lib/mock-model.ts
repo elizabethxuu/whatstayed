@@ -155,13 +155,20 @@ export function mockModel() {
       } else if (last?.role === 'tool') {
         const results = (last.content as Part[]).map((c) => c.toolName);
         const made = results.filter((t) => t === 'draftMemory').length;
-        const onlyNamed = made === 0;
+        // follow up on what they actually said: the drafts' own place, moment and people
+        const callsMade = (p[p.length - 2]?.content as Part[] | string) ?? [];
+        const inputs = (Array.isArray(callsMade) ? callsMade : [])
+          .filter((c) => c.type === 'tool-call')
+          .map((c) => { try { return (typeof c.input === 'string' ? JSON.parse(c.input) : c.input) as { title?: string; moment?: string; place?: string; people?: string[] }; } catch { return {}; } });
+        const d0 = inputs.find((x) => x.moment) ?? {};
+        const trip = inputs.find((x) => !x.moment && x.place) as { place?: string } | undefined;
+        const lc = (t?: string) => (t ? t.charAt(0).toLowerCase() + t.slice(1) : '');
         chunks = say(
-          onlyNamed
-            ? 'Who were you with, and what do you remember most?'
+          made === 0
+            ? `Who went with you to ${trip?.place ?? 'that place'}, and what do you remember first?`
             : made > 1
-              ? 'I’ve drafted those for you to look over. Do you remember what drew you to the first one?'
-              : 'Drafted. What else do you remember about it, or was there somewhere else?',
+              ? `I’ve drafted those for you to look over. Of them, “${d0.title ?? d0.moment}”: ${d0.people?.length ? `what was ${d0.people[0]} doing just then?` : `who else was there in ${d0.place}?`}`
+              : `Drafted. When you picture ${lc(d0.moment)} in ${d0.place}, what can you hear?`,
         );
       } else if (/\b(that's all|that’s all|i'm done|i’m done|nothing else|finish)\b/i.test(said)) {
         chunks = say('Thank you. Your memories are ready to review whenever you are.');
@@ -204,7 +211,7 @@ export function mockModel() {
         }
         chunks = calls.length
           ? [...calls, { type: 'finish', finishReason: 'tool-calls', usage }]
-          : say(isTrip && !tripTitle ? 'Where did you go, and when was it?' : 'What do you see when you picture it? The light, the weather, who was there?');
+          : say(isTrip && !tripTitle ? 'Where did you go, and when was it?' : drafted.length ? `Is there more from ${drafted[drafted.length - 1].place}, or somewhere else you want to keep?` : 'Where were you? Start with the place, and one thing you remember about it.');
       }
       return { stream: simulateReadableStream({ chunks, chunkDelayInMs: 20 }) };
     },

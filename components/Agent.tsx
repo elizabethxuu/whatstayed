@@ -184,22 +184,36 @@ export function usePrompts(mode: Mode, focusPlace?: string) {
       .map(([id, n]) => [snap.people.find((p) => p.id === id)?.name, n] as const)
       .filter((x): x is readonly [string, number] => !!x[0]);
     const out: string[] = [];
+    const p = snap.profile ?? {};
+    const r = new Set([...(p.remember ?? []), ...(p.ways ?? [])]);
+    const own = p.intention?.trim().replace(/[.!?]+$/, '');
     if (mode === 'remember') {
-      out.push('I want to remember a trip…');
-      if (places[0]) out.push(`Something else from ${places[0][0]}…`);
+      // starters in their own terms: their places, their people, their home, their words
+      if (places[0]) out.push(`Another moment from ${places[0][0]}…`);
       if (people[0]) out.push(`A day with ${people[0][0]}…`);
-      out.push('A meal I still think about…');
+      if (p.home) out.push(`Something from ${p.home}…`);
+      if (own && own.split(/\s+/).length <= 9) out.push(`${own}…`);
+      if (places[1]) out.push(`The first time I went to ${places[1][0]}…`);
+      if (!out.length) {
+        if (r.has('places')) out.push('A place I keep going back to…');
+        if (r.has('people')) out.push('Someone I don’t want to forget…');
+        if (r.has('little')) out.push('A small thing I’ve kept…');
+        if (r.has('chapters')) out.push('The year everything changed…');
+        if (r.has('moments')) out.push('The moment when…');
+      }
+      if (!out.length) out.push('Something I remember…');
     } else if (mode === 'ask') {
       if (focusPlace) out.push(`Connect this to my ${focusPlace} memories`);
-      places.slice(0, 2).forEach(([p]) => out.push(`What do you remember about ${p}?`));
+      places.slice(0, 2).forEach(([pl]) => out.push(`What do you remember about ${pl}?`));
       if (people[0]) out.push(`What memories do I have with ${people[0][0]}?`);
       if (snap.talks.length > 1) out.push('What did I tell you about…');
     } else {
-      if (snap.memories.length) out.push('Reflect on my garden');
+      if (places[0] && places[0][1] > 1) out.push(`Reflect on my ${places[0][0]} memories`);
       const years = count(snap.memories.map((m) => m.date?.slice(0, 4)).filter((y): y is string => !!y));
       if (years[0]) out.push(`Summarize ${years[0][0]} for me`);
+      if (people[0]) out.push(`What do my memories with ${people[0][0]} have in common?`);
       if (snap.entries.length > 2) out.push('What themes come up in my pages?');
-      if (!snap.memories.length) out.push('Reflect on my garden');
+      if (snap.memories.length) out.push('Reflect on my garden');
     }
     return out.slice(0, 4);
   }, [snap, mode, focusPlace]);

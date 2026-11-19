@@ -106,7 +106,7 @@ function CollectionEditor({ c, photos, onSave, onClose }: { c?: Collection; phot
         <div className="loc-fields mem-fields">
           <label className="wide">
             <span>Its name</span>
-            <input autoFocus value={name} maxLength={80} onChange={(e) => { setName(e.target.value); setErr(''); }} placeholder="Summers in Jiangmen" aria-invalid={err ? true : undefined} />
+            <input autoFocus value={name} maxLength={80} onChange={(e) => { setName(e.target.value); setErr(''); }} placeholder="A name for the collection" aria-invalid={err ? true : undefined} />
             {err && <em className="field-err">{err}</em>}
           </label>
           <label className="wide">

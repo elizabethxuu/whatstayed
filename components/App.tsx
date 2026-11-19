@@ -7,6 +7,7 @@ import Appearance from './Appearance';
 import AppShell from './AppShell';
 import { ConfirmHost } from '@/lib/confirm';
 import { setUnsentScope } from '@/lib/unsent';
+import { AccountContext } from '@/lib/account';
 
 /** Wraps every signed-in room: the person's data, quiet notices, and a one-time offer to bring in old browser data. */
 export default function App({ initial, email, children }: { initial: Snapshot; email: string; children: ReactNode }) {
@@ -16,6 +17,7 @@ export default function App({ initial, email, children }: { initial: Snapshot; e
     document.cookie = `ws_tz=${new Date().getTimezoneOffset()}; path=/; max-age=31536000; samesite=lax`;
   }, []);
   return (
+    <AccountContext.Provider value={{ email }}>
     <StoreProvider initial={initial}>
       <Appearance value={initial.profile?.appearance} />
       <AppShell>{children}</AppShell>
@@ -23,6 +25,7 @@ export default function App({ initial, email, children }: { initial: Snapshot; e
       <ConfirmHost />
       <Toasts />
     </StoreProvider>
+    </AccountContext.Provider>
   );
 }
 

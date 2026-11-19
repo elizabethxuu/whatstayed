@@ -149,11 +149,11 @@ export default function AddMemory({
             <>
               <label className="rv-field rv-m">
                 <span className="sr">The memory</span>
-                <textarea ref={first} rows={4} maxLength={600} value={d.moment ?? ''} onChange={(e) => set({ moment: e.target.value })} placeholder="The light through the kitchen window, my grandmother humming" />
+                <textarea ref={first} rows={4} maxLength={600} value={d.moment ?? ''} onChange={(e) => set({ moment: e.target.value })} placeholder="Start anywhere: a moment, a detail, a sound" />
               </label>
               <label className="rv-field">
                 <span>A title (optional)</span>
-                <input maxLength={80} value={d.title ?? ''} onChange={(e) => set({ title: e.target.value })} placeholder="Her kitchen" />
+                <input maxLength={80} value={d.title ?? ''} onChange={(e) => set({ title: e.target.value })} placeholder="A few words" />
               </label>
               <label className="rv-field">
                 <span>More, in your own words (optional)</span>
@@ -225,7 +225,7 @@ function WhenWhere({ d, set }: { d: HandDraft; set: (p: Partial<HandDraft>) => v
     <>
       <label className="rv-field">
         <span>Where</span>
-        <input value={d.place ?? ''} maxLength={80} onChange={(e) => set({ place: e.target.value, location: null })} placeholder="Taipei" onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), find())} />
+        <input value={d.place ?? ''} maxLength={80} onChange={(e) => set({ place: e.target.value, location: null })} placeholder="A city, a room, a road" onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), find())} />
       </label>
       <p className="rv-loc">
         {loc ? (
@@ -260,7 +260,7 @@ function WhenWhere({ d, set }: { d: HandDraft; set: (p: Partial<HandDraft>) => v
       <div className="rv-grid">
         <label className="rv-field">
           <span>When, in your words (optional)</span>
-          <input value={d.when ?? ''} maxLength={60} onChange={(e) => set({ when: e.target.value })} placeholder="The summer I turned twelve" />
+          <input value={d.when ?? ''} maxLength={60} onChange={(e) => set({ when: e.target.value })} placeholder="A season, a year, an age" />
         </label>
         <label className="rv-field">
           <span>On a day (optional)</span>
@@ -295,7 +295,7 @@ function WhoWasThere({ d, set }: { d: HandDraft; set: (p: Partial<HandDraft>) =>
             </button>
           </span>
         ))}
-        <input className="chip-add" value={name} maxLength={80} placeholder="A name, or “my sister”" onChange={(e) => setName(e.target.value)} onKeyDown={(e) => (e.key === 'Enter' || e.key === ',') && (e.preventDefault(), add(name))} onBlur={() => add(name)} />
+        <input className="chip-add" value={name} maxLength={80} placeholder="Add a name" onChange={(e) => setName(e.target.value)} onKeyDown={(e) => (e.key === 'Enter' || e.key === ',') && (e.preventDefault(), add(name))} onBlur={() => add(name)} />
       </div>
       {suggestions.length > 0 && (
         <p className="add-suggest">
@@ -390,7 +390,7 @@ function TagsAndLinks({ d, set, memories }: { d: HandDraft; set: (p: Partial<Han
               </button>
             </span>
           ))}
-          <input className="chip-add" value={tag} maxLength={30} placeholder="summer, childhood, Paris" onChange={(e) => setTag(e.target.value)} onKeyDown={(e) => (e.key === 'Enter' || e.key === ',') && (e.preventDefault(), add(tag))} onBlur={() => add(tag)} />
+          <input className="chip-add" value={tag} maxLength={30} placeholder="Add a tag" onChange={(e) => setTag(e.target.value)} onKeyDown={(e) => (e.key === 'Enter' || e.key === ',') && (e.preventDefault(), add(tag))} onBlur={() => add(tag)} />
         </div>
         {known.length > 0 && (
           <p className="add-suggest">

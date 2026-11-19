@@ -60,29 +60,6 @@ export const profileSchema = z.object({
 
 export type Profile = z.infer<typeof profileSchema>;
 
-/** Rotating reflections: one a day, the same for everyone on a given day. */
-export const PROMPTS = [
-  'What is something you wish you could experience again?',
-  'Who made today feel different?',
-  'What small detail would you like to remember?',
-  'Where did you feel most like yourself?',
-  'What has changed about you this year?',
-  'What did you notice today that you usually walk past?',
-  'Which place have you been thinking about lately?',
-  'What did someone say to you that you want to keep?',
-  'What smell or sound takes you back somewhere?',
-  'What would you tell yourself from a year ago?',
-  'What was the light like today?',
-  'Which meal do you still remember, and who was at the table?',
-  'What is something you learned from someone older than you?',
-  'What made you laugh this week?',
-];
-
-export function promptFor(day: Date, offset = 0) {
-  const n = Math.floor(Date.UTC(day.getFullYear(), day.getMonth(), day.getDate()) / 86_400_000);
-  return PROMPTS[(((n + offset) % PROMPTS.length) + PROMPTS.length) % PROMPTS.length];
-}
-
 export function greeting(d = new Date()) {
   const h = d.getHours();
   return h < 5 ? 'Good evening' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';

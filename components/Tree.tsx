@@ -22,6 +22,12 @@ type Props = {
 };
 
 const PETALS = [0, 72, 144, 216, 288];
+/** petals resting on the ground: x offset, y offset, rotation */
+const FALLEN: [number, number, number][] = [[-150, 4, 20], [-96, 9, -35], [-40, 2, 70], [58, 7, -10], [120, 3, 45], [178, 8, -60], [12, 10, 15]];
+/** light in the crown: x, y, delay */
+const MOTES: [number, number, number][] = [[300, 170, 0], [420, 120, 1.4], [520, 150, 2.6], [610, 210, 0.8], [360, 260, 3.2], [470, 230, 1.9], [560, 290, 4.1], [250, 250, 2.2], [650, 140, 3.6], [400, 330, 0.4]];
+/** petals drifting down: start x, delay, duration, scale */
+const DRIFT: [number, number, number, number][] = [[300, 0, 14, 1], [520, 4.5, 17, 0.8], [420, 9, 15, 1.1], [610, 2.2, 19, 0.7], [360, 12, 16, 0.9], [480, 7, 18, 1]];
 const OPEN = 2.6; // seconds for the tree to finish drawing itself
 
 // deterministic 0..1 noise
@@ -187,6 +193,8 @@ function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors,
               fill={tint}
               style={{ '--k': k, '--d': `${(5 + hash(i + k) * 4).toFixed(2)}s` } as CSSProperties}
             />
+            <path className="petal-sheen" d="M0 -3 C -6 -8, -7 -19, -3.5 -25 C -1 -20, -0.6 -10, 0 -3 Z" fill="url(#pSheen)" style={{ '--k': k } as CSSProperties} />
+            <path className="petal-vein" d="M0 -2.5 Q 0.6 -14 0 -24" style={{ '--k': k } as CSSProperties} />
           </g>
         ))}
         <circle className="heart" r="4.4" />
@@ -244,7 +252,7 @@ function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors,
     return (
       <g key={n.id} className={sways ? 'limb' : undefined} style={style}>
         {n.depth === 0 ? (
-          <path className="trunk" d={trunkPath(n)} fill={branchColor(0)} />
+          <path className="trunk" d={trunkPath(n)} fill="url(#trunkG)" />
         ) : (
         <path
           className="br"
@@ -291,20 +299,39 @@ function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors,
     >
       <defs>
         {/* almost-white, translucent petals; only a meaningful (heavy) memory carries a breath of the red */}
-        <radialGradient id="pWhite" cx="50%" cy="100%" r="100%">
-          <stop offset="0" stopColor="#e3e5df" stopOpacity=".95" />
-          <stop offset=".5" stopColor="#f6f6f2" stopOpacity=".86" />
-          <stop offset="1" stopColor="#ffffff" stopOpacity=".78" />
+        {/* pearl petals: white, with the faintest blush at the base and a cool sheen at the tip */}
+        <radialGradient id="pWhite" cx="50%" cy="100%" r="105%">
+          <stop offset="0" stopColor="#f3e6ec" stopOpacity=".98" />
+          <stop offset=".38" stopColor="#fbf8fa" stopOpacity=".95" />
+          <stop offset=".78" stopColor="#ffffff" stopOpacity=".92" />
+          <stop offset="1" stopColor="#eef1ff" stopOpacity=".9" />
         </radialGradient>
-        <radialGradient id="pMist" cx="50%" cy="100%" r="100%">
-          <stop offset="0" stopColor="#cfd2cc" stopOpacity=".95" />
-          <stop offset=".5" stopColor="#eeefeb" stopOpacity=".88" />
-          <stop offset="1" stopColor="#ffffff" stopOpacity=".8" />
+        <radialGradient id="pMist" cx="50%" cy="100%" r="105%">
+          <stop offset="0" stopColor="#e6e3f3" stopOpacity=".98" />
+          <stop offset=".42" stopColor="#f6f5fb" stopOpacity=".95" />
+          <stop offset=".8" stopColor="#ffffff" stopOpacity=".92" />
+          <stop offset="1" stopColor="#eaf1fb" stopOpacity=".9" />
         </radialGradient>
-        <radialGradient id="pMeaning" cx="50%" cy="100%" r="100%">
-          <stop offset="0" stopColor="#b88f90" stopOpacity=".95" />
-          <stop offset=".42" stopColor="#ece2df" stopOpacity=".88" />
-          <stop offset="1" stopColor="#ffffff" stopOpacity=".8" />
+        <radialGradient id="pMeaning" cx="50%" cy="100%" r="105%">
+          <stop offset="0" stopColor="#c99a9f" stopOpacity=".98" />
+          <stop offset=".36" stopColor="#f1e1e4" stopOpacity=".95" />
+          <stop offset=".8" stopColor="#ffffff" stopOpacity=".92" />
+          <stop offset="1" stopColor="#f6eef4" stopOpacity=".9" />
+        </radialGradient>
+        <linearGradient id="pSheen" x1="0" y1="1" x2="0" y2="0">
+          <stop offset=".35" stopColor="#ffffff" stopOpacity="0" />
+          <stop offset=".7" stopColor="#ffffff" stopOpacity=".75" />
+          <stop offset="1" stopColor="#ffffff" stopOpacity="0" />
+        </linearGradient>
+        {/* the trunk: warm grey, lit from the left */}
+        <linearGradient id="trunkG" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#b9b6ae" />
+          <stop offset=".45" stopColor="#9a968e" />
+          <stop offset="1" stopColor="#7f7c76" />
+        </linearGradient>
+        <radialGradient id="fallG" cx="50%" cy="90%" r="100%">
+          <stop offset="0" stopColor="#f4dde6" />
+          <stop offset="1" stopColor="#ffffff" />
         </radialGradient>
         <radialGradient id="bGlow" cx="50%" cy="50%" r="50%">
           <stop offset="0" stopColor="#ffffff" stopOpacity=".9" />
@@ -316,13 +343,33 @@ function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors,
         </radialGradient>
         <radialGradient id="halo" cx="50%" cy="50%" r="50%">
           <stop offset="0" stopColor="#ffffff" stopOpacity=".95" />
-          <stop offset=".6" stopColor="#fbfbf8" stopOpacity=".5" />
+          <stop offset=".45" stopColor="#fbf9ff" stopOpacity=".6" />
+          <stop offset=".75" stopColor="#f4f1ff" stopOpacity=".28" />
           <stop offset="1" stopColor="#f8f7f2" stopOpacity="0" />
         </radialGradient>
+        <linearGradient id="prismRing" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#ffc4d6" />
+          <stop offset=".2" stopColor="#ffd8bd" />
+          <stop offset=".4" stopColor="#fff1c2" />
+          <stop offset=".6" stopColor="#d8f3e3" />
+          <stop offset=".8" stopColor="#cfe1ff" />
+          <stop offset="1" stopColor="#e3d9ff" />
+        </linearGradient>
+        <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="28" />
+        </filter>
       </defs>
 
+      <ellipse className="halo-prism" cx={VIEW.w / 2} cy={VIEW.h * 0.4} rx="330" ry="210" fill="url(#prismRing)" filter="url(#soft)" />
       <ellipse className="halo" cx={VIEW.w / 2} cy={VIEW.h * 0.38} rx="430" ry="290" fill="url(#halo)" />
       <ellipse className="ground" cx={VIEW.w / 2} cy={VIEW.h - 36} rx="380" ry="28" fill="url(#mist)" />
+      <ellipse className="ground-glow" cx={VIEW.w / 2} cy={VIEW.h - 34} rx="200" ry="9" fill="url(#prismRing)" filter="url(#soft)" />
+      {/* a few petals already fallen */}
+      <g className="fallen" aria-hidden="true">
+        {FALLEN.map(([x, y, r], k) => (
+          <path key={k} d="M0 0 C -3.4 -2, -4.2 -7, -1.8 -9 Q 0 -8.2 0 -8.8 Q 0 -8.2 1.8 -9 C 4.2 -7, 3.4 -2, 0 0 Z" transform={`translate(${VIEW.w / 2 + x} ${VIEW.h - 36 + y}) rotate(${r}) scale(.9 .55)`} fill="url(#fallG)" />
+        ))}
+      </g>
 
       <g className="threads" aria-hidden="true">
         {threads.map(([a, b]) => (
@@ -331,6 +378,26 @@ function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors,
       </g>
 
       {limb(root)}
+
+      {/* light caught in the crown, and petals drifting down */}
+      <g className="motes" aria-hidden="true">
+        {MOTES.map(([x, y, d], k) => (
+          <circle key={k} cx={x} cy={y} r={0.9 + (k % 3) * 0.45} style={{ animationDelay: `${d}s` } as CSSProperties} />
+        ))}
+      </g>
+      {memories.length > 0 && (
+        <g className="drifting" aria-hidden="true">
+          {DRIFT.map(([x, d, dur, s], k) => (
+            <path
+              key={k}
+              className="drift-petal"
+              d="M0 0 C -3.4 -2, -4.2 -7, -1.8 -9 Q 0 -8.2 0 -8.8 Q 0 -8.2 1.8 -9 C 4.2 -7, 3.4 -2, 0 0 Z"
+              fill="url(#fallG)"
+              style={{ '--x': `${x}px`, '--s': s, animationDelay: `${d}s`, animationDuration: `${dur}s` } as CSSProperties}
+            />
+          ))}
+        </g>
+      )}
     </svg>
   );
 }

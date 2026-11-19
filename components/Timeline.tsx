@@ -315,7 +315,7 @@ function DayEditor({ day, onSave, onClose }: { day?: Milestone; onSave: (m: { ti
         <div className="loc-fields mem-fields">
           <label className="wide">
             <span>What happened</span>
-            <input autoFocus value={title} maxLength={120} onChange={(e) => setTitle(e.target.value)} placeholder="Moved to New York" aria-invalid={err.title ? true : undefined} />
+            <input autoFocus value={title} maxLength={120} onChange={(e) => setTitle(e.target.value)} placeholder="A move, a first day, an ending" aria-invalid={err.title ? true : undefined} />
             {err.title && <em className="field-err">{err.title}</em>}
           </label>
           <label>

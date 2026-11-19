@@ -286,7 +286,7 @@ function Flow({
           <div className="ob-fields">
             <label>
               <span className="sr">What you’d most like to preserve</span>
-              <textarea rows={4} maxLength={600} value={a.intention ?? ''} onChange={(e) => setA({ ...a, intention: e.target.value })} placeholder="I want to remember the little details of my twenties." />
+              <textarea rows={4} maxLength={600} value={a.intention ?? ''} onChange={(e) => setA({ ...a, intention: e.target.value })} placeholder="In your own words." />
             </label>
             <label className="ob-check">
               <input type="checkbox" checked={a.showIntention ?? true} onChange={(e) => setA({ ...a, showIntention: e.target.checked })} />

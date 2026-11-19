@@ -629,8 +629,8 @@ export default function Garden({ open }: { open: Open }) {
                     ? 'Reflect on…'
                     : messages.length === 0
                       ? talk?.mode === 'trip'
-                        ? 'Edinburgh, last October…'
-                        : 'The night market in Taipei, the steam…'
+                        ? 'Where did you go, and when?'
+                        : 'Tell it something you remember…'
                       : 'Say a little more…'
             }
             required

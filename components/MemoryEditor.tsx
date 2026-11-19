@@ -76,7 +76,7 @@ export default function MemoryEditor({ memory, onSave, onClose }: Props) {
         <div className="loc-fields mem-fields">
           <label className="wide">
             <span>Title (optional)</span>
-            <input maxLength={80} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="The night market" />
+            <input maxLength={80} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="A few words" />
           </label>
           <label className="wide">
             <span>Moment</span>
@@ -86,7 +86,7 @@ export default function MemoryEditor({ memory, onSave, onClose }: Props) {
               maxLength={600}
               value={moment}
               onChange={(e) => { setMoment(e.target.value); clear('moment'); }}
-              placeholder="Steam rising off the dumplings at the night market"
+              placeholder="What you remember"
               required
               {...field('moment')}
             />
@@ -98,12 +98,12 @@ export default function MemoryEditor({ memory, onSave, onClose }: Props) {
           </label>
           <label>
             <span>Where</span>
-            <input ref={first} id="place" maxLength={80} value={place} onChange={(e) => { setPlace(e.target.value); clear('place'); }} placeholder="Taipei" required {...field('place')} />
+            <input ref={first} id="place" maxLength={80} value={place} onChange={(e) => { setPlace(e.target.value); clear('place'); }} placeholder="Where" required {...field('place')} />
             {errors.place && <em id="place-err" className="field-err">{errors.place}</em>}
           </label>
           <label>
             <span>When (optional)</span>
-            <input maxLength={60} value={when} onChange={(e) => setWhen(e.target.value)} placeholder="Summer 2019" />
+            <input maxLength={60} value={when} onChange={(e) => setWhen(e.target.value)} placeholder="When, in your words" />
           </label>
           <label>
             <span>On a day (optional)</span>
