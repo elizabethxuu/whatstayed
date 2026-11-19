@@ -45,3 +45,21 @@ test('extractMemories keeps only planted tool calls, keyed by call id', () => {
 test('memorySchema rejects a memory with no moment', () => {
   assert.equal(memorySchema.safeParse({ place: 'A', moment: '', feeling: 'x', weight: 'light' }).success, false);
 });
+
+import { draftSchema, periodToDate } from '../lib/draft.ts';
+
+test('approximate dates keep their precision for the Timeline', () => {
+  assert.deepEqual(periodToDate('2025-10'), { date: '2025-10-01', label: 'October 2025' });
+  assert.deepEqual(periodToDate('2019'), { date: '2019-01-01', label: '2019' });
+  assert.equal(periodToDate('2024-06-14').date, '2024-06-14');
+  assert.deepEqual(periodToDate(undefined), {});
+});
+
+test('a draft needs a title, a moment and a place; dates must be real periods', () => {
+  const base = { title: 'The bookstore', moment: 'Finding a tiny bookstore', place: 'Edinburgh' };
+  assert.equal(draftSchema.safeParse(base).success, true);
+  assert.equal(draftSchema.safeParse({ ...base, place: '' }).success, false);
+  assert.equal(draftSchema.safeParse({ ...base, date: 'last October' }).success, false);
+  assert.equal(draftSchema.safeParse({ ...base, date: '2025-10' }).success, true);
+  assert.equal(draftSchema.parse(base).weight, 'light');
+});

@@ -14,9 +14,11 @@ export const isoDate = z
 export const memoryInput = memorySchema.extend({
   place: z.string().trim().min(1).max(80),
   moment: z.string().trim().min(2).max(600),
-  feeling: z.string().trim().min(1).max(40),
+  feeling: z.string().trim().max(40).default(''),
   when: z.string().trim().max(60).optional().nullable(),
   date: isoDate.optional().nullable(),
+  title: z.string().trim().max(80).optional().nullable(),
+  narrative: z.string().trim().max(2000).optional().nullable(),
 });
 
 export const locInput = z.object({
@@ -48,21 +50,27 @@ const id = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2
 
 /* ---------- memories ---------- */
 
-const MEM_COLS = `id, place, when_text as "when", to_char(happened_on, 'YYYY-MM-DD') as "date", moment, feeling, weight, echoes, because, origin,
+const MEM_COLS = `id, place, when_text as "when", to_char(happened_on, 'YYYY-MM-DD') as "date", moment, feeling, weight, echoes, because, origin, extra,
   ${ms('created_at')} as "createdAt", ${ms('updated_at')} as "updatedAt"`;
 
 export async function listMemories(user: string) {
   const q = await db();
   const rows = await q(`select ${MEM_COLS} from memories where user_id = $1 order by created_at, id`, [user]);
-  return rows.map((r) => Object.fromEntries(Object.entries(r).filter(([, v]) => v !== null)));
+  return rows.map((r) =>
+    Object.fromEntries(Object.entries(r).filter(([, v]) => v !== null).map(([k, v]) => [k, k === 'extra' && typeof v === 'string' ? JSON.parse(v) : v])),
+  );
 }
 
 export async function plantMemory(user: string, memId: string, m: z.infer<typeof memoryInput> | Omit<z.infer<typeof memoryInput>, 'date'>, origin: 'agent' | 'you') {
   const q = await db();
   await q(
-    `insert into memories (user_id, id, place, when_text, moment, feeling, weight, echoes, because, origin, happened_on)
-     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) on conflict (user_id, id) do nothing`,
-    [user, memId, m.place, m.when || null, m.moment, m.feeling, m.weight, m.echoes || null, m.because || null, origin, ('date' in m && m.date) || null],
+    `insert into memories (user_id, id, place, when_text, moment, feeling, weight, echoes, because, origin, happened_on, extra)
+     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb) on conflict (user_id, id) do nothing`,
+    [
+      user, memId, m.place, m.when || null, m.moment, m.feeling ?? '', m.weight, m.echoes || null, m.because || null, origin,
+      ('date' in m && m.date) || null,
+      'title' in m && (m.title || m.narrative) ? JSON.stringify({ title: m.title || undefined, narrative: m.narrative || undefined }) : null,
+    ],
   );
   return memId;
 }
@@ -74,9 +82,12 @@ export async function createMemory(user: string, m: z.infer<typeof memoryInput>)
 export async function updateMemory(user: string, memId: string, m: z.infer<typeof memoryInput>) {
   const q = await db();
   const rows = await q(
-    `update memories set place=$3, when_text=$4, moment=$5, feeling=$6, weight=$7, happened_on=$8, updated_at=now()
+    `update memories set place=$3, when_text=$4, moment=$5, feeling=$6, weight=$7, happened_on=$8,
+       extra = case when $9::text is null and $10::text is null then extra
+                    else coalesce(extra, '{}'::jsonb) || jsonb_strip_nulls(jsonb_build_object('title', $9::text, 'narrative', $10::text)) end,
+       updated_at=now()
      where user_id=$1 and id=$2 returning id`,
-    [user, memId, m.place, m.when || null, m.moment, m.feeling, m.weight, m.date || null],
+    [user, memId, m.place, m.when || null, m.moment, m.feeling, m.weight, m.date || null, m.title ?? null, m.narrative ?? null],
   );
   if (!rows.length) throw new HttpError(404, 'That memory isn’t here any more.');
 }
@@ -235,8 +246,10 @@ export async function state(user: string, tz?: string) {
        from media where user_id=$1 order by created_at`, [user]),
   ]);
   const life = await lifeState(user, tz);
+  const { listTalks } = await import('./talk');
   return {
     ...life,
+    talks: await listTalks(user),
     memories,
     entries: entries.map((e) => {
       const loc = typeof e.location === 'string' ? JSON.parse(e.location) : e.location;
@@ -251,29 +264,13 @@ export async function state(user: string, tz?: string) {
   };
 }
 
-/* ---------- conversation ---------- */
-
-export async function getConversation(user: string) {
-  const q = await db();
-  const r = await q<{ messages: unknown }>('select messages from conversations where user_id=$1', [user]);
-  const m = r[0]?.messages;
-  return Array.isArray(m) ? m : typeof m === 'string' ? JSON.parse(m) : [];
-}
-
-export async function saveConversation(user: string, messages: unknown[]) {
-  const text = JSON.stringify(messages);
-  if (text.length > 1_500_000) throw new HttpError(413, 'This conversation has grown too long to save.');
-  const q = await db();
-  await q(
-    `insert into conversations (user_id, messages) values ($1,$2::jsonb)
-     on conflict (user_id) do update set messages = excluded.messages, updated_at = now()`,
-    [user, text],
-  );
-}
+/* ---------- conversations live in ./talk.ts ---------- */
 
 export async function clearGarden(user: string) {
   const q = await db();
   await q('delete from conversations where user_id=$1', [user]);
+  await q('delete from talks where user_id=$1', [user]);
+  await q('delete from drafts where user_id=$1', [user]);
   await q(`delete from media where user_id=$1 and owner_type='memory'`, [user]);
   await q('delete from threads where user_id=$1', [user]);
   await q('delete from dismissed where user_id=$1', [user]);

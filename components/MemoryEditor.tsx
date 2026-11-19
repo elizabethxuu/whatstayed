@@ -22,6 +22,8 @@ export default function MemoryEditor({ memory, onSave, onClose }: Props) {
   const [when, setWhen] = useState(memory?.when ?? '');
   const [moment, setMoment] = useState(memory?.moment ?? '');
   const [feeling, setFeeling] = useState(memory?.feeling ?? '');
+  const [title, setTitle] = useState(memory?.extra?.title ?? '');
+  const [narrative, setNarrative] = useState(memory?.extra?.narrative ?? '');
   const [date, setDate] = useState(memory?.date ?? '');
   const [weight, setWeight] = useState<Memory['weight']>(memory?.weight ?? 'tender');
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -40,7 +42,6 @@ export default function MemoryEditor({ memory, onSave, onClose }: Props) {
     const next: Record<string, string> = {};
     if (!place.trim()) next.place = 'Add a place.';
     if (moment.trim().length < 2) next.moment = 'Add a short description.';
-    if (!feeling.trim()) next.feeling = 'Add one word.';
     setErrors(next);
     if (Object.keys(next).length) return;
     setBusy(true);
@@ -51,6 +52,8 @@ export default function MemoryEditor({ memory, onSave, onClose }: Props) {
       feeling: feeling.trim(),
       weight,
       date: date || undefined,
+      title: title.trim() || undefined,
+      narrative: narrative.trim() || undefined,
       echoes: memory?.echoes,
       because: memory?.because,
     });
@@ -72,6 +75,10 @@ export default function MemoryEditor({ memory, onSave, onClose }: Props) {
 
         <div className="loc-fields mem-fields">
           <label className="wide">
+            <span>Title (optional)</span>
+            <input maxLength={80} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="The night market" />
+          </label>
+          <label className="wide">
             <span>Moment</span>
             <textarea
               id="moment"
@@ -84,6 +91,10 @@ export default function MemoryEditor({ memory, onSave, onClose }: Props) {
               {...field('moment')}
             />
             {errors.moment && <em id="moment-err" className="field-err">{errors.moment}</em>}
+          </label>
+          <label className="wide">
+            <span>More, in your own words (optional)</span>
+            <textarea rows={2} maxLength={2000} value={narrative} onChange={(e) => setNarrative(e.target.value)} />
           </label>
           <label>
             <span>Where</span>
@@ -99,8 +110,8 @@ export default function MemoryEditor({ memory, onSave, onClose }: Props) {
             <input type="date" value={date} max="9999-12-31" onChange={(e) => setDate(e.target.value)} />
           </label>
           <label>
-            <span>In a word</span>
-            <input id="feeling" maxLength={40} value={feeling} onChange={(e) => { setFeeling(e.target.value); clear('feeling'); }} placeholder="Calm" required {...field('feeling')} />
+            <span>In a word (optional)</span>
+            <input id="feeling" maxLength={40} value={feeling} onChange={(e) => setFeeling(e.target.value)} placeholder="Calm" />
             {errors.feeling && <em id="feeling-err" className="field-err">{errors.feeling}</em>}
           </label>
           <fieldset className="mem-weight">

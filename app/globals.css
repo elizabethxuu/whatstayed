@@ -918,3 +918,157 @@ body::after {
   .welcome-tree .tree { width: 100%; max-height: 30vh; margin: 0; }
   .welcome-card .mark { margin-bottom: 26px; }
 }
+
+/* plain, upright subtitles: quieter, more editorial */
+.arc-sub, .welcome-sub, .voice-sub { font-style: normal; font-family: var(--sans); font-weight: 300; font-size: 14.5px; line-height: 1.6; letter-spacing: .01em; color: var(--ink-soft); }
+
+/* ================= THE CONVERSATION ================= */
+
+/* drafts on the tree: closed buds, breathing; they open only when saved */
+.bud-draft path:first-child { fill: rgba(236, 237, 232, .92); stroke: rgba(146, 153, 145, .6); stroke-width: .45; }
+.bud-draft .bud-sepal { fill: none; stroke: rgba(146, 153, 145, .7); stroke-width: .5; stroke-linecap: round; }
+.bud-draft { animation: bud-in 1.6s cubic-bezier(.2,.7,.2,1) both, bud-breathe 4.8s ease-in-out 1.6s infinite; transform-box: fill-box; transform-origin: 50% 100%; }
+@keyframes bud-in { from { opacity: 0; scale: .2; } to { opacity: 1; scale: 1; } }
+@keyframes bud-breathe { 0%, 100% { scale: 1; } 50% { scale: 1.06; } }
+/* marks on a blossom: photographs, a pin on the map, a red thread */
+.mk { stroke: none; pointer-events: none; opacity: 0; animation: appear 1.4s ease calc(var(--wait) + 1.6s) both; }
+.mk-photo { fill: #a5a99f; }
+.mk-place { fill: none; stroke: #8e938d; stroke-width: .6; }
+.mk-linked { fill: var(--red); opacity: .7; }
+
+/* the line above the writing: which conversation, the transcript, and drafts to review */
+.talk-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 6px 18px; margin: 0 0 10px; font-size: 12.5px; color: var(--ink-faint); }
+.talk-name { font-family: var(--serif); font-style: italic; font-size: 15px; color: var(--ink-soft); }
+.review-go {
+  display: inline-flex; align-items: center; gap: 8px; padding: 7px 16px; cursor: pointer;
+  font: 400 12.5px/1 var(--sans); letter-spacing: .01em; color: var(--ink);
+  background: rgba(254, 254, 252, .9); border: .75px solid rgba(52, 55, 51, .4); border-radius: 999px;
+  transition: background .4s, color .4s; animation: rise .6s cubic-bezier(.2,.8,.2,1) both;
+}
+.review-go:hover, .review-go:focus-visible { background: var(--ink); color: var(--porcelain); outline: none; }
+.bud-dot { width: 6px; height: 9px; border-radius: 50% 50% 45% 45%; background: #ecede8; border: .5px solid #8e938d; }
+.voice-fail-acts { display: flex; justify-content: center; gap: 20px; margin: 10px 0 0; }
+
+/* speaking instead of typing */
+.say .mic { width: 34px; height: 34px; display: grid; place-items: center; padding: 0; background: none; border: 0; border-radius: 50%; color: var(--ink-faint); cursor: pointer; transition: color .4s, background .4s; }
+.say .mic svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.15; stroke-linecap: round; }
+.say .mic:hover, .say .mic:focus-visible { color: var(--ink); outline: none; }
+.say .mic.on { color: var(--red); background: rgba(135, 77, 80, .07); animation: hear 1.8s ease-in-out infinite; }
+@keyframes hear { 0%, 100% { box-shadow: 0 0 0 0 rgba(135, 77, 80, .18); } 50% { box-shadow: 0 0 0 7px rgba(135, 77, 80, 0); } }
+.say.hearing { opacity: 1; border-bottom-color: rgba(135, 77, 80, .35); }
+.voice-ask { max-width: 520px; margin: 12px auto 0; text-align: left; }
+
+/* the drawer of conversations */
+.talks-veil { place-items: stretch end; padding: 0; }
+.talks {
+  position: relative; width: min(440px, 100%); height: 100%; overflow-y: auto; padding: 40px 32px 32px;
+  background: rgba(254, 254, 252, .97); border-left: .5px solid rgba(146, 153, 145, .3);
+  box-shadow: -30px 0 80px -50px rgba(52, 55, 51, .35); animation: slide-in .5s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes slide-in { from { translate: 30px 0; opacity: 0; } to { translate: 0 0; opacity: 1; } }
+.talks .x { position: absolute; top: 18px; right: 22px; }
+.talks-new { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 14px 0 26px; }
+.talks-list { list-style: none; margin: 0; padding: 0; }
+.talks-list li { display: flex; align-items: baseline; gap: 12px; padding: 14px 0; border-top: .5px solid rgba(146, 153, 145, .28); }
+.talks-list li a { flex: 1; min-width: 0; text-decoration: none; color: var(--ink); }
+.talks-list li.on .talks-title { font-style: italic; }
+.talks-title { display: block; font-family: var(--serif); font-weight: 400; font-size: 19px; line-height: 1.3; }
+.talks-meta { display: block; margin-top: 3px; font-size: 12px; color: var(--ink-faint); }
+.talks-list li a:hover .talks-title, .talks-list li a:focus-visible .talks-title { text-decoration: underline; text-decoration-color: var(--botanical); text-underline-offset: 4px; }
+.talks-clear { margin-top: 34px; padding-top: 18px; border-top: .5px solid rgba(146, 153, 145, .28); }
+
+/* the review */
+.review-veil { align-items: start; overflow-y: auto; padding: clamp(16px, 5vh, 56px) 16px; }
+.review {
+  position: relative; width: min(760px, 100%); margin: 0 auto; padding: clamp(28px, 4vw, 52px);
+  background: rgba(254, 254, 252, .98); border: .5px solid rgba(146, 153, 145, .3);
+  box-shadow: 0 40px 100px -60px rgba(52, 55, 51, .35); animation: rise .6s cubic-bezier(.2,.8,.2,1) both;
+}
+.review .x { position: absolute; top: 18px; right: 22px; }
+.rv-title { margin: 4px 0 0; font-family: var(--serif); font-weight: 300; font-size: clamp(30px, 4vw, 40px); line-height: 1.1; color: var(--ink); }
+.rv-trip-title input { width: 100%; margin-top: 4px; border: 0; border-bottom: .75px solid rgba(146, 153, 145, .4); background: transparent; outline: none; padding: 4px 0 6px; font-family: var(--serif); font-weight: 300; font-size: clamp(30px, 4vw, 40px); color: var(--ink); }
+.rv-trip-title input:focus { border-bottom-color: var(--ink); }
+.rv-sub { margin: 12px 0 0; max-width: 40em; font-size: 13.5px; line-height: 1.6; color: var(--ink-soft); }
+.rv-empty { margin: 26px 0 0; font-size: 14px; color: var(--ink-soft); }
+.rv-list { list-style: none; margin: 30px 0 0; padding: 0; counter-reset: rv; }
+.rv-item { position: relative; display: grid; grid-template-columns: 28px 1fr; gap: 0 14px; padding: 26px 0; border-top: .5px solid rgba(146, 153, 145, .3); transition: opacity .4s; }
+.rv-item.off { opacity: .45; }
+.rv-item.saved { display: block; }
+.rv-keep { padding-top: 8px; }
+.rv-keep input { width: 16px; height: 16px; accent-color: var(--ink); cursor: pointer; }
+.rv-body { min-width: 0; }
+.rv-field { display: block; position: relative; margin-top: 14px; }
+.rv-field > span { display: flex; gap: 10px; align-items: baseline; font-size: 12px; color: var(--ink-faint); }
+.rv-field input, .rv-field textarea, .chip-add {
+  width: 100%; border: 0; border-bottom: .75px solid rgba(146, 153, 145, .35); background: transparent; outline: none;
+  padding: 6px 0; font: 300 16px/1.45 var(--sans); color: var(--ink); border-radius: 0; resize: vertical;
+}
+.rv-field input:focus, .rv-field textarea:focus, .chip-add:focus { border-bottom-color: var(--ink); }
+.rv-field [aria-invalid='true'] { border-bottom-color: var(--red); }
+.rv-t { margin-top: 0; }
+.rv-t input { font-family: var(--serif); font-weight: 400; font-size: 24px; padding-top: 0; }
+.rv-m textarea { font-family: var(--serif); font-style: italic; font-size: 19px; line-height: 1.45; }
+.rv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 26px; }
+.rv-date { margin-top: 4px; font-size: 13.5px !important; color: var(--ink-soft) !important; }
+.rv-loc, .rv-hits { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-top: 6px; font-size: 12.5px; color: var(--ink-soft); }
+.rv-loc em, .rv-hits em { font-style: normal; color: var(--ink-faint); }
+.rv-pin { display: inline-block; width: 6px; height: 6px; border-radius: 50%; border: 1px solid #8a9089; background: #fefefc; }
+.unsure { font-style: normal; font-size: 11px; letter-spacing: .02em; color: var(--ink-soft); background: var(--stone); padding: 1px 7px; border-radius: 999px; }
+.rv-t .unsure { position: absolute; right: 0; top: 8px; }
+.chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 4px 3px 11px; font-size: 13px; color: var(--ink); background: var(--mist); border: .5px solid rgba(146, 153, 145, .35); border-radius: 999px; }
+.chip button { width: 20px; height: 20px; padding: 0; border: 0; background: none; color: var(--ink-faint); cursor: pointer; font-size: 15px; line-height: 1; border-radius: 50%; }
+.chip button:hover, .chip button:focus-visible { color: var(--ink); background: var(--stone); outline: none; }
+.chip-add { flex: 1; min-width: 120px; width: auto; font-size: 14px; }
+.rv-more { margin-top: 14px; }
+.rv-more summary { cursor: pointer; font-size: 12.5px; color: var(--ink-soft); list-style: none; }
+.rv-more summary::before { content: '+ '; }
+.rv-more[open] summary::before { content: '– '; }
+.rv-weight { margin-top: 14px; }
+.rv-suggest { margin-top: 16px; padding: 12px 14px; border-left: 1px solid rgba(135, 77, 80, .35); background: rgba(248, 247, 242, .7); display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; }
+.rv-suggest p { flex: 1 1 100%; margin: 0; font-size: 13.5px; color: var(--ink-soft); }
+.rv-s-label { font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--ink); }
+.rv-s-note { flex: 1 1 200px; }
+.rv-s-note input { width: 100%; border: 0; border-bottom: .5px solid rgba(135, 77, 80, .3); background: transparent; outline: none; font: italic 300 15px var(--serif); color: var(--ink); padding: 3px 0; }
+.rv-suggest.on { border-left-color: var(--red); }
+.rv-suggest.on [aria-pressed='true'] { color: var(--red); }
+.rv-item-acts { margin: 16px 0 0; }
+.rv-trip { margin-top: 10px; padding-top: 22px; border-top: .5px solid rgba(146, 153, 145, .3); }
+.rv-check { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--ink); cursor: pointer; }
+.rv-check input { width: 16px; height: 16px; accent-color: var(--ink); }
+.rv-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 22px; margin-top: 30px; padding-top: 22px; border-top: .5px solid rgba(146, 153, 145, .3); }
+.rv-foot-r { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; margin-left: auto; }
+.rv-saved-title { margin: 0; font-family: var(--serif); font-size: 21px; color: var(--ink); }
+.rv-saved-moment { margin: 4px 0 0; font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--ink-soft); }
+
+/* the memory card, with what came from the conversation */
+.card-title { margin: 6px 0 0; font-family: var(--serif); font-size: 15px; letter-spacing: .01em; color: var(--ink-soft); }
+.card-narrative { margin: 10px 0 0; font-size: 13.5px; line-height: 1.6; color: var(--ink-soft); }
+.card-details { margin: 8px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--ink-faint); }
+.card-meta .unsure { margin-left: -4px; }
+
+@media (max-width: 760px) {
+  .rv-grid { grid-template-columns: 1fr; }
+  .rv-item { grid-template-columns: 22px 1fr; gap: 0 10px; }
+  .review { padding: 26px 18px; }
+  .review-veil { padding: 10px 8px calc(84px + env(safe-area-inset-bottom)); }
+  .talks { padding: 34px 22px calc(90px + env(safe-area-inset-bottom)); }
+  .talk-head { gap: 6px 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bud-draft, .mk, .review, .talks, .review-go { animation: none; }
+  .say .mic.on { animation: none; }
+}
+
+/* phones: when a conversation is under way the tree steps back so the words and the writing line fit above the tab bar */
+@media (max-width: 760px) {
+  .garden.talking .tree { max-height: clamp(150px, calc(100dvh - 560px), 300px); }
+  .garden.talking .stage { min-height: 0; }
+  .garden.talking .fig, .garden.talking .revisits { display: none; }
+  .garden.talking .voice { gap: 8px; }
+  .garden.talking .you { font-size: 16px; margin: 0; }
+  .garden.talking .voice-line { font-size: 21px; }
+  .garden.talking .talk-head { margin-bottom: 6px; }
+}
+.review .x, .talks .x { background: none; border: 0; cursor: pointer; color: var(--ink-faint); padding: 2px 0; font: 400 12.5px var(--sans); }
+.review .x:hover, .review .x:focus-visible, .talks .x:hover, .talks .x:focus-visible { color: var(--ink); outline: none; }

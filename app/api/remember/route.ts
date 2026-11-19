@@ -1,60 +1,46 @@
 import { anthropic } from '@ai-sdk/anthropic';
-import {
-  convertToModelMessages,
-  stepCountIs,
-  streamText,
-  tool,
-  type LanguageModel,
-  type UIMessage,
-} from 'ai';
-import { memorySchema } from '@/lib/memory';
+import { convertToModelMessages, stepCountIs, streamText, tool, type LanguageModel, type UIMessage } from 'ai';
+import { draftSchema, tripSchema } from '@/lib/draft';
 import { mockModel } from '@/lib/mock-model';
 import { currentUser } from '@/lib/server/auth';
-import { listMemories, plantMemory as keep } from '@/lib/server/data';
+import { listMemories } from '@/lib/server/data';
+import { db } from '@/lib/server/db';
 import { ConfigError } from '@/lib/server/db';
+import { allow, listDrafts, nameTrip, ownTalk, upsertDraft } from '@/lib/server/talk';
 
 export const maxDuration = 30;
 
 const MAX_MESSAGES = 40; // keep long sessions affordable
-const MAX_CHARS = 1200; // per message the person sends
+const MAX_CHARS = 2000; // per message the person sends (a spoken story can run long)
+const LIMIT = { turns: 40, windowSec: 600 }; // per person: 40 replies every 10 minutes
 
-const SYSTEM = `You are the guide in What Stayed, a garden where travel memories become blossoms on a tree.
-
-The person tells you about places they have been. Your job is to draw out one clear, specific moment from a place, then plant it.
+const SYSTEM = `You are the listener in What Stayed, a garden where memories become blossoms on a tree. People tell you about their travels, the people in their lives and the moments they want to keep. You help them remember, and you draft memories for them to review.
 
 How you speak:
-- One or two short sentences. Never more than 30 words.
-- Ask one question at a time. Calm, precise and curious, like a good museum guide or an editor. Not sentimental, not effusive, no therapy language.
-- Ask about concrete, visual details: what they saw, the light, the weather, the sounds, who was there, what was happening.
-- Don't tell them how they feel or comment on how meaningful something is.
-- No lists, no headings, no emoji, no markdown. Plain sentences only.
-- Never give travel advice, recommendations or facts about places. This is about their memory, not the destination.
-- Never invent details. Use only what they told you.
+- One or two short sentences, at most 35 words. Plain sentences only: no lists, headings, emoji or markdown.
+- Be genuinely interested in their life: respond to what they actually said, then ask one question that follows from it. Vary your questions; never run through a checklist.
+- Ask about concrete things they can picture: what they saw and heard, the weather, the light, who was there, what they did, what they bought or kept, the names of places.
+- Warm but understated. Don't gush, flatter or tell them how they feel. No therapy language.
+- They never have to answer. If they skip a question, change topic or say they're done, follow them.
+- Never give travel advice or facts about places. Never invent details, dates, names or places.
 
-When to plant:
-- Once they have shared a specific moment (a place plus at least one concrete detail), call plantMemory.
-- Write "moment" in their own words as much as you can, one short line.
-- "feeling" is one plain word for the moment, taken from what they said ("calm", "busy", "bright").
-- Weight: "light" for most memories, "tender" for quieter or more personal ones, "heavy" only for a memory they say matters a great deal.
-- Plant one memory per moment. Do not plant the same moment twice.
-- If a memory is clearly connected to one you planted earlier (the same person, a place they returned to, or a link they draw themselves), set echoes to that earlier place. The person decides whether to tie a red thread, so use it rarely.
-- After planting, confirm it in a few words, then ask about another place or moment.
+Drafting memories (draftMemory):
+- A long story usually holds several distinct memories: one per moment or scene (the walk in the rain, the bookstore, the café). Draft each one separately as soon as you have a place and at least one concrete detail. Don't wait for the end.
+- Use their own words. Put what they said about the moment in "moment" (one line) and, if there's more, "narrative".
+- If they correct or add to something you already drafted, call draftMemory again with "replaces" set to that draft's id, carrying over everything still true.
+- Mark anything they weren't sure about, or that you worked out (like a date from "last October"), in "unsure".
+- Suggest a connection ("related") only for a real, specific link to a memory in their garden or another draft: the same person, the same place, a place they returned to. The person decides.
+- Drafts are not saved until the person reviews them. Don't say a memory is "saved" or "planted"; at most mention that it's drafted for them to look over, and only now and then.
 
 Care:
-- If something painful comes up, acknowledge it briefly and plainly, do not probe, and let them choose whether to continue.
-- If they want to talk about something unrelated, briefly bring it back to places and moments.`;
+- If something painful comes up, acknowledge it simply, don't probe, and let them choose whether to go on.
+- If they want to talk about something unrelated, briefly bring it back to their memories.`;
 
-/** The tool writes straight to this person's garden, keyed by the call id so it is never planted twice. */
-const plantFor = (userId: string) =>
-  tool({
-    description:
-      'Plant one memory on the tree as a blossom. Call this once the person has shared a specific moment from a place.',
-    inputSchema: memorySchema,
-    execute: async (input, { toolCallId }) => {
-      await keep(userId, toolCallId, input, 'agent');
-      return { planted: true, id: toolCallId };
-    },
-  });
+const TRIP = `
+
+This conversation is about one trip. As soon as you know where they went (and when, if they say), call nameTrip once with a plain title like "Edinburgh, October 2025".
+Let the conversation move naturally through these, adapting to what they've already told you and skipping anything they've covered: where they went; when; who they were with; what they remember most; the places they visited; what surprised them; how it felt; the small details they still remember; anything they wish they had captured.
+When they seem finished, tell them in one short sentence that their memories are ready to review.`;
 
 function pickModel(): LanguageModel | null {
   if (process.env.WHATSTAYED_MOCK === '1') return mockModel();
@@ -62,59 +48,119 @@ function pickModel(): LanguageModel | null {
   return anthropic(process.env.WHATSTAYED_MODEL || 'claude-sonnet-5-5');
 }
 
+const fail = (error: string, status: number) => Response.json({ error }, { status });
+
+/** Older conversations planted directly; show those to the model as plain notes rather than as calls to a tool that no longer exists. */
+function legacyToText(messages: UIMessage[]) {
+  return messages.map((m) => ({
+    ...m,
+    parts: m.parts.map((p) => {
+      if (p.type !== 'tool-plantMemory') return p;
+      const input = (p as { input?: { place?: string; moment?: string } }).input;
+      return { type: 'text' as const, text: input ? `(Kept earlier: ${input.place} — ${input.moment})` : '(Kept a memory earlier.)' };
+    }),
+  })) as UIMessage[];
+}
+
 export async function POST(req: Request) {
   let user;
   try {
     user = await currentUser();
   } catch (e) {
-    if (e instanceof ConfigError) return Response.json({ error: e.message }, { status: 503 });
+    if (e instanceof ConfigError) return fail(e.message, 503);
     throw e;
   }
-  if (!user) return Response.json({ error: 'Please sign in.' }, { status: 401 });
+  if (!user) return fail('Please sign in.', 401);
   const origin = req.headers.get('origin');
-  if (origin && new URL(origin).host !== (req.headers.get('x-forwarded-host') || req.headers.get('host'))) {
-    return Response.json({ error: 'Not allowed.' }, { status: 403 });
-  }
+  if (origin && new URL(origin).host !== (req.headers.get('x-forwarded-host') || req.headers.get('host'))) return fail('Not allowed.', 403);
 
   const model = pickModel();
-  if (!model) {
-    return Response.json({ error: 'The garden is resting.' }, { status: 503 });
-  }
+  if (!model) return fail('The conversation isn’t available right now. You can still plant memories by hand.', 503);
 
-  let body: { messages?: UIMessage[] };
+  let body: { messages?: UIMessage[]; talkId?: string };
   try {
     body = await req.json();
   } catch {
-    return Response.json({ error: 'Bad request' }, { status: 400 });
+    return fail('Bad request', 400);
   }
-  const messages = Array.isArray(body.messages) ? body.messages.slice(-MAX_MESSAGES) : [];
-  if (!messages.length) return Response.json({ error: 'Nothing to remember yet' }, { status: 400 });
+  const talkId = typeof body.talkId === 'string' && /^[\w-]{1,80}$/.test(body.talkId) ? body.talkId : null;
+  if (!talkId) return fail('Which conversation is this?', 400);
+  let talk;
+  try {
+    talk = await ownTalk(user.id, talkId);
+  } catch {
+    return fail('That conversation isn’t here any more.', 404);
+  }
+  if (!(await allow(`talk:${user.id}`, LIMIT.turns, LIMIT.windowSec))) {
+    return fail('That’s a lot of conversation in a short time. Take a breath and try again in a few minutes.', 429);
+  }
 
-  // Trim anything overly long the person pasted in.
+  const messages = legacyToText(Array.isArray(body.messages) ? body.messages.slice(-MAX_MESSAGES) : []);
+  if (!messages.length) return fail('Nothing to remember yet', 400);
   for (const m of messages) {
     if (m.role !== 'user') continue;
-    for (const part of m.parts) {
-      if (part.type === 'text' && part.text.length > MAX_CHARS) part.text = part.text.slice(0, MAX_CHARS);
-    }
+    for (const part of m.parts) if (part.type === 'text' && part.text.length > MAX_CHARS) part.text = part.text.slice(0, MAX_CHARS);
   }
 
-  // The agent sees what is already planted (including memories added or edited by hand), so echoes stay honest.
-  const planted = await listMemories(user.id);
-  const known = planted.length
-    ? `\n\nAlready planted in this garden (place: moment):\n${planted
-        .slice(-30)
-        .map((m) => `- ${String(m.place)}: ${String(m.moment)}`)
-        .join('\n')}`
-    : '';
+  // What the agent may refer to: today's date, the garden, the people, and this conversation's drafts.
+  const uid = user.id;
+  const q = await db();
+  const [planted, people, drafts] = await Promise.all([
+    listMemories(uid),
+    q<{ name: string }>('select name from people where user_id=$1 order by lower(name) limit 80', [uid]),
+    listDrafts(uid, talkId),
+  ]);
+  const today = new Date().toISOString().slice(0, 10);
+  const ctx = [
+    `\n\nToday is ${today}.`,
+    planted.length
+      ? `Already in their garden (id | place | when | moment):\n${planted
+          .slice(-40)
+          .map((m) => `- ${m.id} | ${m.place} | ${m.when ?? m.date ?? ''} | ${m.moment}`)
+          .join('\n')}`
+      : 'Their garden is empty so far.',
+    people.length ? `People they keep: ${people.map((p) => p.name).join(', ')}.` : '',
+    drafts.length
+      ? `Drafted in this conversation (id | status | title | place):\n${drafts.map((d) => `- ${d.id} | ${d.status} | ${d.data.title} | ${d.data.place}`).join('\n')}`
+      : '',
+    talk.trip ? `This trip is titled "${talk.trip.title}".` : '',
+  ]
+    .filter(Boolean)
+    .join('\n');
+
+  const tools = {
+    draftMemory: tool({
+      description: 'Draft one distinct memory from the conversation for the person to review. Not saved until they confirm it.',
+      inputSchema: draftSchema,
+      execute: async (input, { toolCallId }) => {
+        const id = await upsertDraft(uid, talkId, toolCallId, input);
+        return { drafted: true, draftId: id };
+      },
+    }),
+    ...(talk.mode === 'trip'
+      ? {
+          nameTrip: tool({
+            description: 'Name the trip this conversation is about, once you know where (and if possible when) it was.',
+            inputSchema: tripSchema,
+            execute: async (input) => {
+              await nameTrip(uid, talkId, input);
+              return { named: true };
+            },
+          }),
+        }
+      : {}),
+  };
 
   const result = streamText({
     model,
-    system: SYSTEM + known,
+    system: SYSTEM + (talk.mode === 'trip' ? TRIP : '') + ctx,
     messages: convertToModelMessages(messages),
-    tools: { plantMemory: plantFor(user.id) },
-    stopWhen: stepCountIs(3),
-    maxOutputTokens: 300,
+    tools,
+    stopWhen: stepCountIs(6),
+    maxOutputTokens: 1200,
   });
 
-  return result.toUIMessageStreamResponse();
+  return result.toUIMessageStreamResponse({
+    onError: () => 'The reply didn’t come through. Nothing was lost — try again, or write the memory yourself.',
+  });
 }

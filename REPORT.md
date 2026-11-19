@@ -221,3 +221,47 @@ For your own use, neither blocks launch.
   - The tab bar and More sheet work.
   - Reduced motion holds the tree still.
   - All earlier suites still pass (186 checks).
+
+---
+
+## The conversational memory agent (November 19)
+
+**What changed:** the agent no longer saves anything by itself. It *drafts* memories as you talk, and nothing reaches the garden until you review it.
+
+- **Drafting:**
+  - One story can hold several memories, each drafted separately: title, moment and narrative (in your words), place, when (as you said it), the period as a date, people, sensory details, objects, and what you weren't sure of.
+  - Corrections replace the earlier draft instead of adding another.
+  - The agent is told today's date, the memories already in your garden, your people, and the drafts so far, so its suggestions refer to real things.
+- **Review:**
+  - Edit everything, see each place found on the map (OpenStreetMap, changeable), add or remove people (new ones are created only on save), and accept, edit or dismiss suggested red threads.
+  - Choose which drafts to keep: save all, save some, discard one or discard the whole draft.
+  - After saving you can attach photos straight away, and the newest memory opens on the tree.
+- **Trip mode** ("Tell it about a trip"):
+  - The agent names the trip once it knows where (and when).
+  - It follows a gentle arc (where, when, who, what you remember most, places, surprises, feelings, small details, what you wish you'd captured), adapting and skipping as you go.
+  - Saving creates the memories, a collection for the trip, and a page in the Archives with the trip in your own words, tied to each memory.
+- **The tree:**
+  - Drafts appear as closed buds while you talk and open into blossoms when saved.
+  - Memories from one trip grow near each other, and tied memories grow near their partner.
+  - Small marks show which blossoms have photos, a pin on the map, or a red thread.
+- **Conversations:**
+  - Every conversation is kept and listed: resume, start new, or delete (memories you saved from it stay).
+  - The full transcript is one tap away.
+  - Your earlier single conversation was moved into this list automatically.
+- **Voice:**
+  - Uses the browser's own speech recognition (Chrome, Edge, Safari), started only when you tap the microphone, after a plain explanation.
+  - Speech lands in the writing line to review before sending.
+  - What Stayed keeps no audio. In Chrome and Safari the browser maker transcribes it.
+  - Where it isn't supported, the microphone doesn't appear and typing works as before.
+- **Failure:** if a reply fails, the app says so (nothing is invented) and offers *Try again* or *Write it yourself*.
+- **Rate limits** (stored in Postgres, no new service): 40 agent replies per person every 10 minutes, and 8 failed sign-ins per email (30 per network address) every 15 minutes.
+- **Separation of facts:**
+  - Drafts live in their own table until confirmed.
+  - Saved memories record that they came from a conversation, which fields were uncertain, and the date's precision (year, month or day), so the Timeline never invents a day.
+- **Tested** (`tests/e2e/conversation.js`, 52 checks; `garden.js` rewritten for the review flow):
+  - All 14 acceptance steps, on desktop and phone.
+  - Corrections, connections, the trip page and collection.
+  - Voice (with a stand-in for the browser's recogniser), failure and retry, history, isolation between accounts, and both rate limits.
+  - Bug found and fixed: opening an older conversation from the list could save its words into the one you came from.
+- **Not tested here:** the real Claude model (tests use a scripted stand-in with the same tools), real speech recognition, and the deployed site.
+

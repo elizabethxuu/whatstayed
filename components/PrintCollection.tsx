@@ -125,7 +125,7 @@ export default function PrintCollection() {
             return (
               <section key={'m' + m.id} className="pd-item">
                 <p className="pd-k">{[loc ? locLine(loc) : m.place, m.when || (m.date ? dateOf(new Date(m.date + 'T12:00:00').getTime()) : '')].filter(Boolean).join(' · ')}</p>
-                <p className="pd-moment">“{m.moment}”</p>
+                <p className="pd-moment">{m.moment}</p>
                 <p className="pd-sub">
                   {m.feeling}
                   {ppl.length ? ` · with ${ppl.map((p) => p.name).join(', ')}` : ''}

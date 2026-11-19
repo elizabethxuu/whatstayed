@@ -193,7 +193,7 @@ function CollectionPage({ c, onGone }: { c: Collection; onGone: () => void }) {
                 <li key={'m' + it.m!.id}>
                   <p className="pl-where">{snap.locations[it.m!.id] ? placeTitle(snap.locations[it.m!.id]) : it.m!.place}{it.m!.when ? ` · ${it.m!.when}` : ''}</p>
                   <Link href={`/?m=${encodeURIComponent(it.m!.id)}`} className="pl-moment as-link">
-                    “{it.m!.moment}”
+                    {it.m!.moment}
                   </Link>
                   <button type="button" className="untie" onClick={() => store.removeFromCollection(c.id, 'memory', it.m!.id)}>
                     take out

@@ -6,12 +6,13 @@
  * One store per page render (React context), so nothing is ever shared between people.
  */
 import { createContext, useContext, useState, useSyncExternalStore, type ReactNode } from 'react';
+import type { MemoryExtra, TalkSummary } from './draft';
 import type { Memory, Kept } from './memory';
-export type MemoryInput = Memory & { date?: string };
+export type MemoryInput = Memory & { date?: string; title?: string; narrative?: string; extra?: MemoryExtra };
 import type { Loc, Thread } from './places';
 import type { Entry } from './archive';
 
-export type Stored = Kept & { origin: 'agent' | 'you'; createdAt: number; updatedAt: number; date?: string };
+export type Stored = Kept & { origin: 'agent' | 'you'; createdAt: number; updatedAt: number; date?: string; extra?: MemoryExtra };
 export type Page = Entry & { location?: Loc };
 export type Person = { id: string; name: string; relation?: string; description?: string; notes?: string; createdAt: number; updatedAt: number };
 export type PersonInput = { name: string; relation?: string; description?: string; notes?: string };
@@ -48,7 +49,27 @@ export type Snapshot = {
   threads: Thread[];
   dismissed: string[];
   media: Media[];
+  talks: TalkSummary[];
 };
+
+export type ReviewItem = {
+  draftId: string;
+  title: string;
+  moment: string;
+  narrative?: string;
+  place: string;
+  when?: string;
+  date?: string;
+  feeling?: string;
+  weight: 'light' | 'tender' | 'heavy';
+  people: { name: string; personId?: string }[];
+  senses: string[];
+  objects: string[];
+  unsure: string[];
+  location?: Loc | null;
+  connections: { to: string; note?: string }[];
+};
+export type ReviewInput = { items: ReviewItem[]; trip?: { title: string; collection: boolean; narrative?: string } };
 
 export type Toast = { id: number; text: string; kind: 'ok' | 'error' };
 
@@ -379,11 +400,41 @@ function createStore(initial: Snapshot) {
         return true;
       }, 'Removed.'),
 
+    /* conversations */
+    newTalk: (mode: 'free' | 'trip') =>
+      attempt(async () => {
+        const { talk } = await api<{ talk: TalkSummary }>('/api/talks', { method: 'POST', json: { mode } });
+        set((s) => ({ ...s, talks: [talk, ...s.talks] }));
+        return talk;
+      }),
+    deleteTalk: (id: string) =>
+      attempt(async () => {
+        await api(`/api/talks/${encodeURIComponent(id)}`, { method: 'DELETE' });
+        set((s) => ({ ...s, talks: s.talks.filter((t) => t.id !== id) }));
+        return true;
+      }, 'Conversation deleted. Memories saved from it stay in the garden.'),
+    /** Save the reviewed memories. Returns what was made, or undefined (with a notice) on failure. */
+    reviewSave: (talkId: string, input: ReviewInput) =>
+      attempt(async () => {
+        const r = await api<{ made: { draftId: string; memoryId: string }[]; collectionId?: string; entryId?: string }>(
+          `/api/talks/${encodeURIComponent(talkId)}/review`,
+          { method: 'POST', json: input },
+        );
+        await refresh();
+        return r;
+      }),
+    discardDrafts: (talkId: string, ids?: string[]) =>
+      attempt(async () => {
+        await api(`/api/talks/${encodeURIComponent(talkId)}/discard`, { method: 'POST', json: { ids } });
+        refresh().catch(() => {});
+        return true;
+      }, ids?.length === 1 ? 'Draft discarded.' : 'Drafts discarded.'),
+
     /* the garden as a whole */
     clearGarden: () =>
       attempt(async () => {
         await api('/api/garden/clear', { method: 'POST' });
-        set((s) => ({ ...s, memories: [], locations: {}, threads: [], dismissed: [], media: s.media.filter((m) => m.ownerType !== 'memory') }));
+        set((s) => ({ ...s, memories: [], locations: {}, threads: [], dismissed: [], talks: [], media: s.media.filter((m) => m.ownerType !== 'memory') }));
         refresh().catch(() => {});
         return true;
       }, 'Garden cleared.'),

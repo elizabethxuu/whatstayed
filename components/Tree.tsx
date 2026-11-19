@@ -4,11 +4,19 @@ import { CSSProperties, memo, useEffect, useMemo, useRef } from 'react';
 import { growTree, VIEW, type Limb as LimbT } from '@/lib/tree';
 import type { Memory } from '@/lib/memory';
 
+type Mark = { photo?: boolean; place?: boolean; linked?: boolean };
+
 type Props = {
   memories: Memory[];
   threads: readonly (readonly [number, number])[];
   selected: number | null;
   onSelect: (i: number | null) => void;
+  /** drafts waiting for review: shown as closed buds, never as blossoms */
+  buds?: number;
+  /** subtle marks: has photographs, is on the map, is tied to another memory */
+  marks?: Mark[];
+  /** grow memory i near memory anchors[i] (same trip, or tied together) */
+  anchors?: (number | null)[];
 };
 
 const PETALS = [0, 72, 144, 216, 288];
@@ -46,7 +54,7 @@ function trunkPath(n: LimbT) {
 /** how much each limb sways, in degrees: trunk still, twigs freer */
 const SWAY = [0, 0.22, 0.4, 0.62, 0.9, 1.25, 1.6, 1.9];
 
-function Tree({ memories, threads, selected, onSelect }: Props) {
+function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors }: Props) {
   const { root, tips } = useMemo(() => growTree(), []);
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -59,15 +67,55 @@ function Tree({ memories, threads, selected, onSelect }: Props) {
     if (!waits.current.has(i)) waits.current.set(i, Math.max(0, OPEN - age + 0.35 + i * 0.22));
   });
 
-  // which limb tip carries which memories
-  const byLimb = useMemo(() => {
-    const m = new Map<number, number[]>();
+  // Which limb tip carries which memory. Each memory takes the next free tip across the crown,
+  // unless it belongs near another (the same trip, or a red thread): then the nearest free tip to that one.
+  // Earlier memories never move when later ones arrive.
+  const anchorKey = (anchors ?? []).join(',');
+  const { byLimb, budTips } = useMemo(() => {
+    const slot: number[] = [];
+    const used = new Map<number, number>();
+    const take = (want: number | null) => {
+      let best = -1;
+      if (want !== null) {
+        const a = tips[want];
+        let d = Infinity;
+        tips.forEach((t, k) => {
+          if (used.has(k)) return;
+          const dd = (t.x - a.x) ** 2 + (t.y - a.y) ** 2;
+          if (dd < d) {
+            d = dd;
+            best = k;
+          }
+        });
+      }
+      if (best < 0) best = tips.findIndex((_, k) => !used.has(k));
+      if (best < 0) {
+        // more memories than tips: share the least crowded
+        let min = Infinity;
+        tips.forEach((_, k) => {
+          if ((used.get(k) ?? 0) < min) {
+            min = used.get(k) ?? 0;
+            best = k;
+          }
+        });
+      }
+      used.set(best, (used.get(best) ?? 0) + 1);
+      return best;
+    };
     memories.forEach((_, i) => {
-      const t = tips[i % tips.length];
-      m.set(t.limb, [...(m.get(t.limb) || []), i]);
+      const a = anchors?.[i];
+      slot[i] = take(a !== null && a !== undefined && a < i ? slot[a] : null);
     });
-    return m;
-  }, [memories, tips]);
+    const m = new Map<number, number[]>();
+    slot.forEach((k, i) => m.set(tips[k].limb, [...(m.get(tips[k].limb) || []), i]));
+    const b = new Map<number, number>();
+    for (let j = 0; j < Math.min(buds, 12); j++) {
+      const k = take(null);
+      b.set(tips[k].limb, (b.get(tips[k].limb) ?? 0) + 1);
+    }
+    return { byLimb: m, budTips: b };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [memories, tips, anchorKey, buds]);
 
 
 
@@ -146,7 +194,21 @@ function Tree({ memories, threads, selected, onSelect }: Props) {
             <circle cy={-9.5 - hash(i + a) * 3} r="1.1" />
           </g>
         ))}
+        {marks?.[i]?.photo && <circle className="mk mk-photo" cx="17" cy="21" r="1.7" />}
+        {marks?.[i]?.place && <circle className="mk mk-place" cx="-19" cy="19" r="1.5" />}
+        {marks?.[i]?.linked && <circle className="mk mk-linked" cx="0" cy="27" r="1.5" />}
         {isSel && <circle className="sel-ring" r="38" />}
+      </g>
+    );
+  }
+
+  /** a drafted memory waiting for review: a small closed bud, breathing slowly */
+  function bud(key: string, x: number, y: number, angle: number) {
+    const tilt = (angle * 180) / Math.PI + 90;
+    return (
+      <g key={key} className="bud-draft" transform={`translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${tilt.toFixed(0)}) scale(1.45)`} aria-hidden="true">
+        <path d="M0 0 C -4.2 -3.2, -4.4 -10, 0 -14 C 4.4 -10, 4.2 -3.2, 0 0 Z" />
+        <path className="bud-sepal" d="M0 0 C -2.6 -1.6, -3.4 -4.4, -2.2 -6.2 M0 0 C 2.6 -1.6, 3.4 -4.4, 2.2 -6.2" />
       </g>
     );
   }
@@ -163,7 +225,7 @@ function Tree({ memories, threads, selected, onSelect }: Props) {
           animationDelay: `${(-wave - hash(n.id + 2) * 4).toFixed(2)}s`,
         } as CSSProperties)
       : undefined;
-    const carries = byLimb.get(n.id);
+    const carries = byLimb.get(n.id) ?? (budTips.has(n.id) ? [] : undefined);
     if (n.later !== undefined) {
       return (
         <path
@@ -212,6 +274,7 @@ function Tree({ memories, threads, selected, onSelect }: Props) {
           />
         )}
         {carries?.map((i, k) => blossom(i, n.x2 + k * 10, n.y2 - k * 8, n.angle))}
+        {Array.from({ length: budTips.get(n.id) ?? 0 }).map((_, k) => bud(`bud${n.id}-${k}`, n.x2 - k * 7, n.y2 + k * 5, n.angle))}
       </g>
     );
   }
@@ -222,7 +285,7 @@ function Tree({ memories, threads, selected, onSelect }: Props) {
       className="tree"
       viewBox={`0 0 ${VIEW.w} ${VIEW.h}`}
       role="img"
-      aria-label={`A tree with ${memories.length} ${memories.length === 1 ? 'blossom' : 'blossoms'}`}
+      aria-label={`A tree with ${memories.length} ${memories.length === 1 ? 'blossom' : 'blossoms'}${buds ? `, and ${buds} ${buds === 1 ? 'bud' : 'buds'} waiting for review` : ''}`}
     >
       <defs>
         {/* almost-white, translucent petals; only a meaningful (heavy) memory carries a breath of the red */}

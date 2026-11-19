@@ -384,7 +384,7 @@ function Page({ id, entry, onClose }: { id: string; entry: Stored | null; onClos
                   <span className="pl-tie-line" aria-hidden="true" />
                   <span className="pl-tie-body">
                     <span className="pl-tie-place">{snap.locations[m.id] ? placeTitle(snap.locations[m.id]) : m.place}</span>
-                    <span className="pl-tie-moment">“{m.moment}”</span>
+                    <span className="pl-tie-moment">{m.moment}</span>
                     {note && <span className="pl-tie-note">{note}</span>}
                   </span>
                   <ThreadNote note={note} label={m.place} onSave={(n) => store.link({ kind: 'entry-memory', a: id, b: m.id, note: n }, true)} />

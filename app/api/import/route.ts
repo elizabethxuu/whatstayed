@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { db } from '@/lib/server/db';
-import { entryInput, getConversation, locInput, memoryInput, saveConversation } from '@/lib/server/data';
+import { entryInput, locInput, memoryInput } from '@/lib/server/data';
+import { db as _db } from '@/lib/server/db';
 import { body, json, withUser } from '@/lib/server/http';
 import { extractMemories } from '@/lib/memory';
 
@@ -40,7 +41,13 @@ export const POST = withUser(async (req, user) => {
     );
     n.memories += r.length;
   }
-  if (p.messages.length && !(await getConversation(u)).length) await saveConversation(u, p.messages);
+  if (p.messages.length) {
+    const qq = await _db();
+    await qq(
+      `insert into talks (user_id, id, title, messages) values ($1, 'talk-imported', 'Earlier conversation', $2::jsonb) on conflict do nothing`,
+      [u, JSON.stringify(p.messages)],
+    );
+  }
 
   for (const e of p.entries) {
     const ok = entryInput.safeParse(e);

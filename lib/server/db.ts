@@ -147,7 +147,42 @@ create table if not exists milestones (
   note text,
   created_at timestamptz not null default now(),
   primary key (user_id, id)
-)
+);
+alter table memories add column if not exists extra jsonb;
+create table if not exists talks (
+  user_id uuid not null references users(id) on delete cascade,
+  id text not null,
+  title text not null default '',
+  mode text not null default 'free',
+  trip jsonb,
+  messages jsonb not null default '[]'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  primary key (user_id, id)
+);
+create table if not exists drafts (
+  user_id uuid not null references users(id) on delete cascade,
+  id text not null,
+  talk_id text not null,
+  data jsonb not null,
+  status text not null default 'draft',
+  memory_id text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  primary key (user_id, id)
+);
+create index if not exists drafts_talk on drafts(user_id, talk_id);
+create table if not exists rate_hits (
+  key text not null,
+  bucket bigint not null,
+  count integer not null default 0,
+  primary key (key, bucket)
+);
+insert into talks (user_id, id, title, messages, created_at, updated_at)
+  select user_id, 'talk-first', 'Earlier conversation', messages, updated_at, updated_at from conversations
+  where jsonb_array_length(messages) > 0
+  on conflict do nothing;
+update conversations set messages = '[]'::jsonb where jsonb_array_length(messages) > 0
 `;
 
 type G = typeof globalThis & { __wsdb?: Promise<Query> };

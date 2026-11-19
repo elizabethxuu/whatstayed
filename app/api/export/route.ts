@@ -1,4 +1,5 @@
-import { getConversation, state } from '@/lib/server/data';
+import { state } from '@/lib/server/data';
+import { getTalk, listTalks } from '@/lib/server/talk';
 import { json, withUser } from '@/lib/server/http';
 import { tzOffset } from '@/lib/server/auth';
 
@@ -11,6 +12,9 @@ export const GET = withUser(async (_req, user) => {
     exportedAt: new Date().toISOString(),
     account: { email: user.email },
     ...s,
-    conversation: await getConversation(user.id),
+    conversations: await Promise.all((await listTalks(user.id)).map(async (t) => {
+      const { messages, drafts } = await getTalk(user.id, t.id);
+      return { ...t, messages, drafts };
+    })),
   });
 });

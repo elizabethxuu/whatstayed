@@ -191,7 +191,7 @@ function PersonPage({ person, onGone }: { person: Person; onGone: () => void }) 
                 <li key={m.id}>
                   <p className="pl-where">{snap.locations[m.id] ? placeTitle(snap.locations[m.id]) : m.place}</p>
                   <Link href={`/?m=${encodeURIComponent(m.id)}`} className="pl-moment as-link">
-                    “{m.moment}”
+                    {m.moment}
                   </Link>
                   <p className="card-meta">
                     {m.when ? <span>{m.when}</span> : null}

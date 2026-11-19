@@ -133,7 +133,7 @@ export default function Places() {
             </p>
             <ul>
               {sel.items.slice(0, 3).map(({ memory }) => (
-                <li key={memory.id}>“{memory.moment}”</li>
+                <li key={memory.id}>{memory.moment}</li>
               ))}
             </ul>
             <Link className="quiet strong" href={`/places?p=${encodeURIComponent(sel.key)}`}>
@@ -178,7 +178,7 @@ export default function Places() {
               {unplaced.map((m) => (
                 <li key={m.id} className="gz-row static">
                   <span className="gz-name">{m.place}</span>
-                  <span className="gz-moment">“{m.moment}”</span>
+                  <span className="gz-moment">{m.moment}</span>
                   <button type="button" className="quiet" onClick={() => setEditing({ kind: 'place', id: m.id })}>
                     Add a place
                   </button>
@@ -264,7 +264,7 @@ function PlacePage({
             <p className="pl-where">
               {[loc.name !== g.title ? loc.name : null, loc.neighborhood].filter(Boolean).join(' · ') || locLine(loc)}
             </p>
-            <blockquote className="pl-moment">“{memory.moment}”</blockquote>
+            <blockquote className="pl-moment">{memory.moment}</blockquote>
             <p className="card-meta">
               {memory.when ? <span>{memory.when}</span> : null}
               <span>{memory.feeling}</span>
@@ -314,7 +314,7 @@ function PlacePage({
                   ) : (
                     <span className="pl-tie-place">{other ? 'Here, too' : mThere.place}</span>
                   )}
-                  <span className="pl-tie-moment">“{mThere.moment}”</span>
+                  <span className="pl-tie-moment">{mThere.moment}</span>
                   {t.note && <span className="pl-tie-note">{t.note}</span>}
                 </span>
                 <ThreadNote note={t.note} label={mThere.place} onSave={(n) => places.updateThread(t.id, n)} />
@@ -327,7 +327,7 @@ function PlacePage({
           {pending.map((p) => (
             <div key={p.key} className="card-suggest">
               <p>
-                “{p.memory.moment.length > 50 ? p.memory.moment.slice(0, 48) + '…' : p.memory.moment}” might connect to {p.other.place}
+                {p.memory.moment.length > 50 ? p.memory.moment.slice(0, 48) + '…' : p.memory.moment} might connect to {p.other.place}
                 {p.because ? `: ${p.because}` : ''}. Tie them?
               </p>
               <button type="button" className="quiet" onClick={() => places.tie(p.memory.id, p.other.id, 'suggested', p.because)}>

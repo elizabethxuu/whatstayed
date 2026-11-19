@@ -14,6 +14,7 @@ type Item = {
   cat: Cat;
   t: number;
   dated: boolean; // false when we only know when it was kept, not when it happened
+  precision?: 'year' | 'month' | 'day';
   title: string;
   sub?: string;
   href?: string;
@@ -55,8 +56,9 @@ export default function Timeline() {
         cat: 'memory',
         t: m.date ? local(m.date) : m.createdAt,
         dated: !!m.date,
-        title: `“${m.moment}”`,
-        sub: [m.when, m.feeling].filter(Boolean).join(' · '),
+        precision: m.extra?.precision,
+        title: m.extra?.title ? `${m.extra.title}. ${m.moment}` : m.moment,
+        sub: [m.when, m.feeling, m.extra?.trip?.title].filter(Boolean).join(' · '),
         href: `/?m=${encodeURIComponent(m.id)}`,
         place: loc ? placeTitle(loc) + (loc.country && loc.country !== placeTitle(loc) ? `, ${loc.country}` : '') : m.place,
         people: peopleOf(snap, 'memory-person', m.id),
@@ -225,7 +227,7 @@ export default function Timeline() {
                         <li key={i.key} className={`tl-item c-${i.cat}`}>
                           <span className="tl-dot" aria-hidden="true" />
                           <p className="tl-when">
-                            {i.dated ? dayLabel(i.t) : `Added ${dayLabel(i.t)}`}
+                            {!i.dated ? `Added ${dayLabel(i.t)}` : i.precision === 'year' ? 'Sometime that year' : i.precision === 'month' ? new Date(i.t).toLocaleDateString('en-US', { month: 'long' }) : dayLabel(i.t)}
                             <span> · {i.cat === 'memory' ? 'Memory' : i.cat === 'entry' ? 'Page' : i.cat === 'milestone' ? 'An important day' : 'Letter'}</span>
                             {i.place ? <span> · {i.place}</span> : null}
                           </p>

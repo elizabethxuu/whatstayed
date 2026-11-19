@@ -11,8 +11,9 @@ const c=await b.newContext({viewport:{width:1440,height:900},deviceScaleFactor:2
 const p=await c.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
 const st=()=>A.state(p);
 await p.goto(B+'/');await p.waitForTimeout(3000);ok('no map lookups on load',osm.length===0);
-const say=async t=>{await p.fill('#say',t);await p.keyboard.press('Enter');await p.waitForFunction(()=>!document.querySelector('.listening'),null,{timeout:15000});await p.waitForTimeout(1300)};
-await say('We went to Lisbon last spring.');await say('On the tram up to Alfama in Lisbon the bells were ringing and my mom held my hand.');
+// memories are planted directly here; drafting through conversation is tested in conversation.js
+const plant=async m=>{const id=await p.evaluate(async m=>(await (await fetch('/api/memories',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(m)})).json()).memory.id,m);await p.goto(B+'/?m='+id);await p.waitForSelector('.card');await p.waitForTimeout(600);return id};
+await plant({place:'Lisbon',moment:'On the tram up to Alfama the bells were ringing and my mom held my hand',feeling:'held',weight:'tender'});
 ok('new memory opens with "Add a place"',await p.isVisible('.card >> text=Add a place'));
 ok('location optional: memory exists unplaced',Object.keys((await st()).locations).length===0);
 // A. search
@@ -25,11 +26,11 @@ await p.click('text=Save place');await p.waitForTimeout(300);
 let s=await st();let L=Object.values(s.locations)[0];ok('saved with coords + venue + neighborhood',!!L&&L.lat>38&&L.name==='Tram 28'&&L.neighborhood==='Alfama'&&L.city==='Lisbon',JSON.stringify(L));
 ok('card shows place line',/Tram 28, Alfama, Lisbon, Portugal/.test(await p.textContent('.card-loc')));
 // B. manual only
-await say('Then we drove to the coast.');await say('At sunset in Sintra we ate grilled sardines and laughed until we cried.');
+await plant({place:'Sintra',moment:'At sunset we ate grilled sardines and laughed until we cried',feeling:'free',weight:'light'});
 await p.click('.card >> text=Add a place');await p.fill('.loc-fields label:nth-child(1) input','Praia da Adraga');await p.fill('.loc-fields label:nth-child(3) input','Sintra');await p.fill('.loc-fields label:nth-child(4) input','Portugal');await p.click('text=Save place');await p.waitForTimeout(300);
 s=await st();ok('manual entry saved without coords',Object.values(s.locations).some(l=>l.city==='Sintra'&&l.lat===undefined));
 // C. device location, with explanation first
-await say('My grandmother’s village.');await say('The last morning in Jiangmen she braided my hair and I knew I might not see her again.');
+await plant({place:'Jiangmen',moment:'The last morning she braided my hair and I knew I might not see her again',feeling:'held',weight:'heavy',echoes:'Lisbon',because:'both with family'});
 await p.click('.card >> text=Add a place');await p.click('text=Use where I am now');
 ok('explains before asking',await p.isVisible('.loc-ask')&&osm.filter(x=>x.startsWith('/reverse')).length===0);
 await p.click('text=Share once');await p.waitForTimeout(800);ok('reverse fills Jiangmen',(await p.inputValue('.loc-fields label:nth-child(3) input'))==='Jiangmen');await p.click('text=Save place');await p.waitForTimeout(300);

@@ -3,10 +3,14 @@
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { StoredDraft, TalkSummary } from '@/lib/draft';
+import { useDictation } from '@/lib/dictation';
+import Review from './Review';
+import Conversations from './Conversations';
 import Tree from './Tree';
 import Masthead from './Masthead';
 import { PREFILL_KEY } from '@/lib/archive';
-import { echoOf, extractMemories } from '@/lib/memory';
+import { echoOf } from '@/lib/memory';
 import { locLine, placeKey as placeKeyOf, placeTitle, suggestionKey, usePlaces } from '@/lib/places';
 import { api, pagesOfMemory, peopleOf, useStore, type Stored } from '@/lib/store';
 import { CollectionPicker, Names, PeoplePicker, pageTitle } from './Pickers';
@@ -28,50 +32,76 @@ function textOf(m?: UIMessage) {
     .trim();
 }
 
-export default function Garden({ initial }: { initial: UIMessage[] }) {
-  const { messages, sendMessage, status, error, setMessages, clearError } = useChat({
+type Open = { talk: TalkSummary; messages: unknown[]; drafts: StoredDraft[] } | null;
+
+const VOICE_OK = 'whatstayed:voice-explained';
+
+/** What the server said went wrong, in its own words when it gave some. */
+function reason(e?: Error) {
+  if (!e) return '';
+  try {
+    const j = JSON.parse(e.message);
+    if (j && typeof j.error === 'string') return j.error;
+  } catch {
+    /* not JSON */
+  }
+  return /fetch|network/i.test(e.message) ? 'You seem to be offline.' : '';
+}
+
+export default function Garden({ open }: { open: Open }) {
+  const [talk, setTalk] = useState<TalkSummary | null>(open?.talk ?? null);
+  const talkRef = useRef<string | null>(open?.talk.id ?? null);
+  const [drafts, setDrafts] = useState<StoredDraft[]>(open?.drafts ?? []);
+  const initial = useMemo(() => (open?.messages ?? []) as UIMessage[], [open]);
+  const { messages, sendMessage, status, error, clearError, regenerate } = useChat({
+    id: open?.talk.id ?? 'new',
     messages: initial,
-    transport: new DefaultChatTransport({ api: '/api/remember' }),
+    transport: new DefaultChatTransport({
+      api: '/api/remember',
+      prepareSendMessagesRequest: ({ messages: ms }) => ({ body: { messages: ms, talkId: talkRef.current } }),
+    }),
   });
   const [draft, setDraft] = useState('');
   const [snap, store] = useStore();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showLog, setShowLog] = useState(false);
+  const [showTalks, setShowTalks] = useState(false);
+  const [reviewing, setReviewing] = useState(false);
   const [hint, setHint] = useState('');
+  const [voiceAsk, setVoiceAsk] = useState(false);
+  const justSaved = useRef<string[]>([]);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const busy = status === 'submitted' || status === 'streaming';
+  const pending = drafts.filter((d) => d.status === 'draft');
 
-  // The conversation is kept in the account, a moment after each reply settles.
+  // The conversation is kept in the account a moment after each reply settles, and its drafts fetched again.
   const savedCount = useRef(initial.length);
-  const lastSaved = useRef(JSON.stringify(initial.map((m) => m.id)) + initial.length);
-  const saveConversation = useCallback(async (msgs: UIMessage[]) => {
-    const sig = JSON.stringify(msgs.map((m) => m.id)) + msgs.length;
-    if (sig === lastSaved.current) return;
-    try {
-      await api('/api/conversation', { method: 'PUT', json: { messages: msgs.slice(-400) } });
-      lastSaved.current = sig;
-      savedCount.current = msgs.length;
-    } catch (e) {
-      store.toast(e instanceof Error ? e.message : 'The conversation couldn’t be saved.', 'error');
-    }
-  }, [store]);
+  const syncTalk = useCallback(
+    async (msgs: UIMessage[]) => {
+      const id = talkRef.current;
+      if (!id) return;
+      try {
+        if (msgs.length !== savedCount.current) {
+          await api(`/api/talks/${encodeURIComponent(id)}`, { method: 'PUT', json: { messages: msgs.slice(-400) } });
+          savedCount.current = msgs.length;
+        }
+        const r = await api<{ talk: TalkSummary; drafts: StoredDraft[] }>(`/api/talks/${encodeURIComponent(id)}`);
+        setDrafts(r.drafts);
+        setTalk(r.talk);
+      } catch (e) {
+        store.toast(e instanceof Error ? e.message : 'The conversation couldn’t be saved.', 'error');
+      }
+    },
+    [store],
+  );
   useEffect(() => {
-    if (status === 'ready' && messages.length !== savedCount.current) saveConversation(messages);
-  }, [messages, status, saveConversation]);
+    if (status === 'ready' && messages.length && messages.length !== savedCount.current) syncTalk(messages);
+  }, [messages, status, syncTalk]);
 
-  // The agent plants straight into the account; when it has, fetch the garden again.
-  const planted = useMemo(() => extractMemories(messages as never).map((m) => m.id), [messages]);
-  const handled = useRef(new Set(planted)); // planted before this visit: never re-fetched, even if since let go
-  useEffect(() => {
-    if (status !== 'ready') return;
-    const fresh = planted.filter((id) => !handled.current.has(id));
-    if (!fresh.length) return;
-    fresh.forEach((id) => handled.current.add(id));
-    store
-      .refresh()
-      .then(() => setSelectedId(fresh[fresh.length - 1]))
-      .catch(() => store.toast('The memory was added, but the garden couldn’t refresh. Reload to see it.', 'error'));
-  }, [planted, status, store]);
+  const dictation = useDictation(
+    (text) => setDraft(text.slice(0, 2000)),
+    (msg) => store.toast(msg, 'error'),
+  );
 
   // /?m=<id> opens that memory (from People, the Timeline, search or a collection)
   useEffect(() => {
@@ -120,15 +150,52 @@ export default function Garden({ initial }: { initial: UIMessage[] }) {
       .filter((p): p is readonly [number, number] => p[0] !== undefined && p[1] !== undefined);
   }, [memories, places.store.threads]);
 
+  const story = useMemo(
+    () =>
+      messages
+        .filter((m) => m.role === 'user')
+        .map((m) => textOf(m))
+        .filter((t) => t && !/^(that['’]?s all|i['’]?m done|done|nothing else)\b/i.test(t))
+        .join('\n\n'),
+    [messages],
+  );
+  // subtle marks on each blossom, and where each one grows: near its trip, or near a memory it's tied to
+  const marks = useMemo(
+    () =>
+      memories.map((m) => ({
+        photo: snap.media.some((x) => x.ownerType === 'memory' && x.ownerId === m.id && x.kind === 'photo'),
+        place: !!places.store.locations[m.id]?.lat,
+        linked: places.store.threads.some((t) => t.a === m.id || t.b === m.id),
+      })),
+    [memories, snap.media, places.store],
+  );
+  const anchors = useMemo(
+    () =>
+      memories.map((m, i) => {
+        const trip = m.extra?.trip?.talkId;
+        if (trip) {
+          const j = memories.findIndex((o, k) => k < i && o.extra?.trip?.talkId === trip);
+          if (j >= 0) return j;
+        }
+        for (const t of places.store.threads) {
+          const other = t.a === m.id ? t.b : t.b === m.id ? t.a : null;
+          const j = other ? memories.findIndex((o, k) => k < i && o.id === other) : -1;
+          if (j >= 0) return j;
+        }
+        return null;
+      }),
+    [memories, places.store.threads],
+  );
   const lastAssistant = [...messages].reverse().find((m) => m.role === 'assistant' && textOf(m));
   const lastUser = [...messages].reverse().find((m) => m.role === 'user');
   const voice = lastAssistant ? textOf(lastAssistant) : '';
   const latestIsUser = messages.length > 0 && messages[messages.length - 1].role === 'user';
 
-  function submit(e?: FormEvent) {
+  async function submit(e?: FormEvent) {
     e?.preventDefault();
     const text = draft.trim();
     if (busy) return;
+    if (dictation.listening) dictation.stop();
     if (text.length < 2) {
       setHint(text ? 'Say a little more, even a few words.' : 'Write a few words first: a place, a moment.');
       inputRef.current?.focus();
@@ -136,22 +203,40 @@ export default function Garden({ initial }: { initial: UIMessage[] }) {
     }
     setHint('');
     clearError();
+    if (!talkRef.current) {
+      const made = await store.newTalk('free');
+      if (!made) return;
+      talkRef.current = made.id;
+      setTalk(made);
+      window.history.replaceState(null, '', `/?c=${encodeURIComponent(made.id)}`);
+    }
     sendMessage({ text });
     setDraft('');
     setSelectedId(null);
   }
 
+  async function startTalk(mode: 'free' | 'trip') {
+    const made = await store.newTalk(mode);
+    if (made) window.location.assign(`/?c=${encodeURIComponent(made.id)}`);
+  }
+
+  function toggleVoice() {
+    if (dictation.listening) return dictation.stop();
+    let explained = false;
+    try {
+      explained = !!localStorage.getItem(VOICE_OK);
+    } catch {
+      /* storage unavailable */
+    }
+    if (!explained) return setVoiceAsk(true);
+    dictation.start(draft);
+  }
+
   async function beginAgain() {
-    if (!window.confirm('Clear the tree, with its places, threads and photos? The Archives aren’t affected. This can’t be undone.')) return;
+    if (!window.confirm('Clear the whole garden: every memory, its places, threads and photos, and every conversation? The Archives aren’t affected. This can’t be undone.')) return;
     const ok = await store.clearGarden();
     if (!ok) return;
-    setMessages([]);
-    savedCount.current = 0;
-    lastSaved.current = '[]0';
-    handled.current = new Set();
-    setSelectedId(null);
-    setShowLog(false);
-    inputRef.current?.focus();
+    window.location.assign('/');
   }
 
   async function letGo() {
@@ -189,26 +274,29 @@ export default function Garden({ initial }: { initial: UIMessage[] }) {
   }, [memories, selected, sel, places.store]);
 
   return (
-    <main className={`garden${busy ? ' listening' : ''}`}>
+    <main className={`garden${busy ? ' listening' : ''}${messages.length || pending.length ? ' talking' : ''}`}>
       <h1 className="sr">What Stayed, the garden</h1>
       <Masthead room="garden">
+        <button
+          type="button"
+          className="quiet"
+          onClick={() => {
+            store.refresh().catch(() => {});
+            setShowTalks(true);
+          }}
+        >
+          Conversations
+        </button>
+        <button type="button" className="quiet" onClick={() => startTalk('trip')}>
+          Tell it about a trip
+        </button>
         <button type="button" className="quiet" onClick={() => setEditing('new')}>
           Plant by hand
         </button>
-        {messages.length > 0 && (
-          <button type="button" className="quiet" onClick={() => setShowLog((v) => !v)} aria-expanded={showLog}>
-            {showLog ? 'Close' : 'Conversation'}
-          </button>
-        )}
-        {(messages.length > 0 || memories.length > 0) && (
-          <button type="button" className="quiet" onClick={beginAgain}>
-            Begin again
-          </button>
-        )}
       </Masthead>
 
       <section className="stage">
-        <Tree memories={memories} threads={threads} selected={selected >= 0 ? selected : null} onSelect={setSelected} />
+        <Tree memories={memories} threads={threads} selected={selected >= 0 ? selected : null} onSelect={setSelected} buds={pending.length} marks={marks} anchors={anchors} />
         {memories.length > 0 && (
           <p className="fig" aria-hidden="true">
             Fig. {memories.length} · {memories.length === 1 ? 'one memory, kept' : `${memories.length} memories, kept`}
@@ -246,10 +334,17 @@ export default function Garden({ initial }: { initial: UIMessage[] }) {
             </button>
             <p className="card-no">No. {String(selected + 1).padStart(2, '0')}</p>
             <p className="card-place">{selLoc ? placeTitle(selLoc) : sel.place}</p>
-            <p className="card-moment">“{sel.moment}”</p>
+            {sel.extra?.title && <p className="card-title">{sel.extra.title}</p>}
+            <p className="card-moment">{sel.moment}</p>
+            {sel.extra?.narrative && <p className="card-narrative">{sel.extra.narrative}</p>}
+            {(sel.extra?.senses?.length || sel.extra?.objects?.length) ? (
+              <p className="card-details">{[...(sel.extra?.senses ?? []), ...(sel.extra?.objects ?? [])].join(' · ')}</p>
+            ) : null}
             <p className="card-meta">
               {sel.when ? <span>{sel.when}</span> : sel.date ? <span>{new Date(sel.date + 'T12:00:00').toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}</span> : null}
-              <span>{sel.feeling}</span>
+              {sel.extra?.unsure?.some((u) => u === 'when' || u === 'date') && <em className="unsure">not sure</em>}
+              {sel.feeling ? <span>{sel.feeling}</span> : null}
+              {sel.extra?.trip && <span>{sel.extra.trip.title}</span>}
             </p>
             <p className="card-with">
               {selPeople.length ? <>With <Names people={selPeople} />. </> : null}
@@ -333,16 +428,56 @@ export default function Garden({ initial }: { initial: UIMessage[] }) {
 
       <Revisits onOpen={(id) => setSelectedId(id)} />
       <section className="talk" aria-live="polite">
+        {(talk || pending.length > 0) && (
+          <p className="talk-head">
+            {talk && (
+              <span className="talk-name">
+                {talk.mode === 'trip' ? 'Trip · ' : ''}
+                {talk.trip?.title || talk.title || 'New conversation'}
+              </span>
+            )}
+            {messages.length > 0 && (
+              <button type="button" className="quiet" onClick={() => setShowLog((v) => !v)} aria-expanded={showLog}>
+                {showLog ? 'Hide the conversation' : 'The conversation'}
+              </button>
+            )}
+            {pending.length > 0 && (
+              <button type="button" className="review-go" onClick={() => setReviewing(true)}>
+                <span className="bud-dot" aria-hidden="true" />
+                Review {pending.length === 1 ? '1 memory' : `${pending.length} memories`}
+              </button>
+            )}
+          </p>
+        )}
         {messages.length === 0 ? (
           <div className="voice">
-            <p className="voice-line">Add a memory</p>
-            <p className="voice-sub">Name a place and a moment from it. It becomes a blossom on the tree.</p>
+            {talk?.mode === 'trip' ? (
+              <>
+                <p className="voice-line">Where did you go?</p>
+                <p className="voice-sub">Tell it about one trip in your own words. Skip anything, change the subject, or stop whenever you like.</p>
+              </>
+            ) : (
+              <>
+                <p className="voice-line">Add a memory</p>
+                <p className="voice-sub">Tell it about a place you’ve been, in your own words. Memories are drafted as you talk, and nothing is kept until you review it.</p>
+              </>
+            )}
           </div>
         ) : (
           <div className="voice">
             {lastUser && <p className="you">{textOf(lastUser)}</p>}
             {error ? (
-              <p className="voice-line rest">The garden is resting right now. Please try again in a little while.</p>
+              <div className="voice-fail" role="alert">
+                <p className="voice-line rest">The reply didn’t come through. {reason(error) || 'Nothing was lost.'}</p>
+                <p className="voice-fail-acts">
+                  <button type="button" className="quiet strong" onClick={() => { clearError(); regenerate(); }}>
+                    Try again
+                  </button>
+                  <button type="button" className="quiet" onClick={() => setEditing('new')}>
+                    Write it yourself
+                  </button>
+                </p>
+              </div>
             ) : busy && latestIsUser ? (
               <p className="listening" aria-label="Listening">
                 <i />
@@ -357,7 +492,7 @@ export default function Garden({ initial }: { initial: UIMessage[] }) {
           </div>
         )}
 
-        <form className="say" onSubmit={submit} noValidate>
+        <form className={`say${dictation.listening ? ' hearing' : ''}`} onSubmit={submit} noValidate>
           <label htmlFor="say" className="sr">
             Tell the garden a memory
           </label>
@@ -365,9 +500,9 @@ export default function Garden({ initial }: { initial: UIMessage[] }) {
             id="say"
             ref={inputRef}
             rows={1}
-            maxLength={1200}
+            maxLength={2000}
             value={draft}
-            placeholder={messages.length === 0 ? 'The night market in Taipei, the steam…' : 'Say a little more…'}
+            placeholder={dictation.listening ? 'Listening…' : messages.length === 0 ? (talk?.mode === 'trip' ? 'Edinburgh, last October…' : 'The night market in Taipei, the steam…') : 'Say a little more…'}
             required
             minLength={2}
             aria-required="true"
@@ -384,18 +519,57 @@ export default function Garden({ initial }: { initial: UIMessage[] }) {
               }
             }}
           />
+          {dictation.supported && (
+            <button
+              type="button"
+              className={`mic${dictation.listening ? ' on' : ''}`}
+              onClick={toggleVoice}
+              aria-pressed={dictation.listening}
+              aria-label={dictation.listening ? 'Stop listening' : 'Speak instead of typing'}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="9" y="3.5" width="6" height="11" rx="3" />
+                <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5" />
+              </svg>
+            </button>
+          )}
           <button type="submit" disabled={busy} aria-label="Send" className={draft.trim() ? 'ready' : ''}>
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M5 12h13M13 6l6 6-6 6" />
             </svg>
           </button>
         </form>
+        {voiceAsk && (
+          <div className="loc-ask voice-ask" role="group" aria-label="Speak instead of typing">
+            <p>
+              Your browser will ask to use the microphone and turn what you say into text in the writing line, for you to read and change before sending. What Stayed keeps no recording. In Chrome and Safari, the transcription is done by Google or Apple.
+            </p>
+            <button
+              type="button"
+              className="quiet strong"
+              onClick={() => {
+                try {
+                  localStorage.setItem(VOICE_OK, '1');
+                } catch {
+                  /* storage unavailable */
+                }
+                setVoiceAsk(false);
+                dictation.start(draft);
+              }}
+            >
+              Start speaking
+            </button>
+            <button type="button" className="quiet" onClick={() => setVoiceAsk(false)}>
+              Not now
+            </button>
+          </div>
+        )}
         {hint ? (
           <p className="hint" id="say-hint" role="alert">
             {hint}
           </p>
         ) : (
-          <p className="privacy">Private to your account.</p>
+          <p className="privacy">{dictation.listening ? 'Listening. Tap the microphone again to stop.' : 'Private to your account.'}</p>
         )}
       </section>
 
@@ -404,16 +578,51 @@ export default function Garden({ initial }: { initial: UIMessage[] }) {
           {messages.map((m) => {
             const t = textOf(m);
             const planted = m.parts.filter((p) => p.type === 'tool-plantMemory').length;
+            const drafted = m.parts
+              .filter((p) => p.type === 'tool-draftMemory')
+              .map((p) => ((p as { input?: { title?: string } }).input?.title ?? 'a memory'));
             return (
               <div key={m.id} className={`log-line ${m.role}`}>
                 {t && <p>{t}</p>}
                 {planted > 0 && <p className="log-planted">✿ planted</p>}
+                {drafted.map((d, k) => (
+                  <p key={k} className="log-planted">
+                    ✿ drafted: {d}
+                  </p>
+                ))}
               </div>
             );
           })}
         </aside>
       )}
 
+      {reviewing && talk && (
+        <Review
+          talk={talk}
+          drafts={drafts}
+          story={story}
+          onClose={() => {
+            setReviewing(false);
+            syncTalk(messages);
+            // after saving, the newest memory opens on the tree
+            const last = justSaved.current[justSaved.current.length - 1];
+            justSaved.current = [];
+            if (last) setSelectedId(last);
+          }}
+          onSaved={(ids) => {
+            justSaved.current = ids;
+            syncTalk(messages);
+          }}
+        />
+      )}
+      {showTalks && (
+        <Conversations
+          current={talk?.id}
+          onClose={() => setShowTalks(false)}
+          onNew={(mode) => startTalk(mode)}
+          onClearGarden={beginAgain}
+        />
+      )}
       {sel && editing === 'place' && (
         <LocationEditor
           memory={sel}
