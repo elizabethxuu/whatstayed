@@ -1,0 +1,198 @@
+# What Stayed — engineering and product report
+
+November 19, 2026. Covers the work done against the *Complete Product Build, Design & Engineering Brief*, in two phases (commits `03fb708` and the one that adds this file).
+
+---
+
+## A. Product audit: where it started
+
+**What existed**
+- **The Garden:** a conversation with a Claude agent (Vercel AI SDK). When you described a moment, its `plantMemory` tool added a blossom to a seeded, swaying SVG tree. There was a transcript, a memory card, and "Begin again".
+- **The Archives:** free-form journal pages with autosave, search, month grouping, delete, and a hand-off of a page into the garden conversation.
+- **Places:** an Equal Earth atlas (d3-geo + world-atlas, drawn locally) with optional memory locations, place pages, OpenStreetMap search, one-time geolocation behind an explanation, and red threads that existed only once the person approved them.
+
+**What was broken or not production-ready**
+- **No accounts and no database.** Everything (conversation, memories, pages, places, threads) lived in the browser's `localStorage`. Clearing the browser or switching devices lost it all, and it could never be multi-user.
+- **No way to add, edit or delete a memory by hand.** Memories existed only as tool calls inside the chat transcript, so a typo in a memory could never be fixed.
+- **No photographs or voice notes anywhere.**
+- **No People, Timeline, Collections, Letters, revisits, unified search or export.**
+- **No lint setup, no unit tests.** The browser test scripts lived outside the repo.
+
+---
+
+## B. What changed
+
+### Phase 1: a real app
+- **Accounts:** email and password sign-up and sign-in, sign out, 30-day sessions.
+- **Persistent Postgres storage** for everything, scoped to the signed-in person.
+- **Memories:** plant by hand, edit, and "let it go" (delete, along with its place, threads and media). The agent now writes its memories straight into the account.
+- **Photographs and voice notes** on memories and Archive pages:
+  - Photos are resized in the browser to at most 2000px.
+  - Voice notes record through the microphone only after a plain-language explanation, or you can upload an audio file.
+  - Both play back, open large (photos), and can be deleted.
+- **Red threads:** the reason for a thread can be added and edited.
+- **Archive pages can be re-dated.**
+- **One-time, opt-in import** of older browser-only data. Nothing moves unless the person says so; nothing already in the account is overwritten.
+- **Account page:**
+  - Real counts of what you've kept.
+  - A full `.zip` export: everything as JSON, plus every photo and recording.
+  - Sign out.
+  - Delete everything, which asks for the password again.
+  - A plain statement of what is and isn't true about your data's security.
+- **Honest "not connected" screen** when no database is configured, instead of pretending to save.
+
+### Phase 2: the rest of the brief
+- **People:**
+  - Profiles with name, relation, a line about them, photos, voice notes and private notes.
+  - Memories and pages connect to a person. "Who was there?" on every memory card.
+  - Each person's page lists their shared memories and pages.
+  - Removing a person keeps the memories; only the connection goes.
+- **Timeline:**
+  - Memories, pages, letters and "important days" (milestones you mark), newest year first, grouped by month.
+  - Filters by year, month, kind and person, with a count of what's showing.
+  - "On this day" at the top.
+- **The Archives:**
+  - Pages gain an optional place, people, and ties to memories (with a reason).
+  - New filters: by person and "with photographs".
+  - A memory card lists the pages written about it.
+  - Place pages list the pages written there.
+- **Collections:**
+  - Named groups of memories and pages, with a chosen cover photo (falls back to the first photo).
+  - **Export:** a printed edition you can "Print or save as PDF" (print styles: cover, one piece per page, an end page).
+  - **Export:** "Download as a web page", a single self-contained `.html` with the photos inside that opens offline and signed out.
+- **Letters to your future self:**
+  - Choose a date: in a year, 5 years, 10 years, or any future date.
+  - **A sealed letter's words never leave the server before its day**, not even to your own browser.
+  - On the day, the garden says a letter has arrived. You can choose to open one early.
+- **Revisits:** the garden quietly surfaces letters that have arrived, the same day in earlier years, and anniversaries. Each one opens its memory. Nothing is invented; all of it comes from dates you gave.
+- **Unified search:** across memories, pages, places, people (including their notes), collections and letters, with highlighting, grouped results and an honest empty state.
+- **Masthead:** the brand and two icons (search, account) on top; all seven rooms below. On a phone the room links scroll sideways and start with the current room in view.
+
+### Design
+- Every new room uses the existing language: ivory and mist grounds, Cormorant italic for anything personal, small tracked capitals for labels, the muted red reserved for threads.
+- No cards-in-grids dashboard. Lists are editorial: dates in the margin, years set large on the Timeline.
+- Notices are quiet one-line toasts. Errors are in the cherry tone and say what happened ("You seem to be offline. Nothing was changed.").
+- Fixed during QA:
+  - The phone memory card could climb over the masthead and hide "Plant by hand". It's now a bottom sheet that scrolls inside.
+  - Search used Chrome's bright-blue clear button and default link colours. Both are now restyled.
+
+### Backend
+- 15 tables (`lib/server/db.ts`), created automatically on first connection:
+  - users, sessions, conversations, memories, entries, locations, threads, dismissed, media
+  - people, links, collections, collection_items, letters, milestones
+- 33 API routes under `app/api/`. All take JSON (media uploads are multipart), all input is validated with zod, and every query is scoped to the signed-in user.
+
+---
+
+## C. Technical architecture
+
+| Layer | What it is |
+|---|---|
+| **Frontend** | Next.js 15 App Router, React 19, TypeScript. Each room is a server page that checks the session and loads the person's data, then renders client components. One client store per page (React context, never shared between requests) keeps a live copy and sends every change to the API. |
+| **Backend** | Next.js route handlers (`app/api/**`) on Vercel's Node runtime. Shared helpers: `withUser` (session, same-origin check, error mapping), zod schemas, and `lib/server/data.ts` + `lib/server/life.ts` for every query. |
+| **Database** | Postgres. In production: Neon via `DATABASE_URL` (or `POSTGRES_URL`), using `pg` with a small pool. Locally and in tests: PGlite, a real Postgres engine in-process (`.data/pglite`, or in memory), so dev and tests run the same SQL. |
+| **Authentication** | Email + password. scrypt hashes (N=16384, r=8, p=1, 16-byte salt). Sessions are 32 random bytes in an `httpOnly`, `SameSite=Lax` cookie (`Secure` in production); only a SHA-256 of the token is stored. Logging in to a missing account still runs a hash, so timing doesn't reveal which emails exist. |
+| **Storage** | Photos and recordings stored as `bytea` in the `media` table, served only to their owner with `Cache-Control: private` and `nosniff`. Allowed types: JPEG/PNG/WebP, and common audio types. 4 MB per file (Vercel's request limit is 4.5 MB). |
+| **External services** | **Anthropic** (the garden's replies; the key stays on the server). **OpenStreetMap Nominatim** for place search (free, no key; only called when you search). **Google Fonts** (Cormorant Garamond, Inter). The map itself is drawn locally. No paid services were added. |
+| **Deployment** | Vercel. Needs `ANTHROPIC_API_KEY` (already set) and a database: **Storage → Create Database → Neon (free) → connect to the project**, which sets `DATABASE_URL`. Then redeploy. Without a database the app shows a "not connected" screen instead of losing writes. |
+
+---
+
+## D. QA report
+
+All of these were run, in this environment, on the final code:
+
+| Check | Result |
+|---|---|
+| TypeScript (`npm run typecheck`) | **Pass**, no errors |
+| ESLint (`npm run lint`, next/core-web-vitals + next/typescript) | **Pass**, no errors or warnings |
+| Unit tests (`npm test`, node:test) | **5/5 pass**: zip writer, CRC32, memory echo logic, tool-call extraction, schema validation |
+| Production build (`npm run build`) | **Pass** (one warning from inside the AI SDK package, not this code) |
+| E2E: accounts and Phase 1 (`tests/e2e/accounts.js`) | **58/58 pass** |
+| E2E: People, Timeline, Collections, Letters, Search, export (`tests/e2e/life.js`) | **60/60 pass** |
+| E2E: garden regression (`garden.js`) | **9/9 pass** |
+| E2E: Archives regression (`archives.js`) | **23/23 pass** |
+| E2E: Places regression (`places.js`) | **36/36 pass** |
+
+**Total: 186 browser checks, 5 unit tests, 0 failures.** The suites are now in the repo; `npm run build && npm run e2e` runs them all, each on a fresh in-memory database.
+
+**The brief's 16 workflows**, each exercised end to end in a real browser:
+
+| # | Workflow | Covered by |
+|---|---|---|
+| 1 | Sign up and sign in | accounts.js (short-password refusal, wrong-password refusal, session cookie flags) |
+| 2–4 | Create a memory; it appears in the garden; edit and delete it | accounts.js (by hand and via the agent; edits and deletion persist after refresh) |
+| 5–6 | Journal entry; persists after refresh | accounts.js, archives.js (including a page written in the last second before leaving) |
+| 7 | Attach a photograph | accounts.js (memory and page), life.js (person) |
+| 8–9 | Add a location; it appears in Places | accounts.js, places.js |
+| 10–11 | Person profile; connect a memory to them | life.js |
+| 12 | Red thread, with a reason, edited | accounts.js, places.js |
+| 13 | Search for an old memory | life.js (finds it and opens it) |
+| 14 | Export a collection | life.js (PDF rendered; web page opened offline, signed out) and the full .zip in accounts.js |
+| 15–16 | Sign out, sign back in, everything intact | accounts.js, life.js |
+
+**Also tested:**
+- **Isolation:** a second account can't read, edit, delete or attach to the first one's memories, media, people, links or collections (all return 404).
+- **Errors:** offline save (says so; nothing is planted), required fields, past dates for letters, wrong password on account deletion.
+- **Layout:** phone (iPhone 13) and tablet layouts with no sideways scroll on every room.
+- **Accessibility and stability:** named controls on the Timeline; no page errors anywhere.
+
+**Bugs found and fixed during QA**
+- Phone: an open memory card could cover the masthead and its buttons.
+- Search: Chrome's blue clear button and default link colours.
+- Search: short pages showed their text twice.
+- On phones, the current room's link could start off-screen.
+- An agent memory you'd let go could trigger a refresh loop on each later reply.
+- Field errors in "Plant a memory" stayed visible after being fixed.
+- Voice notes overflowed narrow cards.
+- A server/browser render mismatch in the recorder.
+
+**Not tested here**
+- Against Neon itself. PGlite is real Postgres, but the production connection hasn't been exercised yet.
+- With the real Anthropic model. Tests use a scripted model so they're repeatable.
+- Real place search. OpenStreetMap is blocked from this environment, so tests use recorded answers.
+- Safari or Firefox (Chromium only).
+- A screen reader.
+
+---
+
+## E. Launch readiness
+
+**Ready**
+- Accounts, isolation and persistence for every feature.
+- Memories, Archives, Places, People, Timeline, Collections, Letters, revisits, search.
+- Photos and voice notes.
+- Export (.zip of everything, collection PDF and web page) and account deletion.
+- Reduced-motion support on the new animations.
+
+**Needs configuration (one step)**
+- Add Neon in Vercel → Storage, then redeploy. Until then the live site shows "The garden isn't connected yet."
+
+**Security, stated plainly**
+- **In place:**
+  - Hashed passwords and hashed session tokens.
+  - httpOnly cookies, and same-origin checks on every change.
+  - Per-user scoping on every query; validated input; type-checked uploads with size limits.
+  - The API key is server-only, and sealed letters are withheld server-side.
+- **Not in place:**
+  - **No rate limiting on sign-in**, so passwords can be guessed repeatedly.
+  - **No email verification or password reset.** A forgotten password currently means a lost account.
+  - **No app-level encryption at rest.** Data is encrypted in transit (HTTPS); at-rest encryption and backups are whatever the database provider's plan gives.
+
+**Remaining blockers before inviting other people**
+1. Password reset. It needs an email service, so it's a decision for you.
+2. Sign-in rate limiting.
+
+For your own use, neither blocks launch.
+
+---
+
+## F. Next steps, in priority order
+
+1. **Connect Neon and redeploy**, then do one pass on the live site: sign up, plant, add a photo, sign out and back in.
+2. **Sign-in rate limiting.** Small, no new service: count failed attempts per email and IP in Postgres.
+3. **Password reset by email.** Needs a sender. Resend's free tier would do; I'd want your OK before adding it.
+4. **Move photos and recordings out of Postgres** once the account grows (Vercel Blob or Cloudflare R2). The current limit is the free database size, not code.
+5. **Load data per room instead of the whole account per page.** It's fast at personal scale (hundreds of items) but should be paged at thousands.
+6. **The tree's next layer from the brief:** branches that represent people, places and periods, and hover hints on branches (today they're on blossoms).
+7. **Cross-browser pass** (Safari and Firefox) and a screen-reader pass.

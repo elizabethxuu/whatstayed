@@ -1,8 +1,21 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import RoomsScroll from './RoomsScroll';
+
+export type Room = 'garden' | 'archives' | 'places' | 'people' | 'timeline' | 'collections' | 'letters' | 'search' | 'account';
+
+const ROOMS: [Room, string, string][] = [
+  ['garden', '/', 'The Garden'],
+  ['archives', '/archives', 'The Archives'],
+  ['places', '/places', 'Places'],
+  ['people', '/people', 'People'],
+  ['timeline', '/timeline', 'Timeline'],
+  ['collections', '/collections', 'Collections'],
+  ['letters', '/letters', 'Letters'],
+];
 
 /** The quiet top line shared by every room. */
-export default function Masthead({ room, children }: { room: 'garden' | 'archives' | 'places' | 'account'; children?: ReactNode }) {
+export default function Masthead({ room, children }: { room: Room; children?: ReactNode }) {
   return (
     <header className="top">
       <div className="brand">
@@ -13,23 +26,28 @@ export default function Masthead({ room, children }: { room: 'garden' | 'archive
       </div>
       <div className="top-r">
         <nav className="rooms" aria-label="Rooms">
-          <Link href="/" className="quiet" aria-current={room === 'garden' ? 'page' : undefined}>
-            The Garden
-          </Link>
-          <Link href="/archives" className="quiet" aria-current={room === 'archives' ? 'page' : undefined}>
-            The Archives
-          </Link>
-          <Link href="/places" className="quiet" aria-current={room === 'places' ? 'page' : undefined}>
-            Places
-          </Link>
+          {ROOMS.map(([r, href, label]) => (
+            <Link key={r} href={href} className="quiet" aria-current={room === r ? 'page' : undefined}>
+              {label}
+            </Link>
+          ))}
+          <RoomsScroll />
         </nav>
         {children ? <div className="acts">{children}</div> : null}
-        <Link href="/account" className="quiet you-link" aria-current={room === 'account' ? 'page' : undefined} aria-label="Your account">
-          <svg viewBox="0 0 20 20" aria-hidden="true">
-            <circle cx="10" cy="7" r="3.2" />
-            <path d="M3.8 17c.9-3.3 3.3-5 6.2-5s5.3 1.7 6.2 5" />
-          </svg>
-        </Link>
+        <span className="top-icons">
+          <Link href="/search" className="quiet you-link" aria-current={room === 'search' ? 'page' : undefined} aria-label="Search everything">
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <circle cx="8.6" cy="8.6" r="5.2" />
+              <path d="M12.6 12.6l4.4 4.4" />
+            </svg>
+          </Link>
+          <Link href="/account" className="quiet you-link" aria-current={room === 'account' ? 'page' : undefined} aria-label="Your account">
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <circle cx="10" cy="7" r="3.2" />
+              <path d="M3.8 17c.9-3.3 3.3-5 6.2-5s5.3 1.7 6.2 5" />
+            </svg>
+          </Link>
+        </span>
       </div>
     </header>
   );

@@ -6,9 +6,11 @@ import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 're
 import Tree from './Tree';
 import Masthead from './Masthead';
 import { PREFILL_KEY } from '@/lib/archive';
-import { echoOf, extractMemories, type Kept } from '@/lib/memory';
+import { echoOf, extractMemories } from '@/lib/memory';
 import { locLine, placeKey as placeKeyOf, placeTitle, suggestionKey, usePlaces } from '@/lib/places';
-import { api, useStore } from '@/lib/store';
+import { api, pagesOfMemory, peopleOf, useStore, type Stored } from '@/lib/store';
+import { CollectionPicker, Names, PeoplePicker, pageTitle } from './Pickers';
+import Revisits from './Revisits';
 import LocationEditor from './LocationEditor';
 import ThreadPicker from './ThreadPicker';
 import MemoryEditor from './MemoryEditor';
@@ -71,6 +73,15 @@ export default function Garden({ initial }: { initial: UIMessage[] }) {
       .catch(() => store.toast('The new memory was planted, but the garden couldn’t refresh. Reload to see it.', 'error'));
   }, [planted, status, store]);
 
+  // /?m=<id> opens that memory (from People, the Timeline, search or a collection)
+  useEffect(() => {
+    const m = new URLSearchParams(window.location.search).get('m');
+    if (m) {
+      setSelectedId(m);
+      window.history.replaceState(null, '', '/');
+    }
+  }, []);
+
   // A page carried over from the Archives lands in the writing line, unsent.
   useEffect(() => {
     try {
@@ -95,9 +106,9 @@ export default function Garden({ initial }: { initial: UIMessage[] }) {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  const memories: Kept[] = snap.memories;
+  const memories: Stored[] = snap.memories;
   const places = usePlaces();
-  const [editing, setEditing] = useState<'place' | 'tie' | 'memory' | 'new' | null>(null);
+  const [editing, setEditing] = useState<'place' | 'tie' | 'memory' | 'new' | 'people' | 'collect' | null>(null);
   const selected = selectedId ? memories.findIndex((m) => m.id === selectedId) : -1;
   const setSelected = useCallback((i: number | null) => setSelectedId(i === null ? null : memories[i]?.id ?? null), [memories]);
 
@@ -151,6 +162,8 @@ export default function Garden({ initial }: { initial: UIMessage[] }) {
   }
 
   const sel = selected >= 0 ? memories[selected] : null;
+  const selPeople = sel ? peopleOf(snap, 'memory-person', sel.id) : [];
+  const selPages = sel ? pagesOfMemory(snap, sel.id) : [];
   const selLoc = sel ? places.store.locations[sel.id] : undefined;
   const selTies = sel
     ? places.store.threads
@@ -235,8 +248,14 @@ export default function Garden({ initial }: { initial: UIMessage[] }) {
             <p className="card-place">{selLoc ? placeTitle(selLoc) : sel.place}</p>
             <p className="card-moment">“{sel.moment}”</p>
             <p className="card-meta">
-              {sel.when ? <span>{sel.when}</span> : null}
+              {sel.when ? <span>{sel.when}</span> : sel.date ? <span>{new Date(sel.date + 'T12:00:00').toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}</span> : null}
               <span>{sel.feeling}</span>
+            </p>
+            <p className="card-with">
+              {selPeople.length ? <>With <Names people={selPeople} />. </> : null}
+              <button type="button" className="quiet" onClick={() => setEditing('people')}>
+                {selPeople.length ? 'Who else' : 'Who was there?'}
+              </button>
             </p>
             <p className="card-links card-tend">
               <button type="button" className="quiet" onClick={() => setEditing('memory')}>
@@ -247,6 +266,12 @@ export default function Garden({ initial }: { initial: UIMessage[] }) {
               </button>
             </p>
             <MediaShelf key={sel.id} owner={{ type: 'memory', id: sel.id }} compact />
+            {selPages.map(({ e, note }) => (
+              <p key={e.id} className="card-thread">
+                Written about: <Link href={`/archives?e=${encodeURIComponent(e.id)}`}>{pageTitle(e)}</Link>
+                {note ? ` · ${note}` : ''}
+              </p>
+            ))}
             <div className="card-where">
               {selLoc ? (
                 <>
@@ -292,15 +317,21 @@ export default function Garden({ initial }: { initial: UIMessage[] }) {
                 </button>
               </div>
             )}
-            {memories.length > 1 && (
-              <button type="button" className="quiet card-tie" onClick={() => setEditing('tie')}>
-                Tie a red thread…
+            <p className="card-links card-more">
+              {memories.length > 1 && (
+                <button type="button" className="quiet" onClick={() => setEditing('tie')}>
+                  Tie a red thread…
+                </button>
+              )}
+              <button type="button" className="quiet" onClick={() => setEditing('collect')}>
+                Keep in a collection…
               </button>
-            )}
+            </p>
           </aside>
         )}
       </section>
 
+      <Revisits onOpen={(id) => setSelectedId(id)} />
       <section className="talk" aria-live="polite">
         {messages.length === 0 ? (
           <div className="voice">
@@ -413,6 +444,15 @@ export default function Garden({ initial }: { initial: UIMessage[] }) {
         />
       )}
       {sel && editing === 'memory' && <MemoryEditor memory={sel} onClose={() => setEditing(null)} onSave={(m) => store.updateMemory(sel.id, m)} />}
+      {sel && editing === 'people' && (
+        <PeoplePicker
+          kicker={`For “${sel.moment.length > 50 ? sel.moment.slice(0, 48) + '…' : sel.moment}”`}
+          chosen={selPeople.map((p) => p.id)}
+          onToggle={(pid, on) => (on ? store.link({ kind: 'memory-person', a: sel.id, b: pid }, true) : store.unlink({ kind: 'memory-person', a: sel.id, b: pid }))}
+          onClose={() => setEditing(null)}
+        />
+      )}
+      {sel && editing === 'collect' && <CollectionPicker kind="memory" id={sel.id} onClose={() => setEditing(null)} />}
       {sel && editing === 'tie' && (
         <ThreadPicker
           from={sel}

@@ -2,10 +2,11 @@
 
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import type { Memory } from '@/lib/memory';
+import type { MemoryInput } from '@/lib/store';
 
 type Props = {
-  memory?: Memory; // editing when given
-  onSave: (m: Memory) => Promise<unknown>;
+  memory?: MemoryInput; // editing when given
+  onSave: (m: MemoryInput) => Promise<unknown>;
   onClose: () => void;
 };
 
@@ -21,6 +22,7 @@ export default function MemoryEditor({ memory, onSave, onClose }: Props) {
   const [when, setWhen] = useState(memory?.when ?? '');
   const [moment, setMoment] = useState(memory?.moment ?? '');
   const [feeling, setFeeling] = useState(memory?.feeling ?? '');
+  const [date, setDate] = useState(memory?.date ?? '');
   const [weight, setWeight] = useState<Memory['weight']>(memory?.weight ?? 'tender');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
@@ -48,6 +50,7 @@ export default function MemoryEditor({ memory, onSave, onClose }: Props) {
       moment: moment.trim(),
       feeling: feeling.trim(),
       weight,
+      date: date || undefined,
       echoes: memory?.echoes,
       because: memory?.because,
     });
@@ -90,6 +93,10 @@ export default function MemoryEditor({ memory, onSave, onClose }: Props) {
           <label>
             <span>When (optional)</span>
             <input maxLength={60} value={when} onChange={(e) => setWhen(e.target.value)} placeholder="Summer 2019" />
+          </label>
+          <label>
+            <span>On a day (optional)</span>
+            <input type="date" value={date} max="9999-12-31" onChange={(e) => setDate(e.target.value)} />
           </label>
           <label>
             <span>How it felt</span>

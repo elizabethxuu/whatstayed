@@ -2,10 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { locateOnce, locLine, reversePlace, searchPlaces, type Loc } from '@/lib/places';
-import type { Kept } from '@/lib/memory';
 
 type Props = {
-  memory: Kept;
+  memory: { moment: string; place: string };
   current?: Loc;
   onSave: (loc: Loc) => void;
   onRemove?: () => void;

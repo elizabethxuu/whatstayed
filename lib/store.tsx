@@ -7,14 +7,26 @@
  */
 import { createContext, useContext, useState, useSyncExternalStore, type ReactNode } from 'react';
 import type { Memory, Kept } from './memory';
+export type MemoryInput = Memory & { date?: string };
 import type { Loc, Thread } from './places';
 import type { Entry } from './archive';
 
-export type Stored = Kept & { origin: 'agent' | 'you'; createdAt: number; updatedAt: number };
+export type Stored = Kept & { origin: 'agent' | 'you'; createdAt: number; updatedAt: number; date?: string };
+export type Page = Entry & { location?: Loc };
+export type Person = { id: string; name: string; relation?: string; description?: string; notes?: string; createdAt: number; updatedAt: number };
+export type PersonInput = { name: string; relation?: string; description?: string; notes?: string };
+export type LinkKind = 'memory-person' | 'entry-person' | 'entry-memory';
+export type Link = { kind: LinkKind; a: string; b: string; note?: string };
+export type Collection = { id: string; name: string; description?: string; cover?: string; createdAt: number; updatedAt: number };
+export type CollectionInput = { name: string; description?: string; cover?: string | null };
+export type CollectionItem = { collectionId: string; kind: 'memory' | 'entry'; id: string; position: number };
+export type Letter = { id: string; openOn: string; writtenAt: number; openedAt?: number; body?: string; sealed: boolean };
+export type Milestone = { id: string; title: string; onDate: string; note?: string };
+export type MilestoneInput = { title: string; onDate: string; note?: string };
 
 export type Media = {
   id: string;
-  ownerType: 'memory' | 'entry';
+  ownerType: 'memory' | 'entry' | 'person';
   ownerId: string;
   kind: 'photo' | 'voice';
   mime: string;
@@ -25,7 +37,13 @@ export type Media = {
 
 export type Snapshot = {
   memories: Stored[];
-  entries: Entry[];
+  entries: Page[];
+  people: Person[];
+  links: Link[];
+  collections: Collection[];
+  collectionItems: CollectionItem[];
+  letters: Letter[];
+  milestones: Milestone[];
   locations: Record<string, Loc>;
   threads: Thread[];
   dismissed: string[];
@@ -117,13 +135,13 @@ function createStore(initial: Snapshot) {
     refresh,
 
     /* memories */
-    createMemory: (m: Memory) =>
+    createMemory: (m: MemoryInput) =>
       attempt(async () => {
         const { memory } = await api<{ memory: Stored }>('/api/memories', { method: 'POST', json: m });
         set((s) => ({ ...s, memories: [...s.memories, memory] }));
         return memory;
       }, 'Planted.'),
-    updateMemory: (id: string, m: Memory) =>
+    updateMemory: (id: string, m: MemoryInput) =>
       attempt(async () => {
         const { memory } = await api<{ memory: Stored }>(`/api/memories/${encodeURIComponent(id)}`, { method: 'PATCH', json: m });
         set((s) => ({ ...s, memories: s.memories.map((x) => (x.id === id ? memory : x)) }));
@@ -143,6 +161,7 @@ function createStore(initial: Snapshot) {
             media: s.media.filter((x) => !(x.ownerType === 'memory' && x.ownerId === id)),
           };
         });
+        refresh().catch(() => {});
         return true;
       }, 'The memory has been let go.'),
 
@@ -193,10 +212,10 @@ function createStore(initial: Snapshot) {
     /* archives */
     saveEntry: async (e: { id: string; body: string; createdAt: number }) => {
       // no toast: the page shows its own quiet save state
-      const { entry } = await api<{ entry: Entry | null }>(`/api/entries/${encodeURIComponent(e.id)}`, { method: 'PUT', json: e });
+      const { entry } = await api<{ entry: Page | null }>(`/api/entries/${encodeURIComponent(e.id)}`, { method: 'PUT', json: e });
       set((s) => ({
         ...s,
-        entries: entry ? [...without(s.entries, e.id), entry] : without(s.entries, e.id),
+        entries: entry ? [...without(s.entries, e.id), { ...entry, location: s.entries.find((x) => x.id === e.id)?.location }] : without(s.entries, e.id),
         media: entry ? s.media : s.media.filter((m) => !(m.ownerType === 'entry' && m.ownerId === e.id)),
       }));
       return entry;
@@ -214,6 +233,7 @@ function createStore(initial: Snapshot) {
       attempt(async () => {
         await api(`/api/entries/${encodeURIComponent(id)}`, { method: 'DELETE' });
         set((s) => ({ ...s, entries: without(s.entries, id), media: s.media.filter((m) => !(m.ownerType === 'entry' && m.ownerId === id)) }));
+        refresh().catch(() => {});
         return true;
       }, 'The page is gone.'),
 
@@ -237,11 +257,134 @@ function createStore(initial: Snapshot) {
         return true;
       }, 'Removed.'),
 
+    setEntryLocation: (id: string, loc: Loc | null) =>
+      attempt(async () => {
+        await api(`/api/entries/${encodeURIComponent(id)}/location`, loc ? { method: 'PUT', json: loc } : { method: 'DELETE' });
+        set((s) => ({ ...s, entries: s.entries.map((e) => (e.id === id ? { ...e, location: loc ?? undefined } : e)) }));
+        return true;
+      }, loc ? 'Place saved.' : 'Place removed.'),
+
+    /* people */
+    createPerson: (p: PersonInput) =>
+      attempt(async () => {
+        const { person } = await api<{ person: Person }>('/api/people', { method: 'POST', json: p });
+        set((s) => ({ ...s, people: [...s.people, person].sort((a, b) => a.name.localeCompare(b.name)) }));
+        return person;
+      }, 'Added.'),
+    updatePerson: (id: string, p: PersonInput) =>
+      attempt(async () => {
+        const { person } = await api<{ person: Person }>(`/api/people/${encodeURIComponent(id)}`, { method: 'PATCH', json: p });
+        set((s) => ({ ...s, people: s.people.map((x) => (x.id === id ? person : x)) }));
+        return person;
+      }, 'Saved.'),
+    deletePerson: (id: string) =>
+      attempt(async () => {
+        await api(`/api/people/${encodeURIComponent(id)}`, { method: 'DELETE' });
+        set((s) => ({
+          ...s,
+          people: without(s.people, id),
+          links: s.links.filter((l) => !(l.kind !== 'entry-memory' && l.b === id)),
+          media: s.media.filter((m) => !(m.ownerType === 'person' && m.ownerId === id)),
+        }));
+        return true;
+      }, 'Removed. Their memories stay.'),
+
+    /* links */
+    link: (l: Link, quiet = false) =>
+      attempt(async () => {
+        await api('/api/links', { method: 'POST', json: l });
+        set((s) => ({ ...s, links: [...s.links.filter((x) => !(x.kind === l.kind && x.a === l.a && x.b === l.b)), l] }));
+        return true;
+      }, quiet ? undefined : 'Connected.'),
+    unlink: (l: Omit<Link, 'note'>) =>
+      attempt(async () => {
+        set((s) => ({ ...s, links: s.links.filter((x) => !(x.kind === l.kind && x.a === l.a && x.b === l.b)) }));
+        await api('/api/links', { method: 'DELETE', json: l });
+        return true;
+      }),
+
+    /* collections */
+    createCollection: (c: CollectionInput) =>
+      attempt(async () => {
+        const { collection } = await api<{ collection: Collection }>('/api/collections', { method: 'POST', json: c });
+        set((s) => ({ ...s, collections: [...s.collections, collection] }));
+        return collection;
+      }, 'Collection made.'),
+    updateCollection: (id: string, c: CollectionInput) =>
+      attempt(async () => {
+        const { collection } = await api<{ collection: Collection }>(`/api/collections/${encodeURIComponent(id)}`, { method: 'PATCH', json: c });
+        set((s) => ({ ...s, collections: s.collections.map((x) => (x.id === id ? collection : x)) }));
+        return collection;
+      }, 'Saved.'),
+    deleteCollection: (id: string) =>
+      attempt(async () => {
+        await api(`/api/collections/${encodeURIComponent(id)}`, { method: 'DELETE' });
+        set((s) => ({ ...s, collections: without(s.collections, id), collectionItems: s.collectionItems.filter((i) => i.collectionId !== id) }));
+        return true;
+      }, 'Collection removed. Everything in it stays.'),
+    addToCollection: (cid: string, kind: CollectionItem['kind'], id: string) =>
+      attempt(async () => {
+        await api(`/api/collections/${encodeURIComponent(cid)}/items`, { method: 'POST', json: { kind, id } });
+        set((s) => {
+          if (s.collectionItems.some((i) => i.collectionId === cid && i.kind === kind && i.id === id)) return s;
+          const pos = Math.max(-1, ...s.collectionItems.filter((i) => i.collectionId === cid).map((i) => i.position)) + 1;
+          return { ...s, collectionItems: [...s.collectionItems, { collectionId: cid, kind, id, position: pos }] };
+        });
+        return true;
+      }, 'Added to the collection.'),
+    removeFromCollection: (cid: string, kind: CollectionItem['kind'], id: string) =>
+      attempt(async () => {
+        set((s) => ({ ...s, collectionItems: s.collectionItems.filter((i) => !(i.collectionId === cid && i.kind === kind && i.id === id)) }));
+        await api(`/api/collections/${encodeURIComponent(cid)}/items`, { method: 'DELETE', json: { kind, id } });
+        return true;
+      }),
+
+    /* letters */
+    writeLetter: (body: string, openOn: string) =>
+      attempt(async () => {
+        const { letters } = await api<{ letters: Letter[] }>('/api/letters', { method: 'POST', json: { body, openOn } });
+        set((s) => ({ ...s, letters }));
+        return true;
+      }, 'Sealed. It will wait for you.'),
+    openLetter: (id: string) =>
+      attempt(async () => {
+        const { letters } = await api<{ letters: Letter[] }>(`/api/letters/${encodeURIComponent(id)}`, { method: 'POST' });
+        set((s) => ({ ...s, letters }));
+        return true;
+      }),
+    deleteLetter: (id: string) =>
+      attempt(async () => {
+        await api(`/api/letters/${encodeURIComponent(id)}`, { method: 'DELETE' });
+        set((s) => ({ ...s, letters: without(s.letters, id) }));
+        return true;
+      }, 'The letter is gone.'),
+
+    /* milestones */
+    addMilestone: (m: MilestoneInput) =>
+      attempt(async () => {
+        const { id } = await api<{ id: string }>('/api/milestones', { method: 'POST', json: m });
+        set((s) => ({ ...s, milestones: [...s.milestones, { id, ...m }].sort((a, b) => a.onDate.localeCompare(b.onDate)) }));
+        return id;
+      }, 'Marked.'),
+    updateMilestone: (id: string, m: MilestoneInput) =>
+      attempt(async () => {
+        await api(`/api/milestones/${encodeURIComponent(id)}`, { method: 'PATCH', json: m });
+        set((s) => ({ ...s, milestones: s.milestones.map((x) => (x.id === id ? { id, ...m } : x)).sort((a, b) => a.onDate.localeCompare(b.onDate)) }));
+        return true;
+      }, 'Saved.'),
+    deleteMilestone: (id: string) =>
+      attempt(async () => {
+        await api(`/api/milestones/${encodeURIComponent(id)}`, { method: 'DELETE' });
+        set((s) => ({ ...s, milestones: without(s.milestones, id) }));
+        return true;
+      }, 'Removed.'),
+
     /* the garden as a whole */
     clearGarden: () =>
       attempt(async () => {
         await api('/api/garden/clear', { method: 'POST' });
         set((s) => ({ ...s, memories: [], locations: {}, threads: [], dismissed: [], media: s.media.filter((m) => m.ownerType !== 'memory') }));
+        refresh().catch(() => {});
         return true;
       }, 'The garden is clear. Your Archives stay.'),
   };
@@ -275,5 +418,25 @@ export function useToasts(): Toast[] {
 }
 
 export const mediaUrl = (id: string) => `/api/media/${id}`;
+
+/* ---------- reading the snapshot ---------- */
+
+export const peopleOf = (snap: Snapshot, kind: 'memory-person' | 'entry-person', id: string) =>
+  snap.links.filter((l) => l.kind === kind && l.a === id).map((l) => snap.people.find((p) => p.id === l.b)).filter((p): p is Person => !!p);
+export const memoriesOfPerson = (snap: Snapshot, pid: string) =>
+  snap.links.filter((l) => l.kind === 'memory-person' && l.b === pid).map((l) => snap.memories.find((m) => m.id === l.a)).filter((m): m is Stored => !!m);
+export const pagesOfPerson = (snap: Snapshot, pid: string) =>
+  snap.links.filter((l) => l.kind === 'entry-person' && l.b === pid).map((l) => snap.entries.find((e) => e.id === l.a)).filter((e): e is Page => !!e);
+export const memoriesOfPage = (snap: Snapshot, eid: string) =>
+  snap.links.filter((l) => l.kind === 'entry-memory' && l.a === eid).map((l) => ({ m: snap.memories.find((m) => m.id === l.b), note: l.note })).filter((x): x is { m: Stored; note: string | undefined } => !!x.m);
+export const pagesOfMemory = (snap: Snapshot, mid: string) =>
+  snap.links.filter((l) => l.kind === 'entry-memory' && l.b === mid).map((l) => ({ e: snap.entries.find((e) => e.id === l.a), note: l.note })).filter((x): x is { e: Page; note: string | undefined } => !!x.e);
+export const itemsOf = (snap: Snapshot, cid: string) =>
+  snap.collectionItems
+    .filter((i) => i.collectionId === cid)
+    .sort((a, b) => a.position - b.position)
+    .map((i) => (i.kind === 'memory' ? { kind: 'memory' as const, m: snap.memories.find((m) => m.id === i.id) } : { kind: 'entry' as const, e: snap.entries.find((e) => e.id === i.id) }))
+    .filter((x) => ('m' in x ? !!x.m : !!x.e));
+export const firstPhoto = (snap: Snapshot, type: Media['ownerType'], id: string) => snap.media.find((m) => m.ownerType === type && m.ownerId === id && m.kind === 'photo');
 export const mediaFor = (snap: Snapshot, type: Media['ownerType'], id: string) =>
   snap.media.filter((m) => m.ownerType === type && m.ownerId === id);

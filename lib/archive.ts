@@ -21,7 +21,7 @@ export function newId() {
 }
 
 /** Newest first. */
-export function sortEntries(entries: Entry[]) {
+export function sortEntries<T extends Entry>(entries: T[]): T[] {
   return [...entries].sort((a, b) => b.createdAt - a.createdAt);
 }
 

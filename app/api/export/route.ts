@@ -1,9 +1,10 @@
 import { getConversation, state } from '@/lib/server/data';
 import { json, withUser } from '@/lib/server/http';
+import { tzOffset } from '@/lib/server/auth';
 
 /** Everything this person has kept, as plain JSON. Files are listed here and fetched one by one. */
 export const GET = withUser(async (_req, user) => {
-  const s = await state(user.id);
+  const s = await state(user.id, await tzOffset());
   return json({
     format: 'whatstayed-export',
     version: 1,

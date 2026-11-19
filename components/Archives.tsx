@@ -3,8 +3,12 @@
 import { useRouter } from 'next/navigation';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Masthead from './Masthead';
-import { fmt, newId, PREFILL_KEY, sortEntries, type Entry } from '@/lib/archive';
-import { useStore } from '@/lib/store';
+import { fmt, newId, PREFILL_KEY, sortEntries } from '@/lib/archive';
+import { memoriesOfPage, peopleOf, useStore, type Page as Stored } from '@/lib/store';
+import { locLine, placeTitle } from '@/lib/places';
+import LocationEditor from './LocationEditor';
+import ThreadNote from './ThreadNote';
+import { CollectionPicker, ItemPicker, Names, PeoplePicker, pageTitle } from './Pickers';
 import MediaShelf from './MediaShelf';
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'failed';
@@ -14,6 +18,15 @@ export default function Archives() {
   const entries = snap.entries;
   const [openId, setOpenId] = useState<string | null>(null);
   const [query, setQuery] = useState('');
+
+  // /archives?e=<id> opens that page directly (from the garden, a person, the timeline or search)
+  useEffect(() => {
+    const e = new URLSearchParams(window.location.search).get('e');
+    if (e) {
+      setOpenId(e);
+      window.history.replaceState(null, '', '/archives');
+    }
+  }, []);
 
   const open = openId ? entries.find((e) => e.id === openId) ?? null : null;
 
@@ -51,19 +64,32 @@ function Collection({
   setQuery,
   onOpen,
 }: {
-  entries: Entry[];
+  entries: Stored[];
   query: string;
   setQuery: (q: string) => void;
   onOpen: (id: string) => void;
 }) {
+  const [snap] = useStore();
+  const [who, setWho] = useState('');
+  const [has, setHas] = useState<'' | 'photo' | 'voice' | 'place' | 'memory'>('');
   const q = query.trim();
-  const shown = useMemo(
-    () => sortEntries(entries).filter((e) => !q || e.body.toLowerCase().includes(q.toLowerCase())),
-    [entries, q],
-  );
+  const shown = useMemo(() => {
+    const withPerson = who ? new Set(snap.links.filter((l) => l.kind === 'entry-person' && l.b === who).map((l) => l.a)) : null;
+    const media = (kind: string) => new Set(snap.media.filter((m) => m.ownerType === 'entry' && m.kind === kind).map((m) => m.ownerId));
+    const filt =
+      has === 'photo' ? media('photo') : has === 'voice' ? media('voice') : has === 'memory' ? new Set(snap.links.filter((l) => l.kind === 'entry-memory').map((l) => l.a)) : null;
+    return sortEntries(entries).filter(
+      (e) =>
+        (!q || e.body.toLowerCase().includes(q.toLowerCase()) || (e.location && locLine(e.location).toLowerCase().includes(q.toLowerCase()))) &&
+        (!withPerson || withPerson.has(e.id)) &&
+        (!filt || filt.has(e.id)) &&
+        (has !== 'place' || !!e.location),
+    );
+  }, [entries, q, who, has, snap.links, snap.media]);
+  const filtering = !!(q || who || has);
 
   // group by month, like sections of a journal
-  const months: { label: string; items: Entry[] }[] = [];
+  const months: { label: string; items: Stored[] }[] = [];
   for (const e of shown) {
     const label = fmt.month(e.createdAt);
     const last = months[months.length - 1];
@@ -95,15 +121,38 @@ function Collection({
               spellCheck={false}
             />
           </label>
+          <label className="arc-filter">
+            <span className="sr">Pages with</span>
+            <select value={has} onChange={(e) => setHas(e.target.value as typeof has)}>
+              <option value="">Every page</option>
+              <option value="photo">With photographs</option>
+              <option value="voice">With voice notes</option>
+              <option value="place">With a place</option>
+              <option value="memory">Tied to a memory</option>
+            </select>
+          </label>
+          {snap.people.length > 0 && (
+            <label className="arc-filter">
+              <span className="sr">With someone</span>
+              <select value={who} onChange={(e) => setWho(e.target.value)}>
+                <option value="">With anyone</option>
+                {snap.people.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    With {p.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <span className="arc-count">
-            {q ? `${shown.length} of ${entries.length}` : entries.length} {entries.length === 1 ? 'page' : 'pages'}
+            {filtering ? `${shown.length} of ${entries.length}` : entries.length} {entries.length === 1 ? 'page' : 'pages'}
           </span>
         </div>
       )}
 
       <section className="pages" aria-label="Your pages">
         {entries.length === 0 && <p className="quiet-note">Nothing here yet. Even the smallest thought deserves a place.</p>}
-        {entries.length > 0 && shown.length === 0 && <p className="quiet-note">Nothing you’ve written matches “{q}”.</p>}
+        {entries.length > 0 && shown.length === 0 && <p className="quiet-note">{q ? `Nothing you’ve written matches “${q}”.` : 'No pages like that yet.'}</p>}
         {months.map((m) => (
           <div key={m.label} className="month">
             <h2 className="month-label">{m.label}</h2>
@@ -114,6 +163,7 @@ function Collection({
                     <span className="leaf-date">
                       {fmt.short(e.createdAt)} <i>·</i> {fmt.time(e.createdAt)}
                       {e.updatedAt - e.createdAt > 60_000 ? <em> · revised</em> : null}
+                      {e.location ? <em> · {placeTitle(e.location)}</em> : null}
                     </span>
                     <span className="leaf-body">
                       <Highlight text={excerpt(e.body, q)} q={q} />
@@ -131,7 +181,8 @@ function Collection({
 
 /* ---------- a single page ---------- */
 
-function Page({ id, entry, onClose }: { id: string; entry: Entry | null; onClose: () => void }) {
+function Page({ id, entry, onClose }: { id: string; entry: Stored | null; onClose: () => void }) {
+  const [sheet, setSheet] = useState<'place' | 'people' | 'memories' | 'collect' | null>(null);
   const router = useRouter();
   const [snap, store] = useStore();
   const [body, setBody] = useState(entry?.body ?? '');
@@ -194,7 +245,7 @@ function Page({ id, entry, onClose }: { id: string; entry: Entry | null; onClose
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !document.querySelector('.loc-veil')) close();
+      if (e.key === 'Escape' && !document.querySelector('.loc-veil') && !sheet) close();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -305,8 +356,93 @@ function Page({ id, entry, onClose }: { id: string; entry: Entry | null; onClose
           <MediaShelf owner={{ type: 'entry', id }} />
         </div>
       ) : (
-        <p className="page-media-wait">Write a few words and you can add photographs and voice notes to this page.</p>
+        <p className="page-media-wait">Write a few words and you can add photographs, voice notes, people and places to this page.</p>
       )}
+
+      {saved && (
+        <section className="page-ties" aria-label="What this page is tied to">
+          <p>
+            <span className="page-k">Where</span>
+            {saved.location ? <span>{locLine(saved.location)}</span> : <span className="names-empty">Nowhere in particular</span>}
+            <button type="button" className="quiet" onClick={() => setSheet('place')}>
+              {saved.location ? 'Change' : 'Add a place'}
+            </button>
+          </p>
+          <p>
+            <span className="page-k">With</span>
+            <Names people={peopleOf(snap, 'entry-person', id)} empty="No one yet" />
+            <button type="button" className="quiet" onClick={() => setSheet('people')}>
+              {peopleOf(snap, 'entry-person', id).length ? 'Who else' : 'Add someone'}
+            </button>
+          </p>
+          <div className="page-threads">
+            <span className="page-k">Tied to</span>
+            {memoriesOfPage(snap, id).length === 0 && <span className="names-empty">No memory yet</span>}
+            <ul>
+              {memoriesOfPage(snap, id).map(({ m, note }) => (
+                <li key={m.id} className="pl-tie">
+                  <span className="pl-tie-line" aria-hidden="true" />
+                  <span className="pl-tie-body">
+                    <span className="pl-tie-place">{snap.locations[m.id] ? placeTitle(snap.locations[m.id]) : m.place}</span>
+                    <span className="pl-tie-moment">“{m.moment}”</span>
+                    {note && <span className="pl-tie-note">{note}</span>}
+                  </span>
+                  <ThreadNote note={note} label={m.place} onSave={(n) => store.link({ kind: 'entry-memory', a: id, b: m.id, note: n }, true)} />
+                  <button type="button" className="untie" onClick={() => store.unlink({ kind: 'entry-memory', a: id, b: m.id })}>
+                    untie
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <p className="page-tie-acts">
+              <button type="button" className="quiet" onClick={() => setSheet('memories')} disabled={!snap.memories.length} title={snap.memories.length ? undefined : 'Plant a memory in the garden first'}>
+                Tie to a memory…
+              </button>
+              <button type="button" className="quiet" onClick={() => setSheet('collect')}>
+                Keep in a collection…
+              </button>
+            </p>
+          </div>
+        </section>
+      )}
+      {saved && sheet === 'place' && (
+        <LocationEditor
+          memory={{ moment: pageTitle(saved), place: '' }}
+          current={saved.location}
+          onClose={() => setSheet(null)}
+          onSave={(loc) => {
+            store.setEntryLocation(id, loc);
+            setSheet(null);
+          }}
+          onRemove={
+            saved.location
+              ? () => {
+                  store.setEntryLocation(id, null);
+                  setSheet(null);
+                }
+              : undefined
+          }
+        />
+      )}
+      {saved && sheet === 'people' && (
+        <PeoplePicker
+          kicker={`For “${pageTitle(saved)}”`}
+          chosen={peopleOf(snap, 'entry-person', id).map((p) => p.id)}
+          onToggle={(pid, on) => (on ? store.link({ kind: 'entry-person', a: id, b: pid }, true) : store.unlink({ kind: 'entry-person', a: id, b: pid }))}
+          onClose={() => setSheet(null)}
+        />
+      )}
+      {saved && sheet === 'memories' && (
+        <ItemPicker
+          title="Tie this page to…"
+          kicker={`“${pageTitle(saved)}”`}
+          kinds={['memory']}
+          isOn={(_k, mid) => snap.links.some((l) => l.kind === 'entry-memory' && l.a === id && l.b === mid)}
+          onToggle={(_k, mid, on) => (on ? store.link({ kind: 'entry-memory', a: id, b: mid }, true) : store.unlink({ kind: 'entry-memory', a: id, b: mid }))}
+          onClose={() => setSheet(null)}
+        />
+      )}
+      {saved && sheet === 'collect' && <CollectionPicker kind="entry" id={id} onClose={() => setSheet(null)} />}
 
       <footer className="page-foot">
         <span className="page-meta">

@@ -11,6 +11,7 @@ import { echoOf, type Kept } from '@/lib/memory';
 import { useStore } from '@/lib/store';
 import MediaShelf from './MediaShelf';
 import ThreadNote from './ThreadNote';
+import { pageTitle } from './Pickers';
 import { groupPlaces, locLine, placeKey, suggestionKey, usePlaces, type PlaceGroup } from '@/lib/places';
 
 export default function Places() {
@@ -241,6 +242,8 @@ function PlacePage({
     .filter((x): x is NonNullable<typeof x> => x !== null);
 
   const region = [g.region, g.country].filter((x) => x && x !== g.title);
+  const [snap] = useStore();
+  const pagesHere = snap.entries.filter((e) => e.location && placeKey(e.location) === g.key).sort((a, b) => b.createdAt - a.createdAt);
 
   return (
     <article className="pl-page">
@@ -278,6 +281,22 @@ function PlacePage({
           </li>
         ))}
       </ol>
+
+      {pagesHere.length > 0 && (
+        <section className="pl-ties">
+          <h2 className="month-label">Pages written here</h2>
+          <ul className="person-pages">
+            {pagesHere.map((e) => (
+              <li key={e.id}>
+                <Link href={`/archives?e=${encodeURIComponent(e.id)}`} className="leaf">
+                  <span className="leaf-date">{new Date(e.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                  <span className="leaf-body">{pageTitle(e)}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {(ties.length > 0 || pending.length > 0) && (
         <section className="pl-ties">

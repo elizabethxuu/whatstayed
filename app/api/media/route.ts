@@ -3,7 +3,7 @@ import { addMedia } from '@/lib/server/data';
 import { HttpError, json, withUser } from '@/lib/server/http';
 
 const meta = z.object({
-  ownerType: z.enum(['memory', 'entry']),
+  ownerType: z.enum(['memory', 'entry', 'person']),
   ownerId: z.string().min(1).max(80),
   kind: z.enum(['photo', 'voice']),
   durationMs: z.coerce.number().int().min(0).max(60 * 60 * 1000).optional(),

@@ -2,14 +2,21 @@ import { z } from 'zod';
 import { db, ms } from './db';
 import { HttpError } from './http';
 import { memorySchema } from '../memory';
+import { lifeState, ownPerson } from './life';
 
 /* ---------- shapes ---------- */
+
+export const isoDate = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2019-07-14.')
+  .refine((v) => !Number.isNaN(Date.parse(v + 'T00:00:00Z')) && +v.slice(0, 4) >= 1000 && +v.slice(0, 4) <= 9999, 'That date isn’t real.');
 
 export const memoryInput = memorySchema.extend({
   place: z.string().trim().min(1).max(80),
   moment: z.string().trim().min(2).max(600),
   feeling: z.string().trim().min(1).max(40),
   when: z.string().trim().max(60).optional().nullable(),
+  date: isoDate.optional().nullable(),
 });
 
 export const locInput = z.object({
@@ -41,7 +48,7 @@ const id = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2
 
 /* ---------- memories ---------- */
 
-const MEM_COLS = `id, place, when_text as "when", moment, feeling, weight, echoes, because, origin,
+const MEM_COLS = `id, place, when_text as "when", to_char(happened_on, 'YYYY-MM-DD') as "date", moment, feeling, weight, echoes, because, origin,
   ${ms('created_at')} as "createdAt", ${ms('updated_at')} as "updatedAt"`;
 
 export async function listMemories(user: string) {
@@ -50,12 +57,12 @@ export async function listMemories(user: string) {
   return rows.map((r) => Object.fromEntries(Object.entries(r).filter(([, v]) => v !== null)));
 }
 
-export async function plantMemory(user: string, memId: string, m: z.infer<typeof memoryInput>, origin: 'agent' | 'you') {
+export async function plantMemory(user: string, memId: string, m: z.infer<typeof memoryInput> | Omit<z.infer<typeof memoryInput>, 'date'>, origin: 'agent' | 'you') {
   const q = await db();
   await q(
-    `insert into memories (user_id, id, place, when_text, moment, feeling, weight, echoes, because, origin)
-     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) on conflict (user_id, id) do nothing`,
-    [user, memId, m.place, m.when || null, m.moment, m.feeling, m.weight, m.echoes || null, m.because || null, origin],
+    `insert into memories (user_id, id, place, when_text, moment, feeling, weight, echoes, because, origin, happened_on)
+     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) on conflict (user_id, id) do nothing`,
+    [user, memId, m.place, m.when || null, m.moment, m.feeling, m.weight, m.echoes || null, m.because || null, origin, ('date' in m && m.date) || null],
   );
   return memId;
 }
@@ -67,9 +74,9 @@ export async function createMemory(user: string, m: z.infer<typeof memoryInput>)
 export async function updateMemory(user: string, memId: string, m: z.infer<typeof memoryInput>) {
   const q = await db();
   const rows = await q(
-    `update memories set place=$3, when_text=$4, moment=$5, feeling=$6, weight=$7, updated_at=now()
+    `update memories set place=$3, when_text=$4, moment=$5, feeling=$6, weight=$7, happened_on=$8, updated_at=now()
      where user_id=$1 and id=$2 returning id`,
-    [user, memId, m.place, m.when || null, m.moment, m.feeling, m.weight],
+    [user, memId, m.place, m.when || null, m.moment, m.feeling, m.weight, m.date || null],
   );
   if (!rows.length) throw new HttpError(404, 'That memory isn’t here any more.');
 }
@@ -80,9 +87,11 @@ export async function deleteMemory(user: string, memId: string) {
   if (!rows.length) throw new HttpError(404, 'That memory isn’t here any more.');
   await q('delete from threads where user_id=$1 and (a=$2 or b=$2)', [user, memId]);
   await q(`delete from media where user_id=$1 and owner_type='memory' and owner_id=$2`, [user, memId]);
+  await q(`delete from links where user_id=$1 and ((kind='memory-person' and a=$2) or (kind='entry-memory' and b=$2))`, [user, memId]);
+  await q(`delete from collection_items where user_id=$1 and kind='memory' and item_id=$2`, [user, memId]);
 }
 
-async function ownMemory(user: string, memId: string) {
+export async function ownMemory(user: string, memId: string) {
   const q = await db();
   const r = await q('select 1 from memories where user_id=$1 and id=$2', [user, memId]);
   if (!r.length) throw new HttpError(404, 'That memory isn’t here any more.');
@@ -158,9 +167,11 @@ export async function deleteEntry(user: string, eid: string) {
   const q = await db();
   await q('delete from entries where user_id=$1 and id=$2', [user, eid]);
   await q(`delete from media where user_id=$1 and owner_type='entry' and owner_id=$2`, [user, eid]);
+  await q(`delete from links where user_id=$1 and kind in ('entry-person','entry-memory') and a=$2`, [user, eid]);
+  await q(`delete from collection_items where user_id=$1 and kind='entry' and item_id=$2`, [user, eid]);
 }
 
-async function ownEntry(user: string, eid: string) {
+export async function ownEntry(user: string, eid: string) {
   const q = await db();
   const r = await q('select 1 from entries where user_id=$1 and id=$2', [user, eid]);
   if (!r.length) throw new HttpError(404, 'Write something on this page first.');
@@ -176,7 +187,7 @@ const MIMES = {
 
 export async function addMedia(
   user: string,
-  owner: { type: 'memory' | 'entry'; id: string },
+  owner: { type: 'memory' | 'entry' | 'person'; id: string },
   kind: 'photo' | 'voice',
   file: { mime: string; bytes: Buffer; durationMs?: number },
 ) {
@@ -185,7 +196,8 @@ export async function addMedia(
   if (!file.bytes.length) throw new HttpError(400, 'That file is empty.');
   if (file.bytes.length > LIMITS[kind]) throw new HttpError(413, 'That file is too large (4 MB at most).');
   if (owner.type === 'memory') await ownMemory(user, owner.id);
-  else await ownEntry(user, owner.id);
+  else if (owner.type === 'entry') await ownEntry(user, owner.id);
+  else await ownPerson(user, owner.id);
   const q = await db();
   const rows = await q(
     `insert into media (user_id, owner_type, owner_id, kind, mime, size, duration_ms, bytes)
@@ -211,20 +223,27 @@ export async function deleteMedia(user: string, mid: string) {
 
 /* ---------- everything, at once ---------- */
 
-export async function state(user: string) {
+export async function state(user: string, tz?: string) {
   const q = await db();
   const [memories, entries, locs, threads, dismissed, media] = await Promise.all([
     listMemories(user),
-    q(`select id, body, ${ms('created_at')} as "createdAt", ${ms('updated_at')} as "updatedAt" from entries where user_id=$1 order by created_at desc`, [user]),
+    q(`select id, body, location, ${ms('created_at')} as "createdAt", ${ms('updated_at')} as "updatedAt" from entries where user_id=$1 order by created_at desc`, [user]),
     q<{ memory_id: string; data: unknown }>('select memory_id, data from locations where user_id=$1', [user]),
     q(`select id, a, b, note, origin, ${ms('created_at')} as "createdAt" from threads where user_id=$1 order by created_at`, [user]),
     q<{ key: string }>('select key from dismissed where user_id=$1', [user]),
     q(`select id, owner_type as "ownerType", owner_id as "ownerId", kind, mime, size, duration_ms as "durationMs", ${ms('created_at')} as "createdAt"
        from media where user_id=$1 order by created_at`, [user]),
   ]);
+  const life = await lifeState(user, tz);
   return {
+    ...life,
     memories,
-    entries,
+    entries: entries.map((e) => {
+      const loc = typeof e.location === 'string' ? JSON.parse(e.location) : e.location;
+      const { location: _l, ...rest } = e;
+      void _l;
+      return loc ? { ...rest, location: loc } : rest;
+    }),
     locations: Object.fromEntries(locs.map((l) => [l.memory_id, typeof l.data === 'string' ? JSON.parse(l.data) : l.data])),
     threads: threads.map((t) => Object.fromEntries(Object.entries(t).filter(([, v]) => v !== null))),
     dismissed: dismissed.map((d) => d.key),
@@ -259,4 +278,12 @@ export async function clearGarden(user: string) {
   await q('delete from threads where user_id=$1', [user]);
   await q('delete from dismissed where user_id=$1', [user]);
   await q('delete from memories where user_id=$1', [user]);
+  await q(`delete from links where user_id=$1 and (kind='memory-person' or kind='entry-memory')`, [user]);
+  await q(`delete from collection_items where user_id=$1 and kind='memory'`, [user]);
+}
+
+export async function setEntryLocation(user: string, eid: string, loc: z.infer<typeof locInput> | null) {
+  await ownEntry(user, eid);
+  const q = await db();
+  await q('update entries set location=$3::jsonb where user_id=$1 and id=$2', [user, eid, loc ? JSON.stringify({ ...loc, updatedAt: Date.now() }) : null]);
 }

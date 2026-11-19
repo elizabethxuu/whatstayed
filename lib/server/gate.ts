@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { currentUser, type User } from './auth';
+import { currentUser, tzOffset, type User } from './auth';
 import { ConfigError } from './db';
 import { getConversation, state } from './data';
 import type { Snapshot } from '../store';
@@ -19,7 +19,7 @@ export async function gate(opts: { conversation?: boolean } = {}): Promise<Gate>
   }
   if (!user) redirect('/welcome');
   const [snapshot, conversation] = await Promise.all([
-    state(user.id) as Promise<Snapshot>,
+    state(user.id, await tzOffset()) as unknown as Promise<Snapshot>,
     opts.conversation ? getConversation(user.id) : Promise.resolve(undefined),
   ]);
   return { ok: true, user, snapshot, conversation };

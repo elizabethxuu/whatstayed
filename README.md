@@ -1,6 +1,8 @@
 # What Stayed
 
-Tell it about the places you've been. A quiet agent asks about the moment that stayed with you, and each memory grows into a blossom on a tree. Keep pages in the Archives, pin memories to a map in Places, and tie red threads between the ones that belong together.
+Tell it about the places you've been. A quiet agent asks about the moment that stayed with you, and each memory grows into a blossom on a tree. Keep pages in the Archives, pin memories to a map in Places, keep the people who were there, read your life back on the Timeline, gather memories into Collections (printable, or as a single web page), write letters that stay sealed until their day, and tie red threads between the ones that belong together.
+
+The full engineering and product report is in [REPORT.md](REPORT.md).
 
 ## How it's built
 
@@ -23,7 +25,7 @@ npm run dev                  # uses PGlite in .data/ (no setup)
 
 No API key? Use the scripted test agent: `WHATSTAYED_MOCK=1 npm run dev`.
 
-Checks: `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`.
+Checks: `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, then `npm run e2e` (browser suites; needs Playwright with Chromium).
 
 ## Deploy on Vercel
 

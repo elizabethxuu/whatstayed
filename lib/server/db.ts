@@ -88,6 +88,66 @@ create table if not exists media (
   created_at timestamptz not null default now()
 );
 create index if not exists media_owner on media(user_id, owner_type, owner_id);
+alter table memories add column if not exists happened_on date;
+alter table entries add column if not exists location jsonb;
+create table if not exists people (
+  user_id uuid not null references users(id) on delete cascade,
+  id text not null,
+  name text not null,
+  relation text,
+  description text,
+  notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  primary key (user_id, id)
+);
+create table if not exists links (
+  user_id uuid not null references users(id) on delete cascade,
+  kind text not null,
+  a text not null,
+  b text not null,
+  note text,
+  created_at timestamptz not null default now(),
+  primary key (user_id, kind, a, b)
+);
+create index if not exists links_b on links(user_id, kind, b);
+create table if not exists collections (
+  user_id uuid not null references users(id) on delete cascade,
+  id text not null,
+  name text not null,
+  description text,
+  cover text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  primary key (user_id, id)
+);
+create table if not exists collection_items (
+  user_id uuid not null references users(id) on delete cascade,
+  collection_id text not null,
+  kind text not null,
+  item_id text not null,
+  position integer not null default 0,
+  added_at timestamptz not null default now(),
+  primary key (user_id, collection_id, kind, item_id)
+);
+create table if not exists letters (
+  user_id uuid not null references users(id) on delete cascade,
+  id text not null,
+  body text not null,
+  open_on date not null,
+  opened_at timestamptz,
+  created_at timestamptz not null default now(),
+  primary key (user_id, id)
+);
+create table if not exists milestones (
+  user_id uuid not null references users(id) on delete cascade,
+  id text not null,
+  title text not null,
+  on_date date not null,
+  note text,
+  created_at timestamptz not null default now(),
+  primary key (user_id, id)
+)
 `;
 
 type G = typeof globalThis & { __wsdb?: Promise<Query> };

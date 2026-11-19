@@ -63,3 +63,9 @@ export async function currentUser(): Promise<User | null> {
   );
   return rows[0] ?? null;
 }
+
+/** The browser's UTC offset in minutes (from Date#getTimezoneOffset), so "today" means the person's today. */
+export async function tzOffset(): Promise<string | undefined> {
+  const v = (await cookies()).get('ws_tz')?.value;
+  return v && /^-?\d{1,4}$/.test(v) ? v : undefined;
+}

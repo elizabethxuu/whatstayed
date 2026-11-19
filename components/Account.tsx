@@ -105,11 +105,14 @@ export default function Account({ email }: { email: string }) {
           <div><dt>Red threads</dt><dd>{snap.threads.length}</dd></div>
           <div><dt>Photographs</dt><dd>{photos}</dd></div>
           <div><dt>Recordings</dt><dd>{voices}</dd></div>
+          <div><dt>People</dt><dd>{snap.people.length}</dd></div>
+          <div><dt>Collections</dt><dd>{snap.collections.length}</dd></div>
+          <div><dt>Letters</dt><dd>{snap.letters.length}</dd></div>
         </dl>
 
         <div className="acc-block">
           <h2>Take it with you</h2>
-          <p>Download everything you’ve kept: memories, pages, places and threads as one readable file, with every photograph and recording alongside it.</p>
+          <p>Download everything you’ve kept: memories, pages, places, threads, people, collections, letters and important days as one readable file, with every photograph and recording alongside it.</p>
           <button type="button" className="quiet strong" onClick={exportAll} disabled={!!exporting}>
             {exporting || 'Download everything (.zip)'}
           </button>
