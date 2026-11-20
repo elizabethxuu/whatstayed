@@ -44,7 +44,7 @@ s=await st();ok('approved → thread saved (suggested)',s.threads.length===1&&s.
 await p.focus('.blossom[aria-label^="Sintra"]');await p.keyboard.press('Enter');await p.waitForTimeout(400);await p.click('text=Tie a red thread…');await p.waitForTimeout(300);await p.click('.tie-list button >> text=bells');await p.fill('.tie-note input','Same trip');await p.click('text=Tie the thread');await p.waitForTimeout(400);
 s=await st();ok('user-made tie saved',s.threads.length===2&&s.threads.some(t=>t.origin==='you'&&t.note==='Same trip'));
 // C/D. Places
-osm=[];await p.click('.rooms >> text=Places');await p.waitForURL('**/places');await p.waitForTimeout(1500);
+osm=[];await p.click('.top-bubbles >> text=Archive');await p.waitForURL('**/archive');await p.click('.chips >> text=Places');await p.waitForURL('**/places');await p.waitForTimeout(1500);
 ok('places loads with no lookups',osm.length===0);
 ok('markers = real placed memories',(await p.$$('.a-mark')).length===2,String((await p.$$('.a-mark')).length));
 ok('red arc between countries',(await p.$$('.a-thread')).length===1);

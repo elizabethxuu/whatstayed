@@ -383,6 +383,11 @@ export default function Garden({ open }: { open: Open }) {
             How it grew
           </button>
         </p>
+        <p className="garden-explore">
+          <Link href="/constellation">Constellation</Link>
+          <span aria-hidden="true">·</span>
+          <Link href="/rewind">Rewind</Link>
+        </p>
         {journeyOpen && <GrowthJourney onClose={() => setJourney(false)} />}
         {memories.length > 0 && (
           <div className="drift" aria-hidden="true">

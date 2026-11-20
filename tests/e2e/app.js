@@ -99,7 +99,7 @@ const PW = 'garden-path-1';
     ok('Today has the tree', await p.isVisible('.today-tree svg'));
     ok('personal first steps (past → a trip; places; writing; people)', (await p.isVisible('text=Tell it about a trip')) && (await p.isVisible('text=Add your first place')) && (await p.isVisible('text=Write your first page')));
     ok('writers get the reflection up front', await p.isVisible('.today-reflect.prominent'));
-    ok('phone: the original bar: Garden, Today, Archives, Places, More', (await p.$$eval('.tabbar .tab', (x) => x.map((a) => a.textContent.trim()))).join(',') === 'Garden,Today,Archives,Places,More');
+    ok('phone: three bubbles: Today, Garden, Archive', (await p.$$eval('.bubbles.dock .bubble', (x) => x.map((a) => a.textContent.trim()))).join(',') === 'Today,Garden,Archive');
     await shot(p, 'today-new');
 
     // ---------- reflection ----------
@@ -206,8 +206,8 @@ const PW = 'garden-path-1';
     await shot(p, 'archives');
 
     // ---------- You ----------
-    await p.click('.tabbar button:has-text("More")');
-    await p.click('.tab-sheet >> text=You');
+    await p.click('.avatar');
+    await p.click('.profile-menu >> text=Profile');
     await p.waitForURL(/\/you/);
     await p.waitForSelector('.you-counts');
     const counts = await p.$$eval('.you-count', (x) => x.map((y) => y.textContent.trim()));
@@ -320,7 +320,7 @@ const PW = 'garden-path-1';
     await q.waitForSelector('.today-greet');
     ok('skipped: Today still works, with no name', /^Good (morning|afternoon|evening)\.$/.test((await q.textContent('.today-greet')).trim()));
     ok('skipped: the first step is simply a first memory', await q.isVisible('text=Your first memory'));
-    ok('desktop: no tab bar, rooms in the masthead', !(await q.isVisible('.tabbar')) && (await q.isVisible('.top .rooms')));
+    ok('desktop: no dock, the three bubbles in the masthead', !(await q.isVisible('.bubbles.dock')) && (await q.isVisible('.top-bubbles')));
     await shot(q, 'today-desktop');
     await q.goto(B + '/you');
     await q.waitForSelector('.you-counts');

@@ -166,7 +166,7 @@ function ProfileForm() {
     setBusy(false);
   }
   return (
-    <form className="you-block" onSubmit={submit} aria-labelledby="ypT">
+    <form id="profile" className="you-block" onSubmit={submit} aria-labelledby="ypT">
       <h2 id="ypT">Your profile</h2>
       <div className="you-grid">
         <label className="rv-field">
@@ -241,7 +241,7 @@ function Preferences() {
   const setReminder = (k: 'evening' | 'weekly' | 'yearAgo', v: boolean) => store.saveProfile({ reminders: { [k]: v } }, true);
   const any = !!(r.evening || r.weekly || r.yearAgo);
   return (
-    <section className="you-block" aria-labelledby="yfT">
+    <section id="settings" className="you-block" aria-labelledby="yfT">
       <h2 id="yfT">Preferences</h2>
       <div className="you-row">
         <span>Appearance</span>
@@ -287,7 +287,7 @@ function Preferences() {
           <i aria-hidden="true" />
         </label>
       ))}
-      <p className="you-note">
+      <p className="you-note" id="notifications">
         Reminders appear in Today when you open What Stayed.{' '}
         {perm === 'unsupported'
           ? 'This browser can’t show notifications.'
@@ -321,7 +321,7 @@ function Privacy() {
       .catch(() => setGeo('unknown'));
   }, []);
   return (
-    <section className="you-block" aria-labelledby="yvT">
+    <section id="privacy" className="you-block" aria-labelledby="yvT">
       <h2 id="yvT">Privacy</h2>
       <ul className="acc-facts">
         <li>Everything you keep is private to your account. Nothing is shared or public.</li>
@@ -394,7 +394,7 @@ function Data() {
     }
   }
   return (
-    <section className="you-block" aria-labelledby="ydT">
+    <section id="export" className="you-block" aria-labelledby="ydT">
       <h2 id="ydT">Your data</h2>
       <p className="you-note">Download everything you’ve kept: memories, pages, places, people, collections, letters, conversations and your profile as one readable file, with every photograph and recording alongside it.</p>
       <button type="button" className="quiet strong" onClick={exportAll} disabled={!!exporting}>
@@ -450,7 +450,7 @@ function Account({ email }: { email: string }) {
     }
   }
   return (
-    <section className="you-block" aria-labelledby="yxT">
+    <section id="account" className="you-block" aria-labelledby="yxT">
       <h2 id="yxT">Account</h2>
       <p className="you-row">
         <span>Email</span>

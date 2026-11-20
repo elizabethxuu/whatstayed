@@ -3,7 +3,7 @@ const {chromium,devices}=require('playwright');const B='http://localhost:3100';
 const A=require('./auth.js');const c=await b.newContext({viewport:{width:1440,height:900},deviceScaleFactor:2});await c.route('https://fonts.googleapis.com/**',r=>r.fulfill({body:'',contentType:'text/css'}));await A.signup(c);const p=await c.newPage();let errs=[];p.on('pageerror',e=>errs.push(e.message));
 const store=async()=>(await A.state(p)).entries;
 await p.goto(B+'/');await p.waitForTimeout(1200);
-await p.click('.rooms >> text=The Archives');await p.waitForURL('**/archives');await p.waitForTimeout(800);
+await p.click('.top-bubbles >> text=Archive');await p.waitForURL('**/archive');await p.click('.chips >> text=Journal');await p.waitForURL('**/archives');await p.waitForTimeout(800);
 ok('nav to Archives',await p.isVisible('h1.arc-title'),await p.textContent('h1.arc-title'));
 ok('empty state',await p.isVisible('.quiet-note'));
 await p.screenshot({path:'ar-empty.png'});

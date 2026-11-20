@@ -1,6 +1,5 @@
 'use client';
 
-import { ArchiveCounts } from './Growth';
 import { useRouter } from 'next/navigation';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Masthead from './Masthead';
@@ -117,9 +116,8 @@ function Collection({
       <Masthead room="archives" />
 
       <section className="arc-head">
-        <h1 className="arc-title">The Archives</h1>
+        <h1 className="arc-title">Journal</h1>
         <p className="arc-sub">Pages and notes.</p>
-        <ArchiveCounts pages={entries.length} />
         <button type="button" className="invite" onClick={() => onOpen(newId())}>
           Preserve a moment…
         </button>
@@ -362,7 +360,7 @@ function Page({ id, entry, onClose }: { id: string; entry: Stored | null; onClos
     <main className="archives writing">
       <header className="page-top">
         <button type="button" className="quiet back" onClick={close}>
-          ← The Archives
+          ← Journal
         </button>
         {dating ? (
           <label className="page-date">

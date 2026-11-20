@@ -74,6 +74,20 @@ export default function GrowthWidget() {
   const g = growth(snap);
   const next = g.stage.next;
   return (
+    <div className="growth-glass">
+    {/* soft blue petals behind the glass, so the pane has something to frost */}
+    <svg className="growth-petals" viewBox="0 0 400 260" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="gpBase" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#A9C0DB" /><stop offset=".55" stopColor="#7F9DC2" /><stop offset="1" stopColor="#5E7FAB" /></linearGradient>
+        <radialGradient id="gp1" cx="50%" cy="90%" r="90%"><stop offset="0" stopColor="#234C83" /><stop offset=".55" stopColor="#6686AC" /><stop offset="1" stopColor="#C9D8E8" /></radialGradient>
+        <radialGradient id="gp2" cx="50%" cy="90%" r="90%"><stop offset="0" stopColor="#4F72A3" /><stop offset=".6" stopColor="#9CB6D3" /><stop offset="1" stopColor="#E4ECF3" /></radialGradient>
+      </defs>
+      <rect width="400" height="260" fill="url(#gpBase)" />
+      <path d="M210 250 C 120 230, 70 140, 120 60 C 150 15, 205 10, 230 50 C 260 100, 255 190, 210 250 Z" fill="url(#gp1)" opacity=".85" />
+      <path d="M215 250 C 260 200, 330 150, 360 80 C 380 35, 345 0, 300 25 C 255 50, 225 150, 215 250 Z" fill="url(#gp2)" opacity=".8" />
+      <path d="M205 250 C 160 220, 70 210, 30 160 C 5 125, 30 95, 70 105 C 130 120, 180 190, 205 250 Z" fill="url(#gp2)" opacity=".7" />
+      <path d="M212 248 C 214 190, 220 120, 228 60" stroke="#E4ECF3" strokeWidth="1.2" fill="none" opacity=".6" />
+    </svg>
     <section className="growth" aria-labelledby="growK">
       <header className="growth-head">
         <p id="growK" className="growth-k">
@@ -122,6 +136,7 @@ export default function GrowthWidget() {
       </button>
       {open && <GrowthJourney onClose={() => setOpen(false)} />}
     </section>
+    </div>
   );
 }
 

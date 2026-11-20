@@ -68,7 +68,7 @@ const PW = 'quiet-garden-27';
   await p.screenshot({ path: OUT + '/revisit.png' });
 
   // 10. create a person
-  await p.click('.rooms >> text=People');
+  await p.click('.top-bubbles >> text=Archive');await p.waitForURL('**/archive');await p.click('.chips >> text=People');
   await p.waitForURL('**/people');
   ok('people: inviting empty state', /No one is here yet/.test(await p.textContent('main')));
   await p.click('text=Add the first person…');
@@ -132,7 +132,7 @@ const PW = 'quiet-garden-27';
   const ties = await p.textContent('.page-ties');
   ok('page tied to a person and (with a reason) a memory', /Nai Nai/.test(ties) && /braided/.test(ties) && /The same courtyard/.test(ties), ties);
   await p.screenshot({ path: OUT + '/page-ties.png', fullPage: true });
-  await p.click('text=← The Archives');
+  await p.click('text=← Journal');
   await p.waitForTimeout(500);
   await p.selectOption('.arc-filter select >> nth=1', { label: 'With Nai Nai' });
   ok('archives filter by person', (await p.$$('.leaf')).length === 1);
@@ -165,7 +165,7 @@ const PW = 'quiet-garden-27';
   ok('place page lists pages written there', /Pages written here[\s\S]*Dreamt of the courtyard/.test(await p.textContent('.pl-page')));
 
   // Timeline
-  await p.click('.rooms >> text=Timeline');
+  await p.click('.top-bubbles >> text=Archive');await p.waitForURL('**/archive');await p.click('.chips >> text=Timeline');
   await p.waitForURL('**/timeline');
   await p.click('text=Add a date');
   await p.fill('.loc-ed input[placeholder="A move, a first day, an ending"]', 'Moved to New York');
@@ -189,7 +189,7 @@ const PW = 'quiet-garden-27';
   await p.screenshot({ path: OUT + '/timeline.png', fullPage: true });
 
   // Collections
-  await p.click('.rooms >> text=Collections');
+  await p.click('.top-bubbles >> text=Archive');await p.waitForURL('**/archive');await p.click('.chips >> text=Collections');
   await p.waitForURL('**/collections');
   await p.click('text=Start the first collection…');
   await p.fill('.loc-ed input[placeholder="A name for the collection"]', 'Jiangmen');

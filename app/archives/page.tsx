@@ -5,7 +5,7 @@ import Unconfigured from '@/components/Unconfigured';
 import { gate } from '@/lib/server/gate';
 
 export const metadata: Metadata = {
-  title: 'The Archives · What Stayed',
+  title: 'Journal · The Archive · What Stayed',
   description: 'Pages and notes.',
 };
 export const dynamic = 'force-dynamic';

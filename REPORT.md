@@ -631,3 +631,25 @@ The willow now grows from a seed with the memories actually saved in the databas
 The Welcome and onboarding screens still show a grown willow as decoration.
 
 **Tests:** `tests/e2e/growth.js` checks the tree at 0, 1, 2, 3, 8, 20 and 50 memories (stage, size, limbs, strands, florets and blossoms only ever rise), that a draft changes nothing, the widget's numbers against the formula, the journey, the archive totals, deletion, and iPhone SE fit.
+
+## Three spaces: Today, Garden, Archive
+
+The bottom bar (Garden, Today, Archives, Places, More) and the desktop row of ten room links are replaced by **three bubbles**: Today, Garden, Archive. On phones they sit in a quiet porcelain dock at the foot of the screen (44px touch targets, safe-area aware); on desktop the same bubbles sit centred in the masthead.
+
+**Bubble design** follows Worn With Care (`wornwith-app`: `.country-chip`, `.menu-icon-btn`): white, fully rounded, a hairline ring drawn inside rather than a border, a faint halo, tracked Inter capitals, a small press-in on tap. Selected: pale blue with a sapphire ring. No glass.
+
+**Where everything went**
+| Before | Now |
+|---|---|
+| Today | Today bubble |
+| Garden | Garden bubble |
+| Constellation, Rewind | Inside Garden (links under the willow; chips "The willow · Constellation · Rewind" on those pages) |
+| Archives (pages) | Archive → Journal (`/archives`, all old `?e=`, `?f=`, `?new=1` links still work) |
+| Places, People, Timeline, Collections, Letters | Archive chips (same URLs) |
+| Search | The search field at the top of every Archive page (`/search?q=` still works) |
+| — | Archive → All (`/archive`): totals, recent memories, recent pages, and a door into each section with its count |
+| You / account | The avatar in the top corner: Profile, Settings, Notifications, Privacy, Export memories, Account (each a section of `/you`); `/account` still redirects |
+
+Every old URL still opens and is marked under its space (tested on phone and desktop in `tests/e2e/nav.js`). The old `TabBar` and `RoomsScroll` components were removed.
+
+**The growth card is now glass:** a frosted pane over soft blue petals, white type. It is the one deliberate piece of glass in the porcelain look.

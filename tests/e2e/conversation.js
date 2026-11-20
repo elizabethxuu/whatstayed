@@ -295,7 +295,7 @@ const fakeSpeech = () => {
   await mp.waitForSelector('.review-go', { timeout: 20000 });
   await mp.waitForTimeout(800);
   const inputBottom = await mp.$eval('#say', (e) => e.getBoundingClientRect().bottom);
-  const barTop = await mp.$eval('.tabbar', (e) => e.getBoundingClientRect().top);
+  const barTop = await mp.$eval('.bubbles.dock', (e) => e.getBoundingClientRect().top);
   ok('14. phone: the writing line sits above the tab bar', inputBottom <= barTop, `${inputBottom} vs ${barTop}`);
   await mp.screenshot({ path: __dirname + '/out/conv-phone.png' });
   await mp.click('.review-go');

@@ -177,7 +177,7 @@ const PW = 'quiet-garden-27';
   ok('thread reason edited', /Both with my family/.test(await p.textContent('.card')));
 
   // 9. Places
-  await p.click('.rooms >> text=Places');
+  await p.click('.top-bubbles >> text=Archive');await p.waitForURL('**/archive');await p.click('.chips >> text=Places');
   await p.waitForURL('**/places');
   await p.waitForTimeout(1200);
   ok('both places on the map', (await p.$$('.a-mark')).length === 2);
@@ -189,7 +189,7 @@ const PW = 'quiet-garden-27';
   await p.screenshot({ path: OUT + '/place-page.png', fullPage: true });
 
   // 5/6. the Archives
-  await p.click('.rooms >> text=The Archives');
+  await p.click('.top-bubbles >> text=Archive');await p.waitForURL('**/archive');await p.click('.chips >> text=Journal');
   await p.waitForURL('**/archives');
   await p.click('text=Preserve a moment…');
   ok('a blank page asks for words before media', await p.isVisible('.page-media-wait'));
@@ -203,7 +203,7 @@ const PW = 'quiet-garden-27';
   await p.fill('.page-date input[type=date]', '2019-07-14');
   await p.waitForTimeout(1500);
   await p.screenshot({ path: OUT + '/archive-page.png' });
-  await p.click('text=← The Archives');
+  await p.click('text=← Journal');
   await p.waitForTimeout(600);
   await p.reload();
   await p.waitForSelector('.leaf');

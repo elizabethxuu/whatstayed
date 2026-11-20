@@ -193,7 +193,7 @@ const plant = async (ctx, m) => (await (await ctx.request.post(B + '/api/memorie
     await p.waitForSelector('.agent-state', { timeout: 5000 }).catch(() => {});
     await p.waitForSelector('.agent-found', { timeout: 15000 });
     ok('home: found memories appear, and light on the tree', (await p.$$('.agent-found button')).length === 2 && (await p.$$('.blossom.is-lit')).length === 2);
-    ok('home: the input stays above the tab bar', (await p.$eval('#say', (e) => e.getBoundingClientRect().bottom)) <= (await p.$eval('.tabbar', (e) => e.getBoundingClientRect().top)) + 1);
+    ok('home: the input stays above the tab bar', (await p.$eval('#say', (e) => e.getBoundingClientRect().bottom)) <= (await p.$eval('.bubbles.dock', (e) => e.getBoundingClientRect().top)) + 1);
     await p.fill('#say', 'Reflect on my garden');
     await p.keyboard.press('Enter');
     await p.waitForSelector('.agent-action.s-pending', { timeout: 15000 });
