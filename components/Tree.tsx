@@ -29,6 +29,8 @@ const FIREFLIES: [number, number, number, number][] = [
 /** petals drifting down: start x, delay, duration, scale */
 const DRIFT: [number, number, number, number][] = [[320, 0, 15, 1], [540, 4.5, 18, 0.8], [430, 9, 16, 1.1], [640, 2.2, 20, 0.7], [380, 12, 17, 0.9], [500, 7, 19, 1]];
 const TONES = ['url(#fl0)', 'url(#fl1)', 'url(#fl2)', 'url(#fl3)'];
+/** about one floret in eight is a soft pink blossom among the blues */
+const toneOf = (fl: Floret) => (fl.tone === 3 && hash(fl.x * 3.1 + fl.y) < 0.5 ? 'url(#fl4)' : TONES[fl.tone]);
 const OPEN = 2.4; // seconds for the willow to finish unfolding
 
 function hash(n: number) {
@@ -45,7 +47,7 @@ function floret(fl: Floret, k: number, open: boolean) {
   return (
     <g key={k} className="floret" transform={`translate(${fl.x.toFixed(1)} ${fl.y.toFixed(1)}) rotate(${fl.rot.toFixed(0)}) scale(${(fl.r / 9).toFixed(3)})`}>
       {[0, 72, 144, 216, 288].map((a) => (
-        <path key={a} d={PETAL} transform={`rotate(${a})`} fill={TONES[fl.tone]} />
+        <path key={a} d={PETAL} transform={`rotate(${a})`} fill={toneOf(fl)} />
       ))}
       <circle r="2.2" className="feye" />
     </g>
@@ -236,6 +238,15 @@ function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors,
         <radialGradient id="fl1" cx="50%" cy="100%" r="110%"><stop offset="0" stopColor="#7d87e8" /><stop offset="1" stopColor="#d3d6ff" /></radialGradient>
         <radialGradient id="fl2" cx="50%" cy="100%" r="110%"><stop offset="0" stopColor="#5f8fe6" /><stop offset="1" stopColor="#b4ceff" /></radialGradient>
         <radialGradient id="fl3" cx="50%" cy="100%" r="110%"><stop offset="0" stopColor="#8f8ae6" /><stop offset="1" stopColor="#e1dcff" /></radialGradient>
+        <radialGradient id="fl4" cx="50%" cy="100%" r="110%"><stop offset="0" stopColor="#c98791" /><stop offset="1" stopColor="#f4e6e5" /></radialGradient>
+        {/* the reflection in still water fades out below the bank */}
+        <linearGradient id="reflFade" x1="0" y1="694" x2="0" y2="776" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#fff" stopOpacity=".55" />
+          <stop offset="1" stopColor="#fff" stopOpacity="0" />
+        </linearGradient>
+        <mask id="reflMask" maskUnits="userSpaceOnUse" x="0" y="694" width="1000" height="90">
+          <rect x="0" y="694" width="1000" height="90" fill="url(#reflFade)" />
+        </mask>
         <radialGradient id="bGlow" cx="50%" cy="50%" r="50%">
           <stop offset="0" stopColor="#bcd3ff" stopOpacity=".55" />
           <stop offset="1" stopColor="#bcd3ff" stopOpacity="0" />
@@ -260,6 +271,7 @@ function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors,
       <ellipse className="ground" cx="488" cy="694" rx="360" ry="26" fill="url(#pool)" />
 
       {/* the strands at the back of the crown first, then the tree, then the front */}
+      <g id="willow-crown">
       {[0, 1].map((layer) => (
         <g key={layer} className={`strands layer-${layer}`}>
           {layer === 1 && (
@@ -289,7 +301,7 @@ function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors,
               >
                 <path className="strand-line" d={s.d} />
                 {s.leaves.map((l, k) => (
-                  <ellipse key={`l${k}`} className="wleaf" cx={l.x} cy={l.y} rx={l.l / 2} ry={0.9} transform={`rotate(${l.a.toFixed(0)} ${l.x.toFixed(1)} ${l.y.toFixed(1)})`} />
+                  <ellipse key={`l${k}`} className="wleaf" cx={l.x} cy={l.y} rx={l.l / 2} ry={1.25} transform={`rotate(${l.a.toFixed(0)} ${l.x.toFixed(1)} ${l.y.toFixed(1)})`} />
                 ))}
                 {s.florets.map((fl, k) => floret(fl, k, fl.order < opened))}
                 {s.cluster.length > 0 && <g className="raceme">{s.cluster.map((fl, k) => floret(fl, 1000 + k, fl.order < opened))}</g>}
@@ -299,6 +311,20 @@ function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors,
             ))}
         </g>
       ))}
+
+      </g>
+
+      {/* the willow, reflected and foreshortened in still water, with a few fine ripple lines */}
+      <g className="reflection" aria-hidden="true" mask="url(#reflMask)">
+        <use href="#willow-crown" transform="matrix(1 0 0 -0.16 0 805.04)" />
+      </g>
+      <g className="ripples" aria-hidden="true">
+        <path d="M300 712 Q 488 704 676 712" />
+        <path d="M352 728 Q 488 722 624 728" />
+        <path d="M410 744 Q 488 740 566 744" />
+        <path d="M236 702 Q 280 699 324 702" />
+        <path d="M660 724 Q 700 721 740 724" />
+      </g>
 
       <g className="carpet" aria-hidden="true">
         {W.ground.map((fl, k) => floret(fl, k, fl.order < opened))}

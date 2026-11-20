@@ -95,7 +95,7 @@ export default function Constellation() {
       <Masthead room="constellation" />
       <header className="arc-head">
         <h1 className="arc-title">Constellation</h1>
-        <p className="arc-sub">Your memories as a night sky, gathered by place. Lines appear only where something really connects them.</p>
+        <p className="arc-sub">Your memories, gathered by place. A line appears only where something really connects them.</p>
       </header>
 
       {snap.memories.length === 0 ? (

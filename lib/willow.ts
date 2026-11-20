@@ -5,7 +5,7 @@
  * the strands as larger blossoms. Nothing here is data; the memories are placed by Tree.tsx.
  */
 
-export const VIEW = { w: 1000, h: 720 };
+export const VIEW = { w: 1000, h: 776 };
 
 function rng(seed: number) {
   let s = seed >>> 0;

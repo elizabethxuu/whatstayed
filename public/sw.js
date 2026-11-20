@@ -3,7 +3,7 @@
  * - Keeps the app's own static files (scripts, styles, icons, fonts) so it opens fast and can show an offline page.
  * - Never caches your memories, pages, photographs or any API response: those always come from your account.
  */
-const VERSION = 'ws-v2';
+const VERSION = 'ws-v3';
 const SHELL = ['/offline.html', '/icons/icon-192.png', '/icons/icon-512.png', '/manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {
@@ -32,7 +32,7 @@ self.addEventListener('fetch', (e) => {
 
   // the app's own build files and fonts: cached once, served fast
   const isStatic =
-    (url.origin === location.origin && (url.pathname.startsWith('/_next/static/') || url.pathname.startsWith('/icons/'))) ||
+    (url.origin === location.origin && (url.pathname.startsWith('/_next/static/') || url.pathname.startsWith('/icons/') || url.pathname.startsWith('/fonts/'))) ||
     url.hostname === 'fonts.googleapis.com' ||
     url.hostname === 'fonts.gstatic.com';
   if (isStatic) {

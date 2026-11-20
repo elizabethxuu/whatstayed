@@ -1,3 +1,15 @@
+/* Self-hosted type (SIL Open Font License; see public/fonts). */
+@font-face { font-family: 'Cormorant Garamond'; font-style: normal; font-weight: 300; font-display: swap; src: url('/fonts/cormorant-garamond-latin-300-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Cormorant Garamond'; font-style: italic; font-weight: 300; font-display: swap; src: url('/fonts/cormorant-garamond-latin-300-italic.woff2') format('woff2'); }
+@font-face { font-family: 'Cormorant Garamond'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/cormorant-garamond-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Cormorant Garamond'; font-style: italic; font-weight: 400; font-display: swap; src: url('/fonts/cormorant-garamond-latin-400-italic.woff2') format('woff2'); }
+@font-face { font-family: 'Cormorant Garamond'; font-style: normal; font-weight: 500; font-display: swap; src: url('/fonts/cormorant-garamond-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Cormorant Garamond'; font-style: italic; font-weight: 500; font-display: swap; src: url('/fonts/cormorant-garamond-latin-500-italic.woff2') format('woff2'); }
+@font-face { font-family: 'Cormorant Garamond'; font-style: normal; font-weight: 600; font-display: swap; src: url('/fonts/cormorant-garamond-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/inter-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 500; font-display: swap; src: url('/fonts/inter-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 600; font-display: swap; src: url('/fonts/inter-latin-600-normal.woff2') format('woff2'); }
+
 :root {
   /* The White Garden: ~90% porcelain, ivory and mist; the muted red is rare and meaningful */
   --porcelain: #fefefc;
@@ -3114,3 +3126,281 @@ html[data-theme='light'] body::before {
 :root[data-theme='light'] .a-dot { fill: #6c63e0; }
 :root[data-theme='light'] .a-label { fill: #241f52; }
 :root[data-theme='light'] .cn-sky { background: radial-gradient(80% 70% at 50% 40%, #2a2466, #120f38); }
+
+/* =====================================================================
+   PORCELAIN — the default look (data-theme="light").
+   An ivory book in a quiet botanical garden: porcelain and white pages,
+   hairline borders, sapphire for structure, dusty rose and aged green as
+   botanical accents. No glass, no blur, no gloss. Midnight stays in You.
+
+   Type system
+   - Display (screen headings): Cormorant Garamond 400, 40/1.08
+   - Title (memory titles, section intros): Cormorant Garamond 500, 24–28/1.2
+   - Prompt (thoughtful questions, reflections): Cormorant Garamond italic 400, 22–28/1.3
+   - Body: Inter 400, 15/1.6
+   - UI (buttons, fields, navigation): Inter 500, 14
+   - Label (dates, metadata): Inter 500, 11, tracked caps
+   ===================================================================== */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --porcelain: #FAF9F6; --ivory: #F0EAE0; --ivory-soft: #F6F2EB; --paper: #FFFFFF; --stone: #E8E5DE; --line: #E9E5DD; --line-strong: #D9D4CA;
+  --sapphire: #234C83; --sapphire-deep: #1B3C69; --muted-blue: #6686AC; --powder: #9CB6D3; --pale-blue: #E4ECF3;
+  --rose: #E9C9CD; --dusty-pink: #C98791; --blush: #F4E6E5;
+  --sage: #A4AD91; --aged-green: #68785B; --moss: #DCE0D2;
+
+  --ink: #24272C; --ink-soft: #5F5B55; --ink-faint: #918C85; --ink-rgb: 36 39 44;
+  --ice: var(--sapphire); --peri: var(--sapphire); --peri-deep: var(--sapphire-deep); --cobalt: var(--sapphire); --violet: var(--sapphire);
+  --peri-ink: var(--sapphire); --peri-flower: var(--powder); --cherry-red: var(--dusty-pink); --cherry: var(--dusty-pink); --thread: var(--dusty-pink);
+  --bloom: var(--powder); --navy: var(--ink); --night: var(--ink); --red: #A94C5C;
+  --pane: var(--paper); --pane-edge: var(--line); --pane-shadow: 0 1px 2px rgb(40 35 30 / .04);
+  --btn-glass: var(--paper); --btn-edge: var(--line-strong); --btn-shadow: none; --btn-shadow-hover: none;
+  --glow: transparent;
+  --display: 'Cormorant Garamond', 'Iowan Old Style', 'Palatino', Georgia, serif;
+}
+
+/* no glass anywhere in this look */
+:root[data-theme='light'] *, :root[data-theme='light'] *::before, :root[data-theme='light'] *::after { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+
+/* the page: porcelain, still */
+:root[data-theme='light'] html, html[data-theme='light'] { background: #FAF9F6; background-image: none; }
+html[data-theme='light'] body::before { display: none; animation: none; }
+html[data-theme='light'] body::after { display: none; }
+:root[data-theme='light'] body { background: #FAF9F6; color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.6; }
+
+/* ---------- type ---------- */
+:root[data-theme='light'] .today-greet, :root[data-theme='light'] .welcome-title, :root[data-theme='light'] .ob-title, :root[data-theme='light'] .arc-title {
+  font-family: var(--display); font-weight: 400; font-style: normal; font-size: clamp(38px, 5.4vw, 60px); line-height: 1.08; letter-spacing: -.012em;
+  color: var(--ink); text-shadow: none; text-wrap: balance;
+}
+:root[data-theme='light'] .voice-line, :root[data-theme='light'] .add-title, :root[data-theme='light'] .capture-head h2, :root[data-theme='light'] .today-prompt,
+:root[data-theme='light'] .today-ask-q {
+  font-family: var(--display); font-weight: 400; font-style: italic; font-size: clamp(25px, 3vw, 32px); line-height: 1.25; letter-spacing: -.005em;
+  color: var(--ink); text-shadow: none;
+}
+:root[data-theme='light'] .arc-sub, :root[data-theme='light'] .welcome-sub, :root[data-theme='light'] .ob-sub, :root[data-theme='light'] .quiet-note, :root[data-theme='light'] .you {
+  font-family: var(--display); font-style: italic; font-weight: 400; font-size: 20px; line-height: 1.45; color: var(--ink-soft);
+}
+:root[data-theme='light'] .card-moment, :root[data-theme='light'] .mem-title, :root[data-theme='light'] .cn-title, :root[data-theme='light'] .rw-ways button strong,
+:root[data-theme='light'] .album-title, :root[data-theme='light'] .agent-found button strong, :root[data-theme='light'] .leaf-title {
+  font-family: var(--display); font-weight: 500; font-style: normal; color: var(--ink); letter-spacing: -.004em;
+}
+:root[data-theme='light'] .today-date, :root[data-theme='light'] .today-k, :root[data-theme='light'] .today-block h2, :root[data-theme='light'] .you-block h2,
+:root[data-theme='light'] .mem-section h2, :root[data-theme='light'] .agent-k, :root[data-theme='light'] .mem-place, :root[data-theme='light'] .card-place,
+:root[data-theme='light'] .month-label, :root[data-theme='light'] .agent-found-place, :root[data-theme='light'] .revisit-k, :root[data-theme='light'] .fig {
+  font-family: var(--sans); font-weight: 500; font-style: normal; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted-blue);
+}
+:root[data-theme='light'] .today-count, :root[data-theme='light'] .card-meta, :root[data-theme='light'] .mem-meta, :root[data-theme='light'] .you-note, :root[data-theme='light'] .capture-hint,
+:root[data-theme='light'] .sub { font-family: var(--sans); font-size: 13.5px; line-height: 1.55; color: var(--ink-soft); }
+:root[data-theme='light'] .log-line.assistant p { font-family: var(--display); font-size: 21px; line-height: 1.45; color: var(--ink); }
+:root[data-theme='light'] .log-line.user p { font-family: var(--sans); font-style: normal; font-size: 15px; line-height: 1.6; color: var(--ink-soft); }
+:root[data-theme='light'] .mark { font-family: var(--display); font-style: normal; font-weight: 500; color: var(--ink); letter-spacing: .005em; }
+:root[data-theme='light'] a { color: inherit; }
+:root[data-theme='light'] .quiet { font-family: var(--sans); font-weight: 500; color: var(--ink-soft); }
+:root[data-theme='light'] .quiet:hover { color: var(--sapphire); }
+:root[data-theme='light'] .quiet.strong, :root[data-theme='light'] .fav.on, :root[data-theme='light'] .ai-mark, :root[data-theme='light'] .log-tool { color: var(--sapphire); }
+:root[data-theme='light'] mark, :root[data-theme='light'] .leaf-body mark { background: linear-gradient(transparent 60%, rgb(233 201 205 / .7) 60%); color: inherit; }
+:root[data-theme='light'] ::selection { background: rgb(156 182 211 / .45); }
+
+/* ---------- surfaces ---------- */
+:root[data-theme='light'] .card, :root[data-theme='light'] .today-step, :root[data-theme='light'] .today-reflect, :root[data-theme='light'] .you-block,
+:root[data-theme='light'] .mem-facts, :root[data-theme='light'] .agent-action, :root[data-theme='light'] .rd, :root[data-theme='light'] .welcome-card,
+:root[data-theme='light'] .import-sheet, :root[data-theme='light'] .lightbox figcaption, :root[data-theme='light'] .toast, :root[data-theme='light'] .cn-story,
+:root[data-theme='light'] .today-back-card, :root[data-theme='light'] .agent-found button {
+  background: var(--paper); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 1px 2px rgb(40 35 30 / .04); color: var(--ink);
+}
+/* reading surfaces: warm ivory */
+:root[data-theme='light'] .today-back-card, :root[data-theme='light'] .today-reflect, :root[data-theme='light'] .mem-facts { background: var(--ivory-soft); border-color: #E8E1D5; }
+:root[data-theme='light'] .toast { background: var(--ink); color: #FAF9F6; border-color: transparent; }
+:root[data-theme='light'] .toast.error { background: #A94C5C; }
+
+/* sheets: a porcelain page that rises from the bottom */
+:root[data-theme='light'] .add, :root[data-theme='light'] .confirm-sheet, :root[data-theme='light'] .review, :root[data-theme='light'] .loc-ed,
+:root[data-theme='light'] .capture-sheet, :root[data-theme='light'] .tab-sheet {
+  background: var(--porcelain); border: 1px solid var(--line); box-shadow: 0 -12px 40px -24px rgb(40 35 30 / .25); color: var(--ink);
+}
+:root[data-theme='light'] .sheet-veil, :root[data-theme='light'] .tab-veil { background: rgb(36 39 44 / .28); }
+:root[data-theme='light'] .sheet-grip { background: var(--line-strong); }
+
+/* ---------- buttons: flat, refined, one shape ---------- */
+:root[data-theme='light'] button, :root[data-theme='light'] .welcome-go { font-family: var(--sans); }
+:root[data-theme='light'] .welcome-go, :root[data-theme='light'] .confirm-yes, :root[data-theme='light'] .agent-yes {
+  background: var(--sapphire); color: #FFFFFF; border: 1px solid var(--sapphire); border-radius: 10px; box-shadow: none;
+  font-weight: 500; font-size: 14.5px; letter-spacing: .015em; transition: background .2s ease, border-color .2s ease;
+}
+:root[data-theme='light'] .welcome-go:hover, :root[data-theme='light'] .welcome-go:focus-visible, :root[data-theme='light'] .confirm-yes:hover, :root[data-theme='light'] .agent-yes:hover {
+  background: var(--sapphire-deep); border-color: var(--sapphire-deep); color: #FFFFFF; box-shadow: none;
+}
+:root[data-theme='light'] .welcome-go:focus-visible { outline: 2px solid rgb(35 76 131 / .3); outline-offset: 2px; }
+:root[data-theme='light'] .welcome-go:active, :root[data-theme='light'] .confirm-yes:active, :root[data-theme='light'] .agent-yes:active { transform: none; background: #163257; }
+:root[data-theme='light'] .welcome-go:disabled { background: #B9C5D6; border-color: #B9C5D6; opacity: 1; }
+:root[data-theme='light'] .confirm-yes.danger, :root[data-theme='light'] .agent-yes.danger { background: #A94C5C; border-color: #A94C5C; color: #fff; }
+:root[data-theme='light'] .confirm-no, :root[data-theme='light'] .agent-no {
+  background: var(--paper); color: var(--ink); border: 1px solid var(--line-strong); border-radius: 10px; box-shadow: none;
+}
+:root[data-theme='light'] .confirm-no:hover { border-color: var(--muted-blue); color: var(--sapphire); }
+
+/* secondary choices: white with a hairline, ivory when touched */
+:root[data-theme='light'] .chip, :root[data-theme='light'] .cn-key, :root[data-theme='light'] .agent-prompt, :root[data-theme='light'] .ob-choice, :root[data-theme='light'] .agent-mode-row,
+:root[data-theme='light'] .rw-ways button, :root[data-theme='light'] .capture-list button, :root[data-theme='light'] .atlas-zoom button {
+  background: var(--paper); border: 1px solid var(--line); border-radius: 10px; box-shadow: none; color: var(--ink); transition: background .2s ease, border-color .2s ease;
+}
+:root[data-theme='light'] .chip:hover, :root[data-theme='light'] .cn-key:hover, :root[data-theme='light'] .agent-prompt:hover, :root[data-theme='light'] .ob-choice:hover,
+:root[data-theme='light'] .rw-ways button:hover, :root[data-theme='light'] .capture-list button:hover { background: var(--ivory-soft); border-color: var(--line-strong); box-shadow: none; }
+:root[data-theme='light'] .ob-choice[aria-pressed='true'], :root[data-theme='light'] .ob-choice[aria-checked='true'], :root[data-theme='light'] .agent-mode[aria-checked='true'],
+:root[data-theme='light'] .rw-ways button[aria-pressed='true'] {
+  background: var(--pale-blue); border-color: var(--powder); color: var(--sapphire); box-shadow: none;
+}
+:root[data-theme='light'] .agent-mode-row { padding: 3px; }
+:root[data-theme='light'] .agent-mode { border-radius: 8px; color: var(--ink-soft); font-weight: 500; }
+:root[data-theme='light'] .agent-mode[aria-checked='true'] { border: 0; }
+:root[data-theme='light'] .mem-tags .chip { background: var(--blush); border-color: transparent; color: #8E4E58; }
+:root[data-theme='light'] .seg { background: var(--ivory-soft); border: 1px solid var(--line); border-radius: 10px; box-shadow: none; padding: 3px; }
+:root[data-theme='light'] .seg button { color: var(--ink-soft); border-radius: 8px; font-weight: 500; }
+:root[data-theme='light'] .seg button[aria-checked='true'] { background: var(--paper); color: var(--sapphire); box-shadow: 0 1px 2px rgb(40 35 30 / .08); }
+:root[data-theme='light'] .ob-toggle i { background: var(--stone); border-color: var(--line-strong); }
+:root[data-theme='light'] .ob-toggle input:checked + i { background: var(--aged-green); }
+:root[data-theme='light'] .ob-progress { background: var(--stone); }
+:root[data-theme='light'] .ob-progress i { background: var(--sapphire); }
+:root[data-theme='light'] .add-dots li.on button { background: var(--sapphire); border-color: var(--sapphire); }
+:root[data-theme='light'] .add-dots li.done button { background: var(--powder); border-color: var(--powder); }
+
+/* the floating + : one quiet sapphire seal */
+:root[data-theme='light'] .capture-fab {
+  background: var(--sapphire); color: #fff; border: 0; box-shadow: 0 8px 18px -10px rgb(35 76 131 / .55), 0 1px 2px rgb(35 76 131 / .2);
+}
+:root[data-theme='light'] .capture-fab:hover { background: var(--sapphire-deep); }
+:root[data-theme='light'] .capture-fab svg { stroke: currentColor; stroke-width: 1.6; }
+:root[data-theme='light'] .capture-fab.high { width: 38px; height: 38px; }
+:root[data-theme='light'] .capture-icon { background: var(--pale-blue); color: var(--sapphire); border: 0; box-shadow: none; border-radius: 9px; }
+:root[data-theme='light'] .capture-title { font-family: var(--sans); font-weight: 500; font-size: 14.5px; color: var(--ink); }
+:root[data-theme='light'] .capture-head h2 { font-size: 27px; }
+
+/* header icons and the bottom navigation: no tiles, just fine lines */
+:root[data-theme='light'] .top-icons button, :root[data-theme='light'] .top-icons a { background: transparent; border: 1px solid transparent; box-shadow: none; color: var(--ink-soft); }
+:root[data-theme='light'] .top-icons button:hover, :root[data-theme='light'] .top-icons a:hover { border-color: var(--line); color: var(--sapphire); }
+:root[data-theme='light'] .tabbar, :root[data-theme='light'].scrolled .tabbar { background: rgb(250 249 246 / .98); border-top: 1px solid var(--line); box-shadow: none; }
+:root[data-theme='light'] .tab { color: var(--ink-faint); font-family: var(--sans); font-weight: 500; letter-spacing: .01em; }
+:root[data-theme='light'] .tab svg, :root[data-theme='light'] .you-link { background: transparent; border-color: transparent; box-shadow: none; color: inherit; }
+:root[data-theme='light'] .tab[aria-current='page'] { color: var(--sapphire); }
+:root[data-theme='light'] .tab[aria-current='page'] svg, :root[data-theme='light'] .you-link[aria-current='page'] { background: transparent; border-color: transparent; box-shadow: none; color: var(--sapphire); }
+:root[data-theme='light'] .rooms a { color: var(--ink-soft); }
+:root[data-theme='light'] .rooms a[aria-current='page'] { color: var(--ink); text-decoration-color: var(--dusty-pink); }
+
+/* fields */
+:root[data-theme='light'] input, :root[data-theme='light'] textarea, :root[data-theme='light'] select { color: var(--ink); font-family: var(--sans); }
+:root[data-theme='light'] input::placeholder, :root[data-theme='light'] textarea::placeholder { color: #A7A29A; }
+:root[data-theme='light'] .rv-field input, :root[data-theme='light'] .rv-field textarea, :root[data-theme='light'] .welcome-form input,
+:root[data-theme='light'] .ob-fields input, :root[data-theme='light'] .ob-fields textarea, :root[data-theme='light'] .today-ask textarea, :root[data-theme='light'] .today-reflect-form textarea,
+:root[data-theme='light'] .arc-filter select, :root[data-theme='light'] .search-big { border-bottom-color: var(--line-strong); }
+:root[data-theme='light'] .welcome-form input:focus, :root[data-theme='light'] .rv-field input:focus, :root[data-theme='light'] .rv-field textarea:focus { border-bottom-color: var(--sapphire); }
+html[data-theme='light'] .garden form.say, :root[data-theme='light'] .say, :root[data-theme='light'] .garden .say {
+  background: var(--paper); border: 1px solid var(--line-strong); border-radius: 14px; box-shadow: 0 1px 2px rgb(40 35 30 / .05);
+}
+:root[data-theme='light'] .say textarea { font-family: var(--display); font-style: italic; font-size: 20px; }
+:root[data-theme='light'] .say button.ready, :root[data-theme='light'] .say button:not(:disabled):hover { background: var(--sapphire); border-color: var(--sapphire); color: #fff; box-shadow: none; border-radius: 9px; }
+:root[data-theme='light'] .say button.ready svg, :root[data-theme='light'] .say button:not(:disabled):hover svg { stroke: #fff; }
+
+/* ---------- the willow as a botanical plate ---------- */
+:root[data-theme='light'] .willow .halo, :root[data-theme='light'] .willow .fireflies, :root[data-theme='light'] .willow .ground { display: none; }
+:root[data-theme='light'] .willow .trunk { filter: none; }
+:root[data-theme='light'] .willow #bark stop:nth-child(1) { stop-color: #A39C8C; }
+:root[data-theme='light'] .willow #bark stop:nth-child(2) { stop-color: #7B7566; }
+:root[data-theme='light'] .willow #bark stop:nth-child(3) { stop-color: #545347; }
+:root[data-theme='light'] .willow .trunk { stroke: #4A4A3E; stroke-width: .8; stroke-opacity: .55; }
+:root[data-theme='light'] .willow .trunk-light { stroke: rgb(250 249 246 / .5); stroke-width: .7; }
+:root[data-theme='light'] .willow .limb-arc { stroke: #6E6B5C; opacity: .8; }
+:root[data-theme='light'] .willow .strand-line { stroke: rgb(104 120 91 / .55); stroke-width: .7; }
+:root[data-theme='light'] .willow .layer-0 .strand-line { stroke: rgb(164 173 145 / .5); }
+:root[data-theme='light'] .willow .wleaf { fill: rgb(104 120 91 / .6); }
+:root[data-theme='light'] .willow .layer-0 .wleaf { fill: rgb(164 173 145 / .55); }
+:root[data-theme='light'] .willow #fl0 stop:first-child { stop-color: #234C83; } :root[data-theme='light'] .willow #fl0 stop:last-child { stop-color: #6686AC; }
+:root[data-theme='light'] .willow #fl1 stop:first-child { stop-color: #4F72A3; } :root[data-theme='light'] .willow #fl1 stop:last-child { stop-color: #9CB6D3; }
+:root[data-theme='light'] .willow #fl2 stop:first-child { stop-color: #6686AC; } :root[data-theme='light'] .willow #fl2 stop:last-child { stop-color: #C9D8E8; }
+:root[data-theme='light'] .willow #fl3 stop:first-child { stop-color: #2E5A94; } :root[data-theme='light'] .willow #fl3 stop:last-child { stop-color: #9CB6D3; }
+:root[data-theme='light'] .willow #fl4 stop:first-child { stop-color: #C98791; } :root[data-theme='light'] .willow #fl4 stop:last-child { stop-color: #F4E6E5; }
+:root[data-theme='light'] .willow .floret path { stroke: rgb(250 249 246 / .9); stroke-width: .4; opacity: 1; }
+:root[data-theme='light'] .willow .floret .feye { fill: #F3E3B8; }
+:root[data-theme='light'] .willow .fbud { fill: rgb(104 120 91 / .55); }
+:root[data-theme='light'] .willow .carpet .fbud { fill: rgb(164 173 145 / .6); }
+:root[data-theme='light'] .willow #pWhite stop:nth-child(1) { stop-color: #1F4478; } :root[data-theme='light'] .willow #pWhite stop:nth-child(2) { stop-color: #4F72A3; } :root[data-theme='light'] .willow #pWhite stop:nth-child(3) { stop-color: #C9D8E8; }
+:root[data-theme='light'] .willow #pMist stop:nth-child(1) { stop-color: #3A5F92; } :root[data-theme='light'] .willow #pMist stop:nth-child(2) { stop-color: #7E9BC0; } :root[data-theme='light'] .willow #pMist stop:nth-child(3) { stop-color: #E4ECF3; }
+:root[data-theme='light'] .willow #pMeaning stop:nth-child(1) { stop-color: #1B3C69; } :root[data-theme='light'] .willow #pMeaning stop:nth-child(2) { stop-color: #4369A0; } :root[data-theme='light'] .willow #pMeaning stop:nth-child(3) { stop-color: #DCE6F1; }
+:root[data-theme='light'] .willow .blossom .petal { stroke: #FAF9F6; stroke-width: .6; filter: none; }
+:root[data-theme='light'] .willow .blossom .heart { fill: #FAF9F6; }
+:root[data-theme='light'] .willow .blossom .eye-ray { stroke: #D9B65E; }
+:root[data-theme='light'] .willow .blossom .glow { display: none; }
+:root[data-theme='light'] .willow .blossom .tbud { fill: var(--dusty-pink); }
+:root[data-theme='light'] .willow .blossom .sel-ring { stroke: var(--dusty-pink); stroke-width: 1; }
+:root[data-theme='light'] .willow .blossom.is-lit .petal { filter: none; stroke: var(--dusty-pink); stroke-width: 1.1; }
+:root[data-theme='light'] .willow .mk { fill: var(--dusty-pink); }
+:root[data-theme='light'] .willow .bud-draft path:first-child { fill: var(--rose); stroke: var(--dusty-pink); }
+:root[data-theme='light'] .willow .bud-sepal { stroke: var(--aged-green); }
+:root[data-theme='light'] .willow .thread { stroke: var(--dusty-pink); stroke-width: 1; filter: none; opacity: .9; }
+:root[data-theme='light'] .willow .drift-petal { fill: #E9C9CD; stroke: none; opacity: .85; }
+:root[data-theme='light'] .willow .reflection { opacity: .5; }
+:root[data-theme='light'] .willow .ripples path { fill: none; stroke: #9CB6D3; stroke-width: .8; stroke-linecap: round; opacity: .55; }
+:root[data-theme='light'] .garden.agent-searching .willow .strand-line { stroke: rgb(35 76 131 / .7); }
+/* a soft watercolour wash behind the tree only, like a pale blue tint on the page */
+:root[data-theme='light'] .today-tree, :root[data-theme='light'] .garden .stage { background: radial-gradient(48% 46% at 50% 52%, rgb(228 236 243 / .9), rgb(228 236 243 / 0) 72%), radial-gradient(26% 20% at 68% 82%, rgb(220 224 210 / .55), transparent 70%); }
+
+/* ---------- constellation by day: a fine diagram of connections on ivory ---------- */
+:root[data-theme='light'] .cn-sky { background: var(--ivory-soft); border: 1px solid #E8E1D5; border-radius: 16px; box-shadow: none; }
+:root[data-theme='light'] .cn-cluster circle { fill: rgb(156 182 211 / .14); }
+:root[data-theme='light'] .cn-cluster text { fill: var(--ink-soft); font-family: var(--sans); letter-spacing: .12em; text-transform: uppercase; }
+:root[data-theme='light'] .cn-glow { fill: rgb(35 76 131 / .1); }
+:root[data-theme='light'] .cn-core { fill: var(--sapphire); }
+:root[data-theme='light'] .cn-star.sel .cn-core { fill: var(--dusty-pink); }
+:root[data-theme='light'] .cn-edge { stroke-width: 1; filter: none; }
+:root[data-theme='light'] .cn-edge.e-thread, :root[data-theme='light'] .k-thread { stroke: var(--dusty-pink); background: var(--dusty-pink); }
+:root[data-theme='light'] .cn-edge.e-person, :root[data-theme='light'] .k-person { stroke: var(--sapphire); background: var(--sapphire); }
+:root[data-theme='light'] .cn-edge.e-trip, :root[data-theme='light'] .k-trip { stroke: var(--aged-green); background: var(--aged-green); }
+:root[data-theme='light'] .cn-edge.e-collection, :root[data-theme='light'] .k-collection { stroke: var(--muted-blue); background: var(--muted-blue); }
+:root[data-theme='light'] .cn-key[aria-pressed='false'] { opacity: .5; }
+
+/* ---------- the map: porcelain land on a pale blue sea ---------- */
+:root[data-theme='light'] .atlas { border-radius: 16px; border: 1px solid var(--line); }
+:root[data-theme='light'] .a-sea { fill: #EDF2F6; }
+:root[data-theme='light'] .a-grat { stroke: rgb(102 134 172 / .1); }
+:root[data-theme='light'] .a-land { fill: #FAF9F6; }
+:root[data-theme='light'] .a-border, :root[data-theme='light'] .a-rim { stroke: #D9D4CA; }
+:root[data-theme='light'] .a-thread { stroke: var(--dusty-pink); }
+:root[data-theme='light'] .a-halo { fill: rgb(35 76 131 / .12); }
+:root[data-theme='light'] .a-dot { fill: var(--sapphire); stroke: #FAF9F6; }
+:root[data-theme='light'] .a-label { fill: var(--ink); stroke: rgb(250 249 246 / .9); font-family: var(--sans); }
+
+/* the saving moment: a ripple on still water instead of a burst of light */
+:root[data-theme='light'] .bloom-burst { background: transparent; }
+:root[data-theme='light'] .bloom-word { color: var(--ink); text-shadow: none; font-family: var(--display); font-style: italic; }
+:root[data-theme='light'] .bloom-ring { border-color: var(--powder); box-shadow: none; }
+
+/* midnight keeps its colours: the pink floret family becomes a pale lilac there */
+:root[data-theme='dark'] .willow #fl4 stop:first-child { stop-color: #8f8ae6; } :root[data-theme='dark'] .willow #fl4 stop:last-child { stop-color: #e1dcff; }
+:root[data-theme='dark'] .willow .ripples path { fill: none; stroke: rgb(159 188 255 / .25); stroke-width: .8; }
+:root[data-theme='dark'] .willow .reflection { opacity: .35; }
+
+/* on a phone the + lives in the header beside search and scrolls with the page, so it never covers words */
+@media (max-width: 760px) {
+  .capture-fab, .capture-fab.high { position: absolute; bottom: auto; top: calc(22px + env(safe-area-inset-top)); right: 66px; width: 38px; height: 38px; }
+  .capture-fab svg, .capture-fab.high svg { width: 18px; height: 18px; }
+  .capture-fab:hover { transform: none; }
+}
+/* lining figures wherever Cormorant sets numbers */
+:root[data-theme='light'] .you-counts, :root[data-theme='light'] .you-counts *, :root[data-theme='light'] .today-greet, :root[data-theme='light'] .arc-title,
+:root[data-theme='light'] .card-moment, :root[data-theme='light'] .mem-title, :root[data-theme='light'] .rw-ways button strong { font-variant-numeric: lining-nums; font-feature-settings: 'lnum' 1; }
+:root[data-theme='light'] .you-name + .arc-sub { font-family: var(--sans); font-style: normal; font-size: 14px; color: var(--ink-soft); }
+:root[data-theme='light'] .invite { font-family: var(--display); font-style: italic; font-weight: 400; }
+/* botanical linework: fine pen limbs, an ink-outlined trunk, a quieter reflection */
+:root[data-theme='light'] .willow .limb-arc { stroke: #7C7564; stroke-width: 1.5px; opacity: .85; stroke-linecap: round; }
+:root[data-theme='light'] .willow #bark stop:nth-child(1) { stop-color: #CFC6B4; }
+:root[data-theme='light'] .willow #bark stop:nth-child(2) { stop-color: #A69C88; }
+:root[data-theme='light'] .willow #bark stop:nth-child(3) { stop-color: #7D7462; }
+:root[data-theme='light'] .willow .trunk { stroke: #5A5345; stroke-width: 1.1; stroke-opacity: .7; }
+:root[data-theme='light'] .willow .trunk-light { stroke: #5A5345; stroke-opacity: .28; stroke-width: .6; }
+:root[data-theme='light'] .willow .reflection { opacity: .32; }
+:root[data-theme='light'] .willow #fl4 stop:first-child { stop-color: #B9707C; }
+:root[data-theme='light'] .willow .strand-line { stroke: rgb(104 120 91 / .45); stroke-width: .6; }
+/* a remembered moment, set as a quotation */
+:root[data-theme='light'] .revisit p, :root[data-theme='light'] .revisit button, :root[data-theme='light'] .revisit a { font-family: var(--display); font-style: italic; font-size: 19px; color: var(--ink); }
+:root[data-theme='light'] #today-q, :root[data-theme='light'] #today-q::placeholder { font-family: var(--display); font-style: italic; font-weight: 400; font-size: 22px; text-align: center; }
+:root[data-theme='light'] .say textarea { font-size: 18px; line-height: 1.4; }
+:root[data-theme='light'] .garden .voice-line { margin-bottom: 14px; }

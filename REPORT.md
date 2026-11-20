@@ -588,3 +588,26 @@ Empty Archives and empty collections were reworded too. Functional controls stay
 - Push notifications aren't set up.
 - Collections with editorial covers suggested by the AI aren't in the UI yet (the agent can already propose collections, which you confirm).
 - An intermittent React hydration warning (#418) has appeared in some production runs; it is recoverable and reported separately by the tests.
+
+## Porcelain (editorial botanical redesign)
+
+The default look is now **Porcelain**: porcelain and white pages, warm ivory reading surfaces, hairline borders, sapphire for structure, dusty rose and aged green as botanical accents. It replaces the Sky/Iris glass looks. Midnight is still in You.
+
+**Removed:** frosted glass, backdrop blur, glossy gradients, tinted button tiles, heavy shadows, glowing particles. Buttons are flat: solid sapphire for the main action, white with a hairline for secondary choices, plain text for quiet links; one 10px radius throughout.
+
+**Type system** (self-hosted in `public/fonts`, SIL Open Font License; no longer loaded from Google, so it works offline and never depends on another site):
+- Display: Cormorant Garamond 400, ~40px, line-height 1.08 (screen headings)
+- Title: Cormorant Garamond 500 (memory titles, section intros)
+- Prompt: Cormorant Garamond italic (questions, reflections, the composer)
+- Body: Inter 400, 15px/1.6
+- UI: Inter 500, 14px (buttons, fields, navigation)
+- Label: Inter 500, 11px tracked capitals in muted blue (dates, metadata)
+- Lining figures for numbers set in Cormorant.
+
+**Willow as a botanical plate:** fine pen limbs, an ink-outlined pale trunk, aged-green strands and leaves, florets in sapphire, muted and powder blue with roughly one in eight in dusty rose, sapphire memory blossoms, and a short, faded reflection in still water with a few ripple lines. A pale blue watercolour wash sits behind the tree only.
+
+**Other screens:** the + moved into the header on phones (it no longer covers text); the Constellation is a fine diagram on ivory (dusty-rose threads, sapphire shared people, aged-green trips); the map is porcelain land on a pale blue sea with sapphire markers.
+
+**Reference:** Worn With Care (`elizabethxuu/wornwith-app`): cream page, white cards, thin warm lines, Cormorant display, tracked Inter eyebrows, restraint. What Stayed borrows those and adds sapphire and botanical colour.
+
+The Sky/Iris glass layers remain earlier in `globals.css`, overridden by the Porcelain layer; removing them is a safe later clean-up.
