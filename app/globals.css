@@ -2952,3 +2952,54 @@ html[data-theme='light'] body::before {
 :root[data-theme='light'] { --pane: linear-gradient(160deg, rgb(255 255 255 / .96), rgb(250 252 255 / .9)); --pane-edge: rgb(20 42 92 / .07); }
 :root[data-theme='light'] .add, :root[data-theme='light'] .confirm-sheet, :root[data-theme='light'] .review, :root[data-theme='light'] .loc-ed, :root[data-theme='light'] .capture-sheet { background: #ffffff; border-color: rgb(20 42 92 / .06); }
 :root[data-theme='light'] .a-sea { fill: #eef4ff; }
+
+/* =====================================================================
+   WHITE GLASS BUTTONS (sky): everything you press is a pane of frosted white
+   with a bright top edge, a soft blue shadow and deep-blue words and icons.
+   ===================================================================== */
+:root[data-theme='light'] {
+  --btn-glass: linear-gradient(180deg, rgb(255 255 255 / .92) 0%, rgb(255 255 255 / .62) 55%, rgb(236 243 255 / .7) 100%);
+  --btn-edge: rgb(20 42 92 / .1);
+  --btn-shadow: 0 1px 0 rgb(255 255 255 / 1) inset, 0 -1px 0 rgb(20 42 92 / .04) inset, 0 10px 24px -12px rgb(40 80 170 / .38), 0 2px 6px -3px rgb(40 80 170 / .18);
+  --btn-shadow-hover: 0 1px 0 rgb(255 255 255 / 1) inset, 0 -1px 0 rgb(20 42 92 / .04) inset, 0 14px 30px -12px rgb(40 80 170 / .48), 0 2px 6px -3px rgb(40 80 170 / .2);
+}
+:root[data-theme='light'] .welcome-go, :root[data-theme='light'] .confirm-yes, :root[data-theme='light'] .agent-yes,
+:root[data-theme='light'] .ob-choice[aria-pressed='true'], :root[data-theme='light'] .ob-choice[aria-checked='true'], :root[data-theme='light'] .agent-mode[aria-checked='true'],
+:root[data-theme='light'] .say button.ready, :root[data-theme='light'] .say button:not(:disabled):hover, :root[data-theme='light'] .confirm-no {
+  background: var(--btn-glass); color: #1f4fbf; border: 1px solid var(--btn-edge); box-shadow: var(--btn-shadow);
+  -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6);
+}
+:root[data-theme='light'] .welcome-go:hover, :root[data-theme='light'] .welcome-go:focus-visible,
+:root[data-theme='light'] .confirm-yes:hover, :root[data-theme='light'] .agent-yes:hover {
+  background: linear-gradient(180deg, #ffffff, rgb(244 248 255 / .85)); color: #1a44a8; box-shadow: var(--btn-shadow-hover); outline: none;
+}
+:root[data-theme='light'] .welcome-go:focus-visible { outline: 2px solid rgb(61 111 216 / .35); outline-offset: 2px; }
+:root[data-theme='light'] .welcome-go:active, :root[data-theme='light'] .confirm-yes:active, :root[data-theme='light'] .agent-yes:active { transform: scale(.98); box-shadow: var(--btn-shadow); }
+:root[data-theme='light'] .say button.ready svg, :root[data-theme='light'] .say button:not(:disabled):hover svg { stroke: #1f4fbf; }
+:root[data-theme='light'] .confirm-yes.danger, :root[data-theme='light'] .agent-yes.danger { background: var(--btn-glass); color: #b23a4e; border-color: rgb(178 58 78 / .2); }
+
+/* the floating + : a white glass pearl */
+:root[data-theme='light'] .capture-fab {
+  color: #1f4fbf; border: 1px solid rgb(20 42 92 / .08);
+  background: radial-gradient(circle at 35% 25%, #ffffff 0%, rgb(255 255 255 / .9) 45%, rgb(226 236 255 / .82) 100%);
+  box-shadow: 0 1px 0 #fff inset, 0 -2px 6px rgb(61 111 216 / .08) inset, 0 14px 30px -12px rgb(40 80 170 / .5), 0 3px 8px -4px rgb(40 80 170 / .25);
+  -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6);
+}
+:root[data-theme='light'] .capture-fab svg { stroke-width: 1.8; }
+:root[data-theme='light'] .capture-fab.open { color: #1a44a8; }
+
+/* small round buttons, chips, tiles and the tab icons in the same glass */
+:root[data-theme='light'] .icon-btn, :root[data-theme='light'] .top-icons button, :root[data-theme='light'] .top-icons a, :root[data-theme='light'] .atlas-zoom button,
+:root[data-theme='light'] .chip, :root[data-theme='light'] .cn-key, :root[data-theme='light'] .capture-list button, :root[data-theme='light'] .rw-ways button,
+:root[data-theme='light'] .agent-prompt, :root[data-theme='light'] .tab svg, :root[data-theme='light'] .you-link {
+  background: var(--btn-glass); border: 1px solid var(--btn-edge); box-shadow: var(--btn-shadow);
+  -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6);
+}
+:root[data-theme='light'] .capture-list button:hover, :root[data-theme='light'] .rw-ways button:hover, :root[data-theme='light'] .agent-prompt:hover, :root[data-theme='light'] .chip:hover { box-shadow: var(--btn-shadow-hover); background: linear-gradient(180deg, #ffffff, rgb(244 248 255 / .85)); }
+:root[data-theme='light'] .capture-icon { background: linear-gradient(180deg, #ffffff, #e9f0ff); border: 1px solid rgb(20 42 92 / .06); box-shadow: 0 1px 0 #fff inset, 0 4px 10px -6px rgb(40 80 170 / .4); }
+:root[data-theme='light'] .tab[aria-current='page'] svg, :root[data-theme='light'] .you-link[aria-current='page'] {
+  background: linear-gradient(180deg, #ffffff, #e6eeff); border-color: rgb(61 111 216 / .28); color: #1f4fbf;
+  box-shadow: 0 1px 0 #fff inset, 0 6px 16px -8px rgb(61 111 216 / .55);
+}
+:root[data-theme='light'] .seg { background: rgb(20 42 92 / .04); border-color: rgb(20 42 92 / .06); box-shadow: 0 1px 2px rgb(20 42 92 / .05) inset; }
+:root[data-theme='light'] .seg button[aria-checked='true'] { background: var(--btn-glass); color: #1f4fbf; box-shadow: var(--btn-shadow); }
