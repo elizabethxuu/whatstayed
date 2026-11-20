@@ -349,6 +349,13 @@ function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors,
 
       {/* the strands at the back of the crown first, then the tree, then the front */}
       {shape && !shape.tree && (m === 0 ? seed() : sprout())}
+      {/* drafts waiting for review sit beside the seed or sprout as closed buds; they are not growth */}
+      {shape && !shape.tree &&
+        Array.from({ length: Math.min(buds, 6) }).map((_, k) => {
+          const side = k % 2 ? 1 : -1;
+          const step = Math.floor(k / 2);
+          return bud(`early-bud${k}`, ROOT.x + side * (34 + step * 16), ROOT.y - 10 - step * 3);
+        })}
       {hasTree && (
       <g
         id="willow-crown"
