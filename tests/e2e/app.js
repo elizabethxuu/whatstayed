@@ -109,7 +109,7 @@ const PW = 'garden-path-1';
     ok('one question at a time; another can be asked for', q1 !== q2);
     await p.fill('#reflect', 'The bus stop by the river, the morning I left.');
     await p.click('text=Save privately');
-    await p.waitForSelector('text=Saved to your Archives.');
+    await p.waitForSelector('text=Saved to your Journal.');
     let s2 = await state(p);
     const refl = s2.entries.find((e) => e.meta?.prompt === q2);
     ok('the reflection is saved privately with its question', !!refl && refl.body.includes('bus stop'));

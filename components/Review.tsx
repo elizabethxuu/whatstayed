@@ -364,7 +364,7 @@ export default function Review({
               Keep the trip together as a collection
             </label>
             <label className="rv-field">
-              <span>The trip, in your words (kept as a page in the Archives)</span>
+              <span>The trip, in your words (kept as a page in your Journal)</span>
               <textarea rows={5} maxLength={20000} value={trip.narrative} onChange={(e) => setTrip({ ...trip, narrative: e.target.value })} />
             </label>
           </div>

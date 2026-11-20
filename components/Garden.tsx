@@ -293,7 +293,7 @@ export default function Garden({ open }: { open: Open }) {
     if (
       !(await confirmSheet({
         title: 'Clear the whole garden?',
-        body: 'Every memory, its places, threads and photographs, and every conversation. The Archives aren’t affected. This can’t be undone.',
+        body: 'Every memory, its places, threads and photographs, and every conversation. Your Journal isn’t affected. This can’t be undone.',
         yes: 'Clear the garden',
         danger: true,
       }))

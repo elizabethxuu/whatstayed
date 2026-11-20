@@ -1236,9 +1236,6 @@ main { animation: room .5s cubic-bezier(.2,.7,.2,1) both; }
 .today-step-t { margin: 0; font-family: var(--serif); font-size: 21px; color: var(--ink); }
 .today-step-b { margin: 6px 0 12px; font-size: 14px; font-weight: 300; line-height: 1.55; color: var(--ink-soft); }
 .today-revisits:empty { display: none; }
-.today-explore { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 60px; padding-top: 22px; border-top: .5px solid rgb(var(--branch-rgb) / .3); }
-.today-explore a { font-size: 14px; color: var(--ink-soft); text-decoration: none; }
-.today-explore a:hover { color: var(--ink); }
 
 /* You */
 .you-page { max-width: 720px; margin: clamp(26px, 6vh, 64px) auto 0; }

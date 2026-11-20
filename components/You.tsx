@@ -265,7 +265,7 @@ function Preferences() {
       <label className="ob-toggle">
         <span>
           Daily reflection
-          <em>One question a day on Today, saved to your Archives if you answer.</em>
+          <em>One question a day on Today, saved to your Journal if you answer.</em>
         </span>
         <input type="checkbox" role="switch" checked={p.reflection?.enabled !== false} onChange={(e) => store.saveProfile({ reflection: { enabled: e.target.checked } }, true)} />
         <i aria-hidden="true" />

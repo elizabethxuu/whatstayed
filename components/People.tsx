@@ -223,7 +223,7 @@ function PersonPage({ person, onGone }: { person: Person; onGone: () => void }) 
               ))}
             </ul>
           )}
-          <button type="button" className="quiet" onClick={() => setSheet('pages')} disabled={!snap.entries.length} title={snap.entries.length ? undefined : 'Write a page in the Archives first'}>
+          <button type="button" className="quiet" onClick={() => setSheet('pages')} disabled={!snap.entries.length} title={snap.entries.length ? undefined : 'Write a page in your Journal first'}>
             Add a page…
           </button>
         </section>

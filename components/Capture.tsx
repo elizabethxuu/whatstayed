@@ -21,7 +21,7 @@ const haptic = (ms = 8) => {
 const ACTIONS: { key: string; title: string; hint: string; icon: React.ReactNode }[] = [
   { key: 'story', title: 'Tell a story', hint: 'Talk it through; it drafts the memories for you', icon: <path d="M4.5 6.5h15v9h-7l-4.5 3.5v-3.5h-3.5z" /> },
   { key: 'voice', title: 'Record a voice memory', hint: 'Speak, and read it back before it’s sent', icon: <><rect x="9" y="3.5" width="6" height="11" rx="3" /><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5" /></> },
-  { key: 'write', title: 'Write something', hint: 'A page in your Archives', icon: <><path d="M6 3.8h9.2L18.5 7v13.2H6z" /><path d="M9 10.5h6.5M9 13.5h6.5M9 16.5h4" /></> },
+  { key: 'write', title: 'Write something', hint: 'A page in your Journal', icon: <><path d="M6 3.8h9.2L18.5 7v13.2H6z" /><path d="M9 10.5h6.5M9 13.5h6.5M9 16.5h4" /></> },
   { key: 'photos', title: 'Add photographs', hint: 'Choose them, then say what you remember', icon: <><rect x="3.8" y="5.5" width="16.4" height="13" rx="2" /><circle cx="9" cy="10.4" r="1.6" /><path d="M4.5 17l5-4.5 3.5 3 2.5-2 4 3.5" /></> },
   { key: 'place', title: 'Save a place', hint: 'Somewhere you want to remember', icon: <><path d="M12 20.5s-6-5.6-6-10.2a6 6 0 0 1 12 0c0 4.6-6 10.2-6 10.2z" /><circle cx="12" cy="10.3" r="2.2" /></> },
   { key: 'moment', title: 'Capture a moment', hint: 'One line is enough', icon: <><circle cx="12" cy="12" r="3.4" /><path d="M12 3.8v2.2M12 18v2.2M3.8 12H6M18 12h2.2" /></> },

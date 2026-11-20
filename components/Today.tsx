@@ -232,15 +232,6 @@ export default function Today() {
           </section>
         )}
 
-        <nav className="today-explore" aria-label="More of your archive">
-          <Link href="/constellation">Constellation</Link>
-          <Link href="/rewind">Rewind</Link>
-          <Link href="/people">People</Link>
-          <Link href="/timeline">Timeline</Link>
-          <Link href="/collections">Collections</Link>
-          <Link href="/letters">Letters</Link>
-          <Link href="/search">Search</Link>
-        </nav>
       </section>
 
       {adding && (
@@ -287,7 +278,7 @@ function MemoryRow({ list }: { list: Stored[] }) {
   );
 }
 
-/** One question at a time. An answer is saved privately to the Archives, and can be tied to a memory. */
+/** One question at a time. An answer is saved privately to the Journal, and can be tied to a memory. */
 function Reflection({ now, prominent }: { now: Date; prominent: boolean }) {
   const [snap, store] = useStore();
   const [offset, setOffset] = useState(0);
@@ -310,7 +301,7 @@ function Reflection({ now, prominent }: { now: Date; prominent: boolean }) {
       await store.saveEntry({ id, body: text.trim(), createdAt: Date.now(), meta: { prompt } });
       if (link) await store.link({ kind: 'entry-memory', a: id, b: link, note: 'A reflection' }, true);
       haptic(12);
-      store.toast('Saved privately to your Archives.');
+      store.toast('Saved privately to your Journal.');
       setSaved(id);
       setText('');
       setLink('');
@@ -360,7 +351,7 @@ function Reflection({ now, prominent }: { now: Date; prominent: boolean }) {
         </p>
       ) : saved ? (
         <p className="you-note" role="status">
-          Saved to your Archives. <Link href={`/archives?e=${encodeURIComponent(saved)}`}>Open it</Link> ·{' '}
+          Saved to your Journal. <Link href={`/archives?e=${encodeURIComponent(saved)}`}>Open it</Link> ·{' '}
           <Link href="/archives?f=reflections">All your reflections</Link>
         </p>
       ) : (

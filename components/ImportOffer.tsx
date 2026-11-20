@@ -88,7 +88,7 @@ export default function ImportOffer({ email }: { email: string }) {
           Before accounts, What Stayed kept things only on this device. We found{' '}
           {[
             found.memories ? `${found.memories} ${found.memories === 1 ? 'memory' : 'memories'}` : null,
-            found.entries.length ? `${found.entries.length} ${found.entries.length === 1 ? 'page' : 'pages'} from the Archives` : null,
+            found.entries.length ? `${found.entries.length} ${found.entries.length === 1 ? 'page' : 'pages'} from your Journal` : null,
           ]
             .filter(Boolean)
             .join(' and ') || 'an earlier conversation'}
