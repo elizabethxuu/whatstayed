@@ -653,3 +653,11 @@ The bottom bar (Garden, Today, Archives, Places, More) and the desktop row of te
 Every old URL still opens and is marked under its space (tested on phone and desktop in `tests/e2e/nav.js`). The old `TabBar` and `RoomsScroll` components were removed.
 
 **The growth card is now glass:** a frosted pane over soft blue petals, white type. It is the one deliberate piece of glass in the porcelain look.
+
+## White garden (white botanical willow)
+
+- **White dominates.** The page is #FFFFFF on Today, Garden, memories and conversation; the Archive (All, Journal, Places, People, Timeline, Collections, Letters) reads on warm ivory #F5F1E9 with white cards. Palette tokens follow the brief: porcelain #FAFAF8, pale stone #EAE7E0, sapphire #456B9A, powder blue #B7CADA, dusty rose #D9A6AA, pale blush #F3E5E4, meadow sage #A3AD8D, forest moss #68775D.
+- **No glass.** The growth card (glass in the previous pass) is now a white porcelain card with a stone hairline and a soft natural shadow; the droplet stays, in sapphire.
+- **The willow is the hero.** Larger on Today (up to 60% of the screen) and in the Garden; a young willow now fills most of the plate (slimmer and sparser rather than tiny). Foliage is sage and moss so it reads as a living tree. Only pale blue mist behind it; a short reflection and ripple lines below.
+- **Alpine and meadow flowers.** Among the strands: forget-me-nots in powder and sapphire, pointed gentians, blush wild roses with gold centres, and small white blossoms, chosen by a fixed hash so the tree is the same on every visit. The number open still follows saved memories (growth system); each memory remains its own larger sapphire blossom.
+- **Type** a touch larger and lighter: display headings in Cormorant 300, labels 12px, interface text 16px.

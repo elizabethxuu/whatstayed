@@ -50,12 +50,56 @@ function hash(n: number) {
 /** five rounded petals, the What Stayed flower */
 const PETAL = 'M0 0 C -4.6 -2.2, -6.2 -8.6, -3.2 -11.4 C -1.6 -12.8, 1.6 -12.8, 3.2 -11.4 C 6.2 -8.6, 4.6 -2.2, 0 0 Z';
 
+/** a gentian's pointed petal */
+const GENTIAN = 'M0 0 C -3.2 -3, -3.8 -9.2, 0 -13.6 C 3.8 -9.2, 3.2 -3, 0 0 Z';
+/** a wild rose's broad, softly notched petal */
+const ROSE = 'M0 0 C -6.6 -2, -8.2 -9.6, -3.8 -12.2 C -1.8 -12.9, -.5 -11.4, 0 -10.4 C .5 -11.4, 1.8 -12.9, 3.8 -12.2 C 8.2 -9.6, 6.6 -2, 0 0 Z';
+
+/**
+ * Alpine and meadow flowers among the willow's strands, chosen by a fixed hash so the tree is the
+ * same on every visit: mostly forget-me-nots, with gentians, wild roses and small white blossoms.
+ */
+function kindOf(fl: Floret): 'forget' | 'gentian' | 'rose' | 'white' {
+  const h = hash(fl.x * 1.7 + fl.y * 0.31 + 5);
+  return h < 0.52 ? 'forget' : h < 0.7 ? 'gentian' : h < 0.83 ? 'rose' : 'white';
+}
+
 function floret(fl: Floret, k: number, open: boolean) {
   if (!open)
     return <circle key={k} className="fbud" cx={fl.x} cy={fl.y} r={Math.max(0.9, fl.r * 0.55)} />;
+  const kind = kindOf(fl);
+  const at = `translate(${fl.x.toFixed(1)} ${fl.y.toFixed(1)}) rotate(${fl.rot.toFixed(0)}) scale(${(fl.r / 9).toFixed(3)})`;
+  const five = [0, 72, 144, 216, 288];
+  if (kind === 'gentian')
+    return (
+      <g key={k} className="floret k-gentian" transform={at}>
+        {five.map((a) => (
+          <path key={a} d={GENTIAN} transform={`rotate(${a})`} fill="url(#flG)" />
+        ))}
+        <circle r="1.8" className="feye" />
+      </g>
+    );
+  if (kind === 'rose')
+    return (
+      <g key={k} className="floret k-rose" transform={`${at} scale(1.15)`}>
+        {five.map((a) => (
+          <path key={a} d={ROSE} transform={`rotate(${a})`} fill="url(#fl4)" />
+        ))}
+        <circle r="2.6" className="feye" />
+      </g>
+    );
+  if (kind === 'white')
+    return (
+      <g key={k} className="floret k-white" transform={`${at} scale(.85)`}>
+        {five.map((a) => (
+          <path key={a} d={PETAL} transform={`rotate(${a})`} />
+        ))}
+        <circle r="1.9" className="feye" />
+      </g>
+    );
   return (
-    <g key={k} className="floret" transform={`translate(${fl.x.toFixed(1)} ${fl.y.toFixed(1)}) rotate(${fl.rot.toFixed(0)}) scale(${(fl.r / 9).toFixed(3)})`}>
-      {[0, 72, 144, 216, 288].map((a) => (
+    <g key={k} className="floret" transform={at}>
+      {five.map((a) => (
         <path key={a} d={PETAL} transform={`rotate(${a})`} fill={toneOf(fl)} />
       ))}
       <circle r="2.2" className="feye" />
@@ -311,6 +355,7 @@ function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors,
         <radialGradient id="fl1" cx="50%" cy="100%" r="110%"><stop offset="0" stopColor="#7d87e8" /><stop offset="1" stopColor="#d3d6ff" /></radialGradient>
         <radialGradient id="fl2" cx="50%" cy="100%" r="110%"><stop offset="0" stopColor="#5f8fe6" /><stop offset="1" stopColor="#b4ceff" /></radialGradient>
         <radialGradient id="fl3" cx="50%" cy="100%" r="110%"><stop offset="0" stopColor="#8f8ae6" /><stop offset="1" stopColor="#e1dcff" /></radialGradient>
+        <radialGradient id="flG" cx="50%" cy="100%" r="110%"><stop offset="0" stopColor="#2F5288" /><stop offset=".6" stopColor="#456B9A" /><stop offset="1" stopColor="#B7CADA" /></radialGradient>
         <radialGradient id="fl4" cx="50%" cy="100%" r="110%"><stop offset="0" stopColor="#c98791" /><stop offset="1" stopColor="#f4e6e5" /></radialGradient>
         {/* the reflection in still water fades out below the bank */}
         <linearGradient id="reflFade" x1="0" y1="694" x2="0" y2="776" gradientUnits="userSpaceOnUse">

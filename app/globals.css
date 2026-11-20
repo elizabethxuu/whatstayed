@@ -3140,10 +3140,10 @@ html[data-theme='light'] body::before {
    ===================================================================== */
 :root[data-theme='light'] {
   color-scheme: light;
-  --porcelain: #FAF9F6; --ivory: #F0EAE0; --ivory-soft: #F6F2EB; --paper: #FFFFFF; --stone: #E8E5DE; --line: #E9E5DD; --line-strong: #D9D4CA;
-  --sapphire: #234C83; --sapphire-deep: #1B3C69; --muted-blue: #6686AC; --powder: #9CB6D3; --pale-blue: #E4ECF3;
-  --rose: #E9C9CD; --dusty-pink: #C98791; --blush: #F4E6E5;
-  --sage: #A4AD91; --aged-green: #68785B; --moss: #DCE0D2;
+  --porcelain: #FFFFFF; --ivory: #F0EAE0; --ivory-soft: #F6F2EB; --paper: #FFFFFF; --stone: #E8E5DE; --line: #E9E5DD; --line-strong: #D9D4CA;
+  --sapphire: #456B9A; --sapphire-deep: #36577F; --muted-blue: #6686AC; --powder: #B7CADA; --pale-blue: #E4ECF3;
+  --rose: #E9C9CD; --dusty-pink: #D9A6AA; --blush: #F3E5E4;
+  --sage: #A3AD8D; --aged-green: #68775D; --moss: #DCE0D2;
 
   --ink: #24272C; --ink-soft: #5F5B55; --ink-faint: #918C85; --ink-rgb: 36 39 44;
   --ice: var(--sapphire); --peri: var(--sapphire); --peri-deep: var(--sapphire-deep); --cobalt: var(--sapphire); --violet: var(--sapphire);
@@ -3159,10 +3159,10 @@ html[data-theme='light'] body::before {
 :root[data-theme='light'] *, :root[data-theme='light'] *::before, :root[data-theme='light'] *::after { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
 
 /* the page: porcelain, still */
-:root[data-theme='light'] html, html[data-theme='light'] { background: #FAF9F6; background-image: none; }
+:root[data-theme='light'] html, html[data-theme='light'] { background: #FFFFFF; background-image: none; }
 html[data-theme='light'] body::before { display: none; animation: none; }
 html[data-theme='light'] body::after { display: none; }
-:root[data-theme='light'] body { background: #FAF9F6; color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.6; }
+:root[data-theme='light'] body { background: #FFFFFF; color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.6; }
 
 /* ---------- type ---------- */
 :root[data-theme='light'] .today-greet, :root[data-theme='light'] .welcome-title, :root[data-theme='light'] .ob-title, :root[data-theme='light'] .arc-title {
@@ -3196,7 +3196,7 @@ html[data-theme='light'] body::after { display: none; }
 :root[data-theme='light'] .quiet:hover { color: var(--sapphire); }
 :root[data-theme='light'] .quiet.strong, :root[data-theme='light'] .fav.on, :root[data-theme='light'] .ai-mark, :root[data-theme='light'] .log-tool { color: var(--sapphire); }
 :root[data-theme='light'] mark, :root[data-theme='light'] .leaf-body mark { background: linear-gradient(transparent 60%, rgb(233 201 205 / .7) 60%); color: inherit; }
-:root[data-theme='light'] ::selection { background: rgb(156 182 211 / .45); }
+:root[data-theme='light'] ::selection { background: rgb(183 202 218 / .45); }
 
 /* ---------- surfaces ---------- */
 :root[data-theme='light'] .card, :root[data-theme='light'] .today-step, :root[data-theme='light'] .today-reflect, :root[data-theme='light'] .you-block,
@@ -3207,7 +3207,7 @@ html[data-theme='light'] body::after { display: none; }
 }
 /* reading surfaces: warm ivory */
 :root[data-theme='light'] .today-back-card, :root[data-theme='light'] .today-reflect, :root[data-theme='light'] .mem-facts { background: var(--ivory-soft); border-color: #E8E1D5; }
-:root[data-theme='light'] .toast { background: var(--ink); color: #FAF9F6; border-color: transparent; }
+:root[data-theme='light'] .toast { background: var(--ink); color: #FFFFFF; border-color: transparent; }
 :root[data-theme='light'] .toast.error { background: #A94C5C; }
 
 /* sheets: a porcelain page that rises from the bottom */
@@ -3227,8 +3227,8 @@ html[data-theme='light'] body::after { display: none; }
 :root[data-theme='light'] .welcome-go:hover, :root[data-theme='light'] .welcome-go:focus-visible, :root[data-theme='light'] .confirm-yes:hover, :root[data-theme='light'] .agent-yes:hover {
   background: var(--sapphire-deep); border-color: var(--sapphire-deep); color: #FFFFFF; box-shadow: none;
 }
-:root[data-theme='light'] .welcome-go:focus-visible { outline: 2px solid rgb(35 76 131 / .3); outline-offset: 2px; }
-:root[data-theme='light'] .welcome-go:active, :root[data-theme='light'] .confirm-yes:active, :root[data-theme='light'] .agent-yes:active { transform: none; background: #163257; }
+:root[data-theme='light'] .welcome-go:focus-visible { outline: 2px solid rgb(69 107 154 / .3); outline-offset: 2px; }
+:root[data-theme='light'] .welcome-go:active, :root[data-theme='light'] .confirm-yes:active, :root[data-theme='light'] .agent-yes:active { transform: none; background: #2C4A70; }
 :root[data-theme='light'] .welcome-go:disabled { background: #B9C5D6; border-color: #B9C5D6; opacity: 1; }
 :root[data-theme='light'] .confirm-yes.danger, :root[data-theme='light'] .agent-yes.danger { background: #A94C5C; border-color: #A94C5C; color: #fff; }
 :root[data-theme='light'] .confirm-no, :root[data-theme='light'] .agent-no {
@@ -3263,7 +3263,7 @@ html[data-theme='light'] body::after { display: none; }
 
 /* the floating + : one quiet sapphire seal */
 :root[data-theme='light'] .capture-fab {
-  background: var(--sapphire); color: #fff; border: 0; box-shadow: 0 8px 18px -10px rgb(35 76 131 / .55), 0 1px 2px rgb(35 76 131 / .2);
+  background: var(--sapphire); color: #fff; border: 0; box-shadow: 0 8px 18px -10px rgb(69 107 154 / .55), 0 1px 2px rgb(69 107 154 / .2);
 }
 :root[data-theme='light'] .capture-fab:hover { background: var(--sapphire-deep); }
 :root[data-theme='light'] .capture-fab svg { stroke: currentColor; stroke-width: 1.6; }
@@ -3275,7 +3275,7 @@ html[data-theme='light'] body::after { display: none; }
 /* header icons and the bottom navigation: no tiles, just fine lines */
 :root[data-theme='light'] .top-icons button, :root[data-theme='light'] .top-icons a { background: transparent; border: 1px solid transparent; box-shadow: none; color: var(--ink-soft); }
 :root[data-theme='light'] .top-icons button:hover, :root[data-theme='light'] .top-icons a:hover { border-color: var(--line); color: var(--sapphire); }
-:root[data-theme='light'] .tabbar, :root[data-theme='light'].scrolled .tabbar { background: rgb(250 249 246 / .98); border-top: 1px solid var(--line); box-shadow: none; }
+:root[data-theme='light'] .tabbar, :root[data-theme='light'].scrolled .tabbar { background: rgb(255 255 255 / .98); border-top: 1px solid var(--line); box-shadow: none; }
 :root[data-theme='light'] .tab { color: var(--ink-faint); font-family: var(--sans); font-weight: 500; letter-spacing: .01em; }
 :root[data-theme='light'] .tab svg, :root[data-theme='light'] .you-link { background: transparent; border-color: transparent; box-shadow: none; color: inherit; }
 :root[data-theme='light'] .tab[aria-current='page'] { color: var(--sapphire); }
@@ -3304,26 +3304,26 @@ html[data-theme='light'] .garden form.say, :root[data-theme='light'] .say, :root
 :root[data-theme='light'] .willow #bark stop:nth-child(2) { stop-color: #7B7566; }
 :root[data-theme='light'] .willow #bark stop:nth-child(3) { stop-color: #545347; }
 :root[data-theme='light'] .willow .trunk { stroke: #4A4A3E; stroke-width: .8; stroke-opacity: .55; }
-:root[data-theme='light'] .willow .trunk-light { stroke: rgb(250 249 246 / .5); stroke-width: .7; }
+:root[data-theme='light'] .willow .trunk-light { stroke: rgb(255 255 255 / .5); stroke-width: .7; }
 :root[data-theme='light'] .willow .limb-arc { stroke: #6E6B5C; opacity: .8; }
-:root[data-theme='light'] .willow .strand-line { stroke: rgb(104 120 91 / .55); stroke-width: .7; }
-:root[data-theme='light'] .willow .layer-0 .strand-line { stroke: rgb(164 173 145 / .5); }
-:root[data-theme='light'] .willow .wleaf { fill: rgb(104 120 91 / .6); }
-:root[data-theme='light'] .willow .layer-0 .wleaf { fill: rgb(164 173 145 / .55); }
-:root[data-theme='light'] .willow #fl0 stop:first-child { stop-color: #234C83; } :root[data-theme='light'] .willow #fl0 stop:last-child { stop-color: #6686AC; }
-:root[data-theme='light'] .willow #fl1 stop:first-child { stop-color: #4F72A3; } :root[data-theme='light'] .willow #fl1 stop:last-child { stop-color: #9CB6D3; }
+:root[data-theme='light'] .willow .strand-line { stroke: rgb(104 119 93 / .55); stroke-width: .7; }
+:root[data-theme='light'] .willow .layer-0 .strand-line { stroke: rgb(163 173 141 / .5); }
+:root[data-theme='light'] .willow .wleaf { fill: rgb(104 119 93 / .6); }
+:root[data-theme='light'] .willow .layer-0 .wleaf { fill: rgb(163 173 141 / .55); }
+:root[data-theme='light'] .willow #fl0 stop:first-child { stop-color: #456B9A; } :root[data-theme='light'] .willow #fl0 stop:last-child { stop-color: #6686AC; }
+:root[data-theme='light'] .willow #fl1 stop:first-child { stop-color: #4F72A3; } :root[data-theme='light'] .willow #fl1 stop:last-child { stop-color: #B7CADA; }
 :root[data-theme='light'] .willow #fl2 stop:first-child { stop-color: #6686AC; } :root[data-theme='light'] .willow #fl2 stop:last-child { stop-color: #C9D8E8; }
-:root[data-theme='light'] .willow #fl3 stop:first-child { stop-color: #2E5A94; } :root[data-theme='light'] .willow #fl3 stop:last-child { stop-color: #9CB6D3; }
-:root[data-theme='light'] .willow #fl4 stop:first-child { stop-color: #C98791; } :root[data-theme='light'] .willow #fl4 stop:last-child { stop-color: #F4E6E5; }
-:root[data-theme='light'] .willow .floret path { stroke: rgb(250 249 246 / .9); stroke-width: .4; opacity: 1; }
+:root[data-theme='light'] .willow #fl3 stop:first-child { stop-color: #2E5A94; } :root[data-theme='light'] .willow #fl3 stop:last-child { stop-color: #B7CADA; }
+:root[data-theme='light'] .willow #fl4 stop:first-child { stop-color: #D9A6AA; } :root[data-theme='light'] .willow #fl4 stop:last-child { stop-color: #F3E5E4; }
+:root[data-theme='light'] .willow .floret path { stroke: rgb(255 255 255 / .9); stroke-width: .4; opacity: 1; }
 :root[data-theme='light'] .willow .floret .feye { fill: #F3E3B8; }
-:root[data-theme='light'] .willow .fbud { fill: rgb(104 120 91 / .55); }
-:root[data-theme='light'] .willow .carpet .fbud { fill: rgb(164 173 145 / .6); }
+:root[data-theme='light'] .willow .fbud { fill: rgb(104 119 93 / .55); }
+:root[data-theme='light'] .willow .carpet .fbud { fill: rgb(163 173 141 / .6); }
 :root[data-theme='light'] .willow #pWhite stop:nth-child(1) { stop-color: #1F4478; } :root[data-theme='light'] .willow #pWhite stop:nth-child(2) { stop-color: #4F72A3; } :root[data-theme='light'] .willow #pWhite stop:nth-child(3) { stop-color: #C9D8E8; }
 :root[data-theme='light'] .willow #pMist stop:nth-child(1) { stop-color: #3A5F92; } :root[data-theme='light'] .willow #pMist stop:nth-child(2) { stop-color: #7E9BC0; } :root[data-theme='light'] .willow #pMist stop:nth-child(3) { stop-color: #E4ECF3; }
-:root[data-theme='light'] .willow #pMeaning stop:nth-child(1) { stop-color: #1B3C69; } :root[data-theme='light'] .willow #pMeaning stop:nth-child(2) { stop-color: #4369A0; } :root[data-theme='light'] .willow #pMeaning stop:nth-child(3) { stop-color: #DCE6F1; }
-:root[data-theme='light'] .willow .blossom .petal { stroke: #FAF9F6; stroke-width: .6; filter: none; }
-:root[data-theme='light'] .willow .blossom .heart { fill: #FAF9F6; }
+:root[data-theme='light'] .willow #pMeaning stop:nth-child(1) { stop-color: #36577F; } :root[data-theme='light'] .willow #pMeaning stop:nth-child(2) { stop-color: #4369A0; } :root[data-theme='light'] .willow #pMeaning stop:nth-child(3) { stop-color: #DCE6F1; }
+:root[data-theme='light'] .willow .blossom .petal { stroke: #FFFFFF; stroke-width: .6; filter: none; }
+:root[data-theme='light'] .willow .blossom .heart { fill: #FFFFFF; }
 :root[data-theme='light'] .willow .blossom .eye-ray { stroke: #D9B65E; }
 :root[data-theme='light'] .willow .blossom .glow { display: none; }
 :root[data-theme='light'] .willow .blossom .tbud { fill: var(--dusty-pink); }
@@ -3335,16 +3335,16 @@ html[data-theme='light'] .garden form.say, :root[data-theme='light'] .say, :root
 :root[data-theme='light'] .willow .thread { stroke: var(--dusty-pink); stroke-width: 1; filter: none; opacity: .9; }
 :root[data-theme='light'] .willow .drift-petal { fill: #E9C9CD; stroke: none; opacity: .85; }
 :root[data-theme='light'] .willow .reflection { opacity: .5; }
-:root[data-theme='light'] .willow .ripples path { fill: none; stroke: #9CB6D3; stroke-width: .8; stroke-linecap: round; opacity: .55; }
-:root[data-theme='light'] .garden.agent-searching .willow .strand-line { stroke: rgb(35 76 131 / .7); }
+:root[data-theme='light'] .willow .ripples path { fill: none; stroke: #B7CADA; stroke-width: .8; stroke-linecap: round; opacity: .55; }
+:root[data-theme='light'] .garden.agent-searching .willow .strand-line { stroke: rgb(69 107 154 / .7); }
 /* a soft watercolour wash behind the tree only, like a pale blue tint on the page */
 :root[data-theme='light'] .today-tree, :root[data-theme='light'] .garden .stage { background: radial-gradient(48% 46% at 50% 52%, rgb(228 236 243 / .9), rgb(228 236 243 / 0) 72%), radial-gradient(26% 20% at 68% 82%, rgb(220 224 210 / .55), transparent 70%); }
 
 /* ---------- constellation by day: a fine diagram of connections on ivory ---------- */
 :root[data-theme='light'] .cn-sky { background: var(--ivory-soft); border: 1px solid #E8E1D5; border-radius: 16px; box-shadow: none; }
-:root[data-theme='light'] .cn-cluster circle { fill: rgb(156 182 211 / .14); }
+:root[data-theme='light'] .cn-cluster circle { fill: rgb(183 202 218 / .14); }
 :root[data-theme='light'] .cn-cluster text { fill: var(--ink-soft); font-family: var(--sans); letter-spacing: .12em; text-transform: uppercase; }
-:root[data-theme='light'] .cn-glow { fill: rgb(35 76 131 / .1); }
+:root[data-theme='light'] .cn-glow { fill: rgb(69 107 154 / .1); }
 :root[data-theme='light'] .cn-core { fill: var(--sapphire); }
 :root[data-theme='light'] .cn-star.sel .cn-core { fill: var(--dusty-pink); }
 :root[data-theme='light'] .cn-edge { stroke-width: 1; filter: none; }
@@ -3358,12 +3358,12 @@ html[data-theme='light'] .garden form.say, :root[data-theme='light'] .say, :root
 :root[data-theme='light'] .atlas { border-radius: 16px; border: 1px solid var(--line); }
 :root[data-theme='light'] .a-sea { fill: #EDF2F6; }
 :root[data-theme='light'] .a-grat { stroke: rgb(102 134 172 / .1); }
-:root[data-theme='light'] .a-land { fill: #FAF9F6; }
+:root[data-theme='light'] .a-land { fill: #FFFFFF; }
 :root[data-theme='light'] .a-border, :root[data-theme='light'] .a-rim { stroke: #D9D4CA; }
 :root[data-theme='light'] .a-thread { stroke: var(--dusty-pink); }
-:root[data-theme='light'] .a-halo { fill: rgb(35 76 131 / .12); }
-:root[data-theme='light'] .a-dot { fill: var(--sapphire); stroke: #FAF9F6; }
-:root[data-theme='light'] .a-label { fill: var(--ink); stroke: rgb(250 249 246 / .9); font-family: var(--sans); }
+:root[data-theme='light'] .a-halo { fill: rgb(69 107 154 / .12); }
+:root[data-theme='light'] .a-dot { fill: var(--sapphire); stroke: #FFFFFF; }
+:root[data-theme='light'] .a-label { fill: var(--ink); stroke: rgb(255 255 255 / .9); font-family: var(--sans); }
 
 /* the saving moment: a ripple on still water instead of a burst of light */
 :root[data-theme='light'] .bloom-burst { background: transparent; }
@@ -3395,7 +3395,7 @@ html[data-theme='light'] .garden form.say, :root[data-theme='light'] .say, :root
 :root[data-theme='light'] .willow .trunk-light { stroke: #5A5345; stroke-opacity: .28; stroke-width: .6; }
 :root[data-theme='light'] .willow .reflection { opacity: .32; }
 :root[data-theme='light'] .willow #fl4 stop:first-child { stop-color: #B9707C; }
-:root[data-theme='light'] .willow .strand-line { stroke: rgb(104 120 91 / .45); stroke-width: .6; }
+:root[data-theme='light'] .willow .strand-line { stroke: rgb(104 119 93 / .45); stroke-width: .6; }
 /* a remembered moment, set as a quotation */
 :root[data-theme='light'] .revisit p, :root[data-theme='light'] .revisit button, :root[data-theme='light'] .revisit a { font-family: var(--display); font-style: italic; font-size: 19px; color: var(--ink); }
 :root[data-theme='light'] #today-q, :root[data-theme='light'] #today-q::placeholder { font-family: var(--display); font-style: italic; font-weight: 400; font-size: 22px; text-align: center; }
@@ -3412,12 +3412,12 @@ html[data-theme='light'] .garden form.say, :root[data-theme='light'] .say, :root
 .willow .seedling .root { fill: none; stroke: #8C8270; stroke-width: .7; stroke-linecap: round; }
 .willow .seed-coat { fill: #C9B796; stroke: #6E6552; stroke-width: .8; }
 .willow .seed-line { fill: none; stroke: #6E6552; stroke-width: .5; stroke-opacity: .6; }
-.willow .dew { fill: rgb(156 182 211 / .55); stroke: #6686AC; stroke-width: .6; }
+.willow .dew { fill: rgb(183 202 218 / .55); stroke: #6686AC; stroke-width: .6; }
 .willow .seed { animation: seed-rest 6s ease-in-out infinite; transform-origin: 488px 694px; transform-box: view-box; }
 @keyframes seed-rest { 50% { transform: translateY(-.6px); } }
-.willow .sprout-stem { fill: none; stroke: #68785B; stroke-width: 1.6; stroke-linecap: round; }
+.willow .sprout-stem { fill: none; stroke: #68775D; stroke-width: 1.6; stroke-linecap: round; }
 .willow .sprout-stem.fine { stroke-width: .9; }
-.willow .sprout-stem.drooping { stroke: #A4AD91; }
+.willow .sprout-stem.drooping { stroke: #A3AD8D; }
 .willow .sprout-leaf { fill: #8E9A78; stroke: #5E6C50; stroke-width: .5; }
 .willow .sprout { transform-origin: 488px 694px; transform-box: view-box; animation: sprout-up 1.6s cubic-bezier(.22, .8, .3, 1) both, sprout-sway 7s ease-in-out 1.6s infinite; }
 @keyframes sprout-up { from { transform: scaleY(.2); opacity: 0; } to { transform: none; opacity: 1; } }
@@ -3435,9 +3435,9 @@ html[data-theme='light'] .garden form.say, :root[data-theme='light'] .say, :root
 /* ---------- the growth widget: a small botanical specimen card ---------- */
 .growth {
   position: relative; max-width: 460px; margin: 28px auto 8px; padding: 18px 20px 14px;
-  background: linear-gradient(180deg, rgb(255 255 255 / .86), rgb(250 249 246 / .72));
+  background: linear-gradient(180deg, rgb(255 255 255 / .86), rgb(255 255 255 / .72));
   border: 1px solid #E6E2DA; border-radius: 16px;
-  box-shadow: 0 1px 0 rgb(255 255 255 / .9) inset, 0 12px 28px -22px rgb(35 76 131 / .35), 0 1px 2px rgb(40 35 30 / .04);
+  box-shadow: 0 1px 0 rgb(255 255 255 / .9) inset, 0 12px 28px -22px rgb(69 107 154 / .35), 0 1px 2px rgb(40 35 30 / .04);
 }
 .growth-head { display: flex; align-items: center; justify-content: space-between; }
 .growth-k { margin: 0; font-family: var(--sans); font-weight: 500; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #6686AC; }
@@ -3448,14 +3448,14 @@ html[data-theme='light'] .garden form.say, :root[data-theme='light'] .say, :root
 .growth-nums strong { display: inline-flex; align-items: center; gap: 6px; font-family: var(--display); font-weight: 500; font-size: 36px; line-height: 1; color: var(--ink); font-variant-numeric: lining-nums; font-feature-settings: 'lnum' 1; }
 .growth-nums span { font-family: var(--sans); font-size: 13px; color: var(--ink-soft); }
 .droplet { flex: none; }
-.droplet path:first-child { fill: rgb(156 182 211 / .35); stroke: #6686AC; stroke-width: 1.1; }
+.droplet path:first-child { fill: rgb(183 202 218 / .35); stroke: #6686AC; stroke-width: 1.1; }
 .droplet .droplet-shine { fill: none; stroke: #fff; stroke-width: 1; stroke-linecap: round; }
 .growth-bar { height: 4px; border-radius: 4px; background: #ECE8E1; overflow: hidden; }
-.growth-bar i { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, #9CB6D3, #234C83); transition: width 1.6s cubic-bezier(.22, .8, .3, 1); }
+.growth-bar i { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, #B7CADA, #456B9A); transition: width 1.6s cubic-bezier(.22, .8, .3, 1); }
 .growth-line { margin: 12px 0 0; font-family: var(--sans); font-size: 13.5px; line-height: 1.55; color: var(--ink-soft); }
 .growth-line em { font-family: var(--display); font-style: italic; font-size: 17px; color: var(--ink); }
 .growth-next { color: #6686AC; }
-.growth-open { margin-top: 6px; padding: 6px 0; font-size: 13px; color: #234C83; }
+.growth-open { margin-top: 6px; padding: 6px 0; font-size: 13px; color: #456B9A; }
 .today-page .growth { margin-left: auto; margin-right: auto; }
 
 /* the journey sheet */
@@ -3463,9 +3463,9 @@ html[data-theme='light'] .garden form.say, :root[data-theme='light'] .say, :root
 .growth-title { margin: 6px 0 4px; font-family: var(--display); font-weight: 400; font-size: 34px; line-height: 1.1; color: var(--ink); }
 .growth-stages { list-style: none; padding: 0; margin: 20px 0 8px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
 .growth-stages li { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; }
-.growth-stages i { width: 9px; height: 9px; border-radius: 50%; border: 1px solid #9CB6D3; background: #fff; }
-.growth-stages li.past i { background: #9CB6D3; }
-.growth-stages li.now i { background: #234C83; border-color: #234C83; box-shadow: 0 0 0 4px rgb(35 76 131 / .1); }
+.growth-stages i { width: 9px; height: 9px; border-radius: 50%; border: 1px solid #B7CADA; background: #fff; }
+.growth-stages li.past i { background: #B7CADA; }
+.growth-stages li.now i { background: #456B9A; border-color: #456B9A; box-shadow: 0 0 0 4px rgb(69 107 154 / .1); }
 .growth-stages span { font-family: var(--display); font-size: 15px; line-height: 1.15; color: var(--ink); }
 .growth-stages li.later span { color: var(--ink-faint); }
 .growth-stages small { font-family: var(--sans); font-size: 10.5px; color: var(--ink-faint); }
@@ -3478,7 +3478,7 @@ html[data-theme='light'] .garden form.say, :root[data-theme='light'] .say, :root
 
 /* the garden's caption, set like a plate in a botanical book */
 .growth-fig { display: flex; gap: 6px; justify-content: center; align-items: baseline; flex-wrap: wrap; }
-.growth-fig button { padding: 0; font: inherit; letter-spacing: inherit; text-transform: inherit; color: #234C83; text-decoration: underline; text-decoration-color: rgb(35 76 131 / .3); text-underline-offset: 3px; }
+.growth-fig button { padding: 0; font: inherit; letter-spacing: inherit; text-transform: inherit; color: #456B9A; text-decoration: underline; text-decoration-color: rgb(69 107 154 / .3); text-underline-offset: 3px; }
 
 /* the archive's totals */
 .arc-counts { margin: 6px 0 0; font-family: var(--sans); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: #6686AC; }
@@ -3511,17 +3511,17 @@ html[data-theme='light'] .garden form.say, :root[data-theme='light'] .say, :root
   display: inline-flex; align-items: center; justify-content: center; text-decoration: none; white-space: nowrap;
   font: 500 11px/1 var(--sans); letter-spacing: .18em; text-transform: uppercase;
   color: #5F5B55; background: #FFFFFF; border-radius: 9999px;
-  box-shadow: inset 0 0 0 1px #E6E2DA, 0 0 0 3px rgb(156 182 211 / 0);
+  box-shadow: inset 0 0 0 1px #E6E2DA, 0 0 0 3px rgb(183 202 218 / 0);
   transition: box-shadow .3s ease, background .3s ease, color .3s ease, transform .2s ease;
   -webkit-tap-highlight-color: transparent;
 }
 .bubble { min-height: 40px; padding: 0 20px; }
-.bubble:hover, .chip-bubble:hover { color: #24272C; box-shadow: inset 0 0 0 1px #9CB6D3, 0 0 0 3px rgb(156 182 211 / .16); }
+.bubble:hover, .chip-bubble:hover { color: #24272C; box-shadow: inset 0 0 0 1px #B7CADA, 0 0 0 3px rgb(183 202 218 / .16); }
 .bubble:active, .chip-bubble:active { transform: scale(.96); }
 .bubble[aria-current='page'], .chip-bubble[aria-current='page'] {
-  color: #234C83; background: #EDF2F8; box-shadow: inset 0 0 0 1.5px #234C83, 0 0 0 3px rgb(35 76 131 / .08);
+  color: #456B9A; background: #EDF2F8; box-shadow: inset 0 0 0 1.5px #456B9A, 0 0 0 3px rgb(69 107 154 / .08);
 }
-.bubble:focus-visible, .chip-bubble:focus-visible { outline: none; box-shadow: inset 0 0 0 1.5px #234C83, 0 0 0 4px rgb(35 76 131 / .18); }
+.bubble:focus-visible, .chip-bubble:focus-visible { outline: none; box-shadow: inset 0 0 0 1.5px #456B9A, 0 0 0 4px rgb(69 107 154 / .18); }
 .bubbles.dock { display: none; }
 
 /* phones: the same three bubbles, docked at the foot of the screen on a porcelain band */
@@ -3532,7 +3532,7 @@ html[data-theme='light'] .garden form.say, :root[data-theme='light'] .say, :root
   .bubbles.dock {
     display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; gap: 8px;
     padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
-    background: #FAF9F6; border-top: 1px solid #ECE8E1;
+    background: #FFFFFF; border-top: 1px solid #ECE8E1;
   }
   .bubbles.dock .bubble { flex: 1 1 0; max-width: 132px; min-height: 44px; padding: 0 10px; letter-spacing: .16em; }
   body { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
@@ -3543,13 +3543,13 @@ html[data-theme='light'] .garden form.say, :root[data-theme='light'] .say, :root
 .profile { position: relative; }
 .avatar {
   width: 36px; height: 36px; border-radius: 9999px; display: inline-grid; place-items: center; padding: 0; cursor: pointer;
-  font: 500 15px/1 var(--display); color: #234C83;
+  font: 500 15px/1 var(--display); color: #456B9A;
   background: linear-gradient(180deg, #FFFFFF, #F6F4EF); border: 0;
   box-shadow: inset 0 0 0 1px #E6E2DA, 0 2px 8px rgb(40 35 30 / .05);
   transition: box-shadow .2s ease, transform .15s ease;
 }
 .avatar svg { width: 18px; height: 18px; fill: none; stroke: #5F5B55; stroke-width: 1.3; stroke-linecap: round; }
-.avatar:hover, .avatar[aria-expanded='true'], .avatar[aria-current='page'] { box-shadow: inset 0 0 0 1px #9CB6D3, 0 0 0 3px rgb(156 182 211 / .18); }
+.avatar:hover, .avatar[aria-expanded='true'], .avatar[aria-current='page'] { box-shadow: inset 0 0 0 1px #B7CADA, 0 0 0 3px rgb(183 202 218 / .18); }
 .avatar:active { transform: scale(.94); }
 .profile-menu {
   position: absolute; right: 0; top: calc(100% + 8px); z-index: 40; min-width: 210px; padding: 8px 0;
@@ -3557,7 +3557,7 @@ html[data-theme='light'] .garden form.say, :root[data-theme='light'] .say, :root
   animation: room .25s ease both;
 }
 .profile-menu a { display: block; padding: 10px 18px; text-decoration: none; font: 400 14px/1.3 var(--sans); color: #24272C; }
-.profile-menu a:hover, .profile-menu a:focus-visible { background: #F6F2EB; color: #234C83; outline: none; }
+.profile-menu a:hover, .profile-menu a:focus-visible { background: #F6F2EB; color: #456B9A; outline: none; }
 .profile-name { margin: 2px 18px 8px; padding-bottom: 10px; border-bottom: 1px solid #EFEBE4; font: 400 19px/1.2 var(--display); color: #24272C; }
 #profile, #settings, #notifications, #privacy, #export, #account { scroll-margin-top: 24px; }
 
@@ -3570,7 +3570,7 @@ html[data-theme='light'] .garden form.say, :root[data-theme='light'] .say, :root
   font: 400 14.5px var(--sans); color: #24272C; background: #FFFFFF; box-shadow: inset 0 0 0 1px #E6E2DA;
   transition: box-shadow .25s ease;
 }
-.archive-search input:focus { outline: none; box-shadow: inset 0 0 0 1px #234C83, 0 0 0 4px rgb(35 76 131 / .1); }
+.archive-search input:focus { outline: none; box-shadow: inset 0 0 0 1px #456B9A, 0 0 0 4px rgb(69 107 154 / .1); }
 .chips { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 .chip-bubble { min-height: 34px; padding: 0 14px; font-size: 10.5px; letter-spacing: .16em; }
 .garden-chips { padding-top: 8px; }
@@ -3598,7 +3598,7 @@ html[data-theme='light'] .garden form.say, :root[data-theme='light'] .say, :root
 
 /* the garden's ways of exploring */
 .garden-explore { display: flex; gap: 10px; justify-content: center; margin: 4px 0 0; font: 500 11px var(--sans); letter-spacing: .16em; text-transform: uppercase; color: #918C85; }
-.garden-explore a { color: #234C83; text-decoration: none; }
+.garden-explore a { color: #456B9A; text-decoration: none; }
 .garden-explore a:hover { text-decoration: underline; text-underline-offset: 3px; }
 
 /* midnight */
@@ -3610,8 +3610,8 @@ html[data-theme='light'] .garden form.say, :root[data-theme='light'] .say, :root
 :root[data-theme='dark'] .profile-menu a:hover { background: rgb(255 255 255 / .06); color: #fff; }
 
 /* the avatar keeps its own look inside the header */
-:root[data-theme='light'] .top-icons .avatar { background: linear-gradient(180deg, #FFFFFF, #F6F4EF); border: 0; color: #234C83; box-shadow: inset 0 0 0 1px #E6E2DA, 0 2px 8px rgb(40 35 30 / .05); }
-:root[data-theme='light'] .top-icons .avatar:hover, :root[data-theme='light'] .top-icons .avatar[aria-expanded='true'], :root[data-theme='light'] .top-icons .avatar[aria-current='page'] { box-shadow: inset 0 0 0 1px #9CB6D3, 0 0 0 3px rgb(156 182 211 / .18); }
+:root[data-theme='light'] .top-icons .avatar { background: linear-gradient(180deg, #FFFFFF, #F6F4EF); border: 0; color: #456B9A; box-shadow: inset 0 0 0 1px #E6E2DA, 0 2px 8px rgb(40 35 30 / .05); }
+:root[data-theme='light'] .top-icons .avatar:hover, :root[data-theme='light'] .top-icons .avatar[aria-expanded='true'], :root[data-theme='light'] .top-icons .avatar[aria-current='page'] { box-shadow: inset 0 0 0 1px #B7CADA, 0 0 0 3px rgb(183 202 218 / .18); }
 
 /* =====================================================================
    THE GROWTH CARD AS GLASS: a frosted pane over soft blue petals,
@@ -3624,7 +3624,7 @@ html[data-theme='light'] .garden form.say, :root[data-theme='light'] .say, :root
   background: linear-gradient(180deg, rgb(255 255 255 / .34), rgb(255 255 255 / .16)) !important;
   -webkit-backdrop-filter: blur(16px) saturate(1.5) !important; backdrop-filter: blur(16px) saturate(1.5) !important;
   border: 0; border-radius: 22px;
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / .6), inset 0 1px 0 rgb(255 255 255 / .8), 0 18px 40px -24px rgb(35 76 131 / .55);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / .6), inset 0 1px 0 rgb(255 255 255 / .8), 0 18px 40px -24px rgb(69 107 154 / .55);
 }
 .growth-glass .growth-k, .growth-glass .growth-next { color: rgb(255 255 255 / .9); }
 .growth-glass .growth-sprig { stroke: #fff; }
@@ -3638,5 +3638,119 @@ html[data-theme='light'] .garden form.say, :root[data-theme='light'] .say, :root
 .growth-glass .growth-open { color: #fff; text-decoration: underline; text-decoration-color: rgb(255 255 255 / .5); text-underline-offset: 3px; }
 @media (max-width: 760px) { .growth-glass { margin-left: -4px; margin-right: -4px; } }
 .growth-glass { padding: 22px 16px; }
-.growth-petals { border-radius: 28px; box-shadow: 0 20px 40px -28px rgb(35 76 131 / .6); }
+.growth-petals { border-radius: 28px; box-shadow: 0 20px 40px -28px rgb(69 107 154 / .6); }
 .growth-glass .growth-nums strong, .growth-glass .growth-line, .growth-glass .growth-k { text-shadow: 0 1px 10px rgb(27 60 105 / .35); }
+
+/* =====================================================================
+   WHITE GARDEN — the willow in a bright, quiet garden.
+   White dominates; ivory only for the Archive's reading surfaces.
+   Sapphire for what matters, dusty rose for floral details, sage and
+   moss for the tree. No glass anywhere, the growth card included.
+   ===================================================================== */
+:root[data-theme='light'] {
+  --white: #FFFFFF; --porcelain: #FAFAF8; --ivory: #F5F1E9; --ivory-soft: #F5F1E9; --stone: #EAE7E0; --line: #EAE7E0; --line-strong: #DCD8CF;
+  --sapphire: #456B9A; --sapphire-deep: #36577F; --powder: #B7CADA; --pale-blue: #EEF3F8;
+  --rose: #D9A6AA; --dusty-pink: #D9A6AA; --blush: #F3E5E4; --sage: #A3AD8D; --moss: #68775D; --aged-green: #68775D;
+  --page: #FFFFFF;
+  --ink: #2A2D31; --ink-soft: #62605B; --ink-faint: #94908A;
+}
+:root[data-theme='light'] html, html[data-theme='light'] { background: var(--page); }
+:root[data-theme='light'] body { background: var(--page); font-size: 16px; }
+/* the Archive reads on warm ivory paper */
+:root[data-theme='light'] body:has(.archive-nav) { --page: #F5F1E9; }
+:root[data-theme='light'] body:has(.archive-nav) .card, :root[data-theme='light'] body:has(.archive-nav) .leaf, :root[data-theme='light'] body:has(.archive-nav) .archive-search input,
+:root[data-theme='light'] body:has(.archive-nav) .chip-bubble:not([aria-current='page']), :root[data-theme='light'] body:has(.archive-nav) .bubble:not([aria-current='page']) { background: #FFFFFF; }
+.bubbles.dock { background: var(--page, #FFFFFF); border-top-color: #EAE7E0; }
+
+/* type: a little larger, lighter and roomier */
+:root[data-theme='light'] .today-greet, :root[data-theme='light'] .welcome-title, :root[data-theme='light'] .ob-title, :root[data-theme='light'] .arc-title { font-weight: 300; font-size: clamp(40px, 5.8vw, 66px); letter-spacing: -.015em; margin-bottom: .18em; }
+:root[data-theme='light'] .voice-line, :root[data-theme='light'] .today-prompt { font-weight: 300; font-size: clamp(27px, 3.2vw, 34px); }
+:root[data-theme='light'] .arc-sub, :root[data-theme='light'] .welcome-sub, :root[data-theme='light'] .ob-sub { font-size: 21px; font-weight: 300; }
+:root[data-theme='light'] .today-date, :root[data-theme='light'] .today-k, :root[data-theme='light'] .today-block h2, :root[data-theme='light'] .you-block h2, :root[data-theme='light'] .mem-section h2,
+:root[data-theme='light'] .agent-k, :root[data-theme='light'] .mem-place, :root[data-theme='light'] .card-place, :root[data-theme='light'] .month-label, :root[data-theme='light'] .revisit-k,
+:root[data-theme='light'] .fig, .growth-k, .all-k, .arc-counts, .garden-explore { font-size: 12px; color: #5D7BA0; }
+:root[data-theme='light'] .today-count, :root[data-theme='light'] .card-meta, :root[data-theme='light'] .mem-meta, :root[data-theme='light'] .you-note, :root[data-theme='light'] .capture-hint { font-size: 14.5px; }
+.bubble { font-size: 12px; }
+.chip-bubble { font-size: 11.5px; }
+.all-title, .all-door { font-size: 21px; }
+.all-meta { font-size: 13.5px; }
+:root[data-theme='light'] .log-line.assistant p { font-size: 22px; font-weight: 400; }
+
+/* surfaces: white, a stone hairline, a natural shadow */
+:root[data-theme='light'] .card, :root[data-theme='light'] .today-step, :root[data-theme='light'] .you-block, :root[data-theme='light'] .agent-action, :root[data-theme='light'] .rd,
+:root[data-theme='light'] .welcome-card, :root[data-theme='light'] .cn-story, :root[data-theme='light'] .agent-found button {
+  background: #FFFFFF; border-color: #EAE7E0; box-shadow: 0 1px 2px rgb(42 45 49 / .04), 0 10px 26px -22px rgb(42 45 49 / .25);
+}
+:root[data-theme='light'] .today-back-card, :root[data-theme='light'] .today-reflect, :root[data-theme='light'] .mem-facts { background: #FAFAF8; border-color: #EAE7E0; }
+:root[data-theme='light'] .add, :root[data-theme='light'] .confirm-sheet, :root[data-theme='light'] .review, :root[data-theme='light'] .loc-ed, :root[data-theme='light'] .capture-sheet { background: #FFFFFF; border-color: #EAE7E0; }
+
+/* the growth card: white porcelain, no glass */
+.growth-petals { display: none; }
+.growth-glass { padding: 0; }
+.growth-glass .growth, :root[data-theme='light'] .growth-glass .growth.growth {
+  color: var(--ink); background: #FFFFFF !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+  border: 1px solid #EAE7E0; border-radius: 16px; box-shadow: 0 1px 2px rgb(42 45 49 / .04), 0 14px 30px -24px rgb(69 107 154 / .35);
+}
+.growth-glass .growth-k, .growth-glass .growth-next { color: #5D7BA0; text-shadow: none; }
+.growth-glass .growth-sprig { stroke: #68775D; }
+.growth-glass .growth-nums strong { color: var(--ink); text-shadow: none; }
+.growth-glass .growth-nums span, .growth-glass .growth-line { color: var(--ink-soft); text-shadow: none; }
+.growth-glass .growth-line em { color: var(--ink); }
+.growth-glass .growth-nums p + p { border-left-color: #EAE7E0; }
+.growth-glass .droplet path:first-child { fill: rgb(183 202 218 / .45); stroke: #456B9A; }
+.growth-glass .droplet .droplet-shine { stroke: #fff; }
+.growth-glass .growth-bar { background: #EFECE6; }
+.growth-glass .growth-bar i { background: linear-gradient(90deg, #B7CADA, #456B9A); }
+.growth-glass .growth-open { color: #456B9A; text-decoration-color: rgb(69 107 154 / .35); }
+@media (max-width: 760px) { .growth-glass { margin-left: 0; margin-right: 0; } }
+
+/* the willow, larger: the hero of Today and the Garden */
+.today-tree { margin-top: 10px; }
+.today-tree .tree { max-height: min(60vh, 600px); width: min(100%, 1040px); }
+.tree { max-height: clamp(320px, calc(100dvh - 330px), 720px); }
+@media (max-width: 760px) {
+  .today-tree .tree { max-height: 54vh; }
+  .garden:not(.talking) .tree { max-height: min(52vh, 470px); }
+}
+/* misty light behind the tree only: pale blue air, a breath of sage at the bank */
+:root[data-theme='light'] .today-tree, :root[data-theme='light'] .garden .stage {
+  background:
+    radial-gradient(46% 44% at 50% 46%, rgb(238 243 248 / .95), rgb(238 243 248 / 0) 72%),
+    radial-gradient(40% 12% at 50% 90%, rgb(183 202 218 / .28), transparent 70%),
+    radial-gradient(22% 16% at 30% 86%, rgb(163 173 141 / .18), transparent 70%);
+}
+
+/* foliage: sage and moss, so the tree reads as a living willow */
+:root[data-theme='light'] .willow .strand-line { stroke: rgb(104 119 93 / .5); stroke-width: .65; }
+:root[data-theme='light'] .willow .layer-0 .strand-line { stroke: rgb(163 173 141 / .55); }
+:root[data-theme='light'] .willow .wleaf { fill: rgb(104 119 93 / .72); }
+:root[data-theme='light'] .willow .layer-0 .wleaf { fill: rgb(163 173 141 / .68); }
+:root[data-theme='light'] .willow .limb-arc { stroke: #7E7867; }
+:root[data-theme='light'] .willow .fbud { fill: rgb(163 173 141 / .7); }
+:root[data-theme='light'] .willow .carpet .fbud { fill: rgb(163 173 141 / .55); }
+
+/* the flowers: forget-me-nots in powder and sapphire, gentians, wild roses, small white blossoms */
+:root[data-theme='light'] .willow #fl0 stop:first-child { stop-color: #456B9A; } :root[data-theme='light'] .willow #fl0 stop:last-child { stop-color: #B7CADA; }
+:root[data-theme='light'] .willow #fl1 stop:first-child { stop-color: #6E8DB3; } :root[data-theme='light'] .willow #fl1 stop:last-child { stop-color: #D3E0EA; }
+:root[data-theme='light'] .willow #fl2 stop:first-child { stop-color: #8AA6C4; } :root[data-theme='light'] .willow #fl2 stop:last-child { stop-color: #E3ECF3; }
+:root[data-theme='light'] .willow #fl3 stop:first-child { stop-color: #3D6191; } :root[data-theme='light'] .willow #fl3 stop:last-child { stop-color: #B7CADA; }
+:root[data-theme='light'] .willow #fl4 stop:first-child { stop-color: #C98E94; } :root[data-theme='light'] .willow #fl4 stop:last-child { stop-color: #F3E5E4; }
+:root[data-theme='light'] .willow .floret path { stroke: #FFFFFF; stroke-width: .45; }
+:root[data-theme='light'] .willow .floret .feye { fill: #F2DFA6; }
+:root[data-theme='light'] .willow .k-gentian .feye { fill: #FFFFFF; }
+:root[data-theme='light'] .willow .k-rose .feye { fill: #EBC86E; }
+:root[data-theme='light'] .willow .k-white path { fill: #FFFFFF; stroke: #CFCBC2; stroke-width: .6; }
+:root[data-theme='light'] .willow .k-white .feye { fill: #E6D49A; }
+:root[data-theme='light'] .willow #pWhite stop:nth-child(1) { stop-color: #36577F; } :root[data-theme='light'] .willow #pWhite stop:nth-child(2) { stop-color: #5D7FA9; } :root[data-theme='light'] .willow #pWhite stop:nth-child(3) { stop-color: #D3E0EA; }
+:root[data-theme='light'] .willow #pMist stop:nth-child(1) { stop-color: #4E6F99; } :root[data-theme='light'] .willow #pMist stop:nth-child(2) { stop-color: #8FA9C6; } :root[data-theme='light'] .willow #pMist stop:nth-child(3) { stop-color: #EEF3F8; }
+:root[data-theme='light'] .willow #pMeaning stop:nth-child(1) { stop-color: #2F4F78; } :root[data-theme='light'] .willow #pMeaning stop:nth-child(2) { stop-color: #456B9A; } :root[data-theme='light'] .willow #pMeaning stop:nth-child(3) { stop-color: #E3ECF3; }
+:root[data-theme='light'] .willow .ripples path { stroke: #B7CADA; opacity: .6; }
+:root[data-theme='light'] .willow .reflection { opacity: .3; }
+:root[data-theme='dark'] .willow .k-white path { fill: #e8eeff; }
+:root[data-theme='dark'] .willow #flG stop:first-child { stop-color: #6f9cf2; }
+/* only pale blue mist behind the tree: no sage smudge on the white */
+:root[data-theme='light'] .today-tree, :root[data-theme='light'] .garden .stage {
+  background: radial-gradient(46% 44% at 50% 46%, rgb(238 243 248 / .95), rgb(238 243 248 / 0) 72%), radial-gradient(40% 10% at 50% 90%, rgb(183 202 218 / .22), transparent 70%);
+}
+/* the + sheet: one column on a narrow phone, so the hints read as lines, not stacks */
+@media (max-width: 430px) { .capture-list { grid-template-columns: 1fr; } .capture-list button { min-height: 0; padding: 12px 14px; } }

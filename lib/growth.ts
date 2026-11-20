@@ -47,8 +47,9 @@ export function shapeFor(memories: number) {
   const scale = tree ? 0.34 + 0.66 * ease(m - 3, 16) : 0; // size of trunk, limbs and strands
   const reach = tree ? 0.14 + 0.86 * ease(m - 3, 13) : 0; // share of strands that have grown
   const limbs = tree ? Math.min(10, 3 + Math.round(7 * ease(m - 3, 9))) : 0; // arching limbs drawn
-  // a close view while it is small, drawing back as it grows (applied around the root)
-  const zoom = m === 0 ? 4.2 : m === 1 ? 3.4 : m < 3 ? 3 : Math.max(1, Math.pow(scale, -0.6));
+  // a close view while it is small, drawing back as it grows (applied around the root): a young
+  // willow still fills most of the plate, slimmer and sparser rather than tiny
+  const zoom = m === 0 ? 4.2 : m === 1 ? 3.4 : m < 3 ? 3 : Math.max(1, Math.pow(scale, -0.82));
   // tiny florets that have opened; the canopy keeps filling long after the tree is grown
   const florets = tree ? Math.round(m * 16 + Math.max(0, m - 20) * 10) : 0;
   const carpet = m >= 8; // a few fallen blossoms at the foot of the tree
