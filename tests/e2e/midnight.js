@@ -157,11 +157,11 @@ const plant = async (c, m) => (await (await c.request.post(B + '/api/memories', 
     ok('share: the card is drawn here and follows what you choose', true);
     ok('share: nothing is uploaded and no link is made', posts.length === 0, posts.join(' '));
 
-    // ---------- the map by night ----------
+    // ---------- the map by day ----------
     await p.goto(B + '/places');
     await p.waitForSelector('.a-land');
     const land = await p.$eval('.a-land', (e) => getComputedStyle(e).fill);
-    ok('map: navy and silver-blue', /rgb\(26, 42, 88\)/.test(land), land);
+    ok('map: white land on a pale blue sea', /rgb\(255, 255, 255\)/.test(land), land);
 
     { const h418 = errs.filter((e) => /React error #418/.test(String(e))); errs = errs.filter((e) => !/React error #418/.test(String(e))); if (h418.length) T.push('NOTE recoverable hydration warnings (#418, known issue): ' + h418.length); }
 

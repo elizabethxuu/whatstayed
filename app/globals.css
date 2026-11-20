@@ -2738,3 +2738,199 @@ body:has(.sheet-veil) .capture-fab, body:has(.album) .capture-fab, body:has(.loc
 
 /* the composer is frosted enough that the conversation scrolling beneath it never shows through as text */
 html[data-theme='dark'] .garden form.say { background: rgb(14 24 58 / .86); -webkit-backdrop-filter: blur(22px) saturate(1.2); backdrop-filter: blur(22px) saturate(1.2); }
+
+/* =====================================================================
+   SKY: the default look. A light blue morning sky that settles into white,
+   soft cloud light, white frosted glass, deep-navy type, and the willow in
+   cornflower and periwinkle so its tiny blossoms still read on a pale ground.
+   Midnight (data-theme="dark") remains in You.
+   ===================================================================== */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --ink: #142a5c; --ink-soft: #4a5f8f; --ink-faint: #7d8db3; --ink-rgb: 20 42 92;
+  --porcelain: #f4f8ff; --ivory: #f8fbff; --mist: #eef4ff; --stone: #dbe6fa;
+  --stone-rgb: 219 230 250; --branch-rgb: 70 100 170; --bot-rgb: 90 120 190; --porc-rgb: 244 248 255; --ivory-rgb: 248 251 255;
+  --glow: rgb(120 160 240 / .14);
+  --ice: #1f4fbf; --peri: #3d6fd8; --peri-deep: #1f4fbf; --night: #142a5c;
+  --navy: #142a5c; --cobalt: #2f5fcc; --cobalt-soft: rgb(47 95 204 / .1);
+  --violet: #3d6fd8; --peri-ink: #2f5fcc; --peri-flower: #6f9cf2; --cherry-red: #3d6fd8; --cherry-deep: #142a5c;
+  --thread: #3d6fd8; --red: #c4475a;
+  --bloom: #6f9cf2;
+  --pane: linear-gradient(160deg, rgb(255 255 255 / .78), rgb(244 249 255 / .58));
+  --pane-edge: rgb(255 255 255 / .9);
+  --pane-shadow: 0 1px 0 rgb(255 255 255 / .9) inset, 0 24px 50px -30px rgb(40 80 170 / .35), 0 2px 8px -4px rgb(40 80 170 / .12);
+  --glass-tile: rgb(255 255 255 / .6);
+}
+
+/* the sky: clear light blue overhead, a white sun-glow top right, fading to white at the ground */
+:root[data-theme='light'] html, html[data-theme='light'] {
+  background-color: #f6f9ff;
+  background-image:
+    radial-gradient(34% 26% at 82% 4%, rgb(255 255 255 / .95), transparent 70%),
+    radial-gradient(55% 32% at 12% 18%, rgb(255 255 255 / .6), transparent 70%),
+    radial-gradient(70% 30% at 70% 34%, rgb(255 255 255 / .45), transparent 70%),
+    linear-gradient(180deg, #bcd6fb 0%, #d4e5fd 26%, #e9f2fe 52%, #f8fbff 78%, #ffffff 100%);
+  background-attachment: fixed;
+}
+/* soft clouds drifting high up, and a few out-of-focus blue blooms low on the edges */
+html[data-theme='light'] body::before {
+  display: block; position: fixed; z-index: -1; pointer-events: none;
+  left: 0; top: 0; right: 0; bottom: 0; width: auto; height: auto; max-width: none; border-radius: 0; opacity: 1; filter: none; transform: none;
+  background:
+    radial-gradient(18% 6% at 22% 12%, rgb(255 255 255 / .85), transparent 70%),
+    radial-gradient(12% 5% at 30% 10%, rgb(255 255 255 / .7), transparent 70%),
+    radial-gradient(20% 6% at 68% 22%, rgb(255 255 255 / .7), transparent 70%),
+    radial-gradient(14% 5% at 76% 20%, rgb(255 255 255 / .6), transparent 70%),
+    radial-gradient(circle at 6% 80%, rgb(111 156 242 / .22) 0 6px, transparent 18px),
+    radial-gradient(circle at 12% 68%, rgb(143 150 240 / .16) 0 9px, transparent 24px),
+    radial-gradient(circle at 93% 74%, rgb(111 156 242 / .2) 0 7px, transparent 20px),
+    radial-gradient(circle at 88% 86%, rgb(143 150 240 / .14) 0 11px, transparent 28px);
+  animation: cloud-drift 40s ease-in-out infinite alternate;
+}
+@keyframes cloud-drift { from { transform: translateX(-1.5vw); } to { transform: translateX(1.5vw); } }
+html[data-theme='light']::after { display: none; }
+html[data-theme='light'] body::after { opacity: .03; mix-blend-mode: multiply; }
+:root[data-theme='light'] body { background: transparent; color: var(--ink); }
+
+/* type on the sky */
+:root[data-theme='light'] .today-date, :root[data-theme='light'] .today-k, :root[data-theme='light'] .today-block h2, :root[data-theme='light'] .you-block h2,
+:root[data-theme='light'] .mem-section h2, :root[data-theme='light'] .agent-k, :root[data-theme='light'] .mem-place, :root[data-theme='light'] .card-place,
+:root[data-theme='light'] .month-label, :root[data-theme='light'] .agent-found-place, :root[data-theme='light'] .today-about a, :root[data-theme='light'] .fig { color: #4a6fb8; }
+:root[data-theme='light'] a { color: inherit; }
+:root[data-theme='light'] .quiet.strong, :root[data-theme='light'] .fav.on, :root[data-theme='light'] .ai-mark, :root[data-theme='light'] .log-tool { color: #2f5fcc; }
+:root[data-theme='light'] .voice-line, :root[data-theme='light'] .today-greet, :root[data-theme='light'] .welcome-title, :root[data-theme='light'] .ob-title, :root[data-theme='light'] .arc-title {
+  color: #10244f; text-shadow: 0 1px 24px rgb(255 255 255 / .9);
+}
+:root[data-theme='light'] mark, :root[data-theme='light'] .leaf-body mark { background: linear-gradient(transparent 58%, rgb(111 156 242 / .3) 58%); }
+:root[data-theme='light'] ::selection { background: rgb(111 156 242 / .35); }
+:root[data-theme='light'] .revisit-k { color: #4a6fb8; }
+
+/* white frosted glass */
+:root[data-theme='light'] .card, :root[data-theme='light'] .today-step, :root[data-theme='light'] .today-reflect, :root[data-theme='light'] .you-block,
+:root[data-theme='light'] .mem-facts, :root[data-theme='light'] .tab-sheet, :root[data-theme='light'] .agent-action, :root[data-theme='light'] .rd,
+:root[data-theme='light'] .ob-choice, :root[data-theme='light'] .agent-found button, :root[data-theme='light'] .agent-mode-row, :root[data-theme='light'] .welcome-card,
+:root[data-theme='light'] .import-sheet, :root[data-theme='light'] .lightbox figcaption, :root[data-theme='light'] .agent-prompt, :root[data-theme='light'] .toast, :root[data-theme='light'] .seg,
+:root[data-theme='light'] .today-back-card, :root[data-theme='light'] .cn-key, :root[data-theme='light'] .cn-story, :root[data-theme='light'] .rw-ways button {
+  background: var(--pane); border: 1px solid var(--pane-edge); box-shadow: var(--pane-shadow); color: var(--ink);
+  -webkit-backdrop-filter: blur(22px) saturate(1.5); backdrop-filter: blur(22px) saturate(1.5);
+}
+:root[data-theme='light'] .add, :root[data-theme='light'] .confirm-sheet, :root[data-theme='light'] .review, :root[data-theme='light'] .loc-ed, :root[data-theme='light'] .capture-sheet {
+  background: linear-gradient(170deg, rgb(214 230 254 / .7), transparent 42%), #fbfdff; border: 1px solid rgb(255 255 255 / .9); color: var(--ink);
+  box-shadow: 0 -20px 60px -30px rgb(40 80 170 / .35);
+}
+:root[data-theme='light'] .sheet-veil { background: rgb(60 90 160 / .22); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+:root[data-theme='light'] .offline { background: rgb(255 255 255 / .92); color: var(--ink); }
+
+/* things you press: deep cornflower on white */
+:root[data-theme='light'] .welcome-go, :root[data-theme='light'] .confirm-yes, :root[data-theme='light'] .agent-yes,
+:root[data-theme='light'] .ob-choice[aria-pressed='true'], :root[data-theme='light'] .ob-choice[aria-checked='true'], :root[data-theme='light'] .agent-mode[aria-checked='true'],
+:root[data-theme='light'] .say button.ready, :root[data-theme='light'] .say button:not(:disabled):hover {
+  background: linear-gradient(160deg, #3d6fd8, #1f4fbf); color: #fff; border-color: transparent;
+  box-shadow: 0 1px 0 rgb(255 255 255 / .3) inset, 0 10px 26px -10px rgb(31 79 191 / .55);
+}
+:root[data-theme='light'] .welcome-go:hover, :root[data-theme='light'] .welcome-go:focus-visible { background: linear-gradient(160deg, #4a7be0, #2656c6); color: #fff; outline: 2px solid rgb(61 111 216 / .35); }
+:root[data-theme='light'] .welcome-go:disabled { opacity: .45; }
+:root[data-theme='light'] .say button.ready svg, :root[data-theme='light'] .say button:not(:disabled):hover svg { stroke: #fff; }
+:root[data-theme='light'] .confirm-yes.danger, :root[data-theme='light'] .agent-yes.danger { background: #c4475a; color: #fff; }
+:root[data-theme='light'] .confirm-no { background: rgb(20 42 92 / .06); color: var(--ink); }
+:root[data-theme='light'] .ob-toggle i { background: rgb(20 42 92 / .1); border-color: rgb(20 42 92 / .12); }
+:root[data-theme='light'] .ob-toggle input:checked + i { background: #2f5fcc; }
+:root[data-theme='light'] .seg button { color: var(--ink-soft); }
+:root[data-theme='light'] .seg button[aria-checked='true'] { background: #fff; color: var(--ink); box-shadow: 0 2px 8px -3px rgb(40 80 170 / .3); }
+:root[data-theme='light'] .chip { background: rgb(255 255 255 / .7); border-color: rgb(61 111 216 / .2); color: var(--ink); }
+:root[data-theme='light'] .mem-tags .chip { background: rgb(111 156 242 / .14); color: #1f4fbf; }
+:root[data-theme='light'] .ob-progress { background: rgb(20 42 92 / .08); }
+:root[data-theme='light'] .ob-progress i { background: #3d6fd8; }
+:root[data-theme='light'] .add-dots li.on button { background: #1f4fbf; border-color: #1f4fbf; }
+:root[data-theme='light'] .add-dots li.done button { background: #8fb0ff; border-color: #8fb0ff; }
+
+/* fields */
+:root[data-theme='light'] input, :root[data-theme='light'] textarea, :root[data-theme='light'] select { color: var(--ink); }
+:root[data-theme='light'] input::placeholder, :root[data-theme='light'] textarea::placeholder { color: #8394bd; }
+:root[data-theme='light'] .rv-field input, :root[data-theme='light'] .rv-field textarea, :root[data-theme='light'] .welcome-form input,
+:root[data-theme='light'] .ob-fields input, :root[data-theme='light'] .ob-fields textarea, :root[data-theme='light'] .today-ask textarea, :root[data-theme='light'] .today-reflect-form textarea,
+:root[data-theme='light'] .arc-filter select, :root[data-theme='light'] .search-big { border-bottom-color: rgb(20 42 92 / .16); }
+html[data-theme='light'] .garden form.say, :root[data-theme='light'] .say {
+  background: rgb(255 255 255 / .82); border: 1px solid rgb(255 255 255 / .95); box-shadow: var(--pane-shadow);
+  -webkit-backdrop-filter: blur(22px) saturate(1.4); backdrop-filter: blur(22px) saturate(1.4);
+}
+
+/* navigation: white glass along the bottom, icons on small frosted tiles */
+:root[data-theme='light'] .tabbar, :root[data-theme='light'].scrolled .tabbar { background: linear-gradient(180deg, rgb(255 255 255 / .74), rgb(248 251 255 / .9)); border-top: 1px solid rgb(255 255 255 / .95); box-shadow: 0 -18px 40px -30px rgb(40 80 170 / .35); -webkit-backdrop-filter: blur(24px) saturate(1.5); backdrop-filter: blur(24px) saturate(1.5); }
+:root[data-theme='light'] .tab { color: #6b7ea8; }
+:root[data-theme='light'] .tab svg, :root[data-theme='light'] .you-link { background: rgb(255 255 255 / .7); border: 1px solid rgb(255 255 255 / .95); box-shadow: 0 2px 8px -4px rgb(40 80 170 / .25); color: #3d5288; }
+:root[data-theme='light'] .tab[aria-current='page'] { color: #1f4fbf; }
+:root[data-theme='light'] .tab[aria-current='page'] svg, :root[data-theme='light'] .you-link[aria-current='page'] { background: linear-gradient(160deg, #e3edff, #c9dcff); border-color: rgb(61 111 216 / .35); color: #1f4fbf; box-shadow: 0 4px 14px -4px rgb(61 111 216 / .45); }
+:root[data-theme='light'] .rooms a { color: #4a5f8f; }
+:root[data-theme='light'] .rooms a[aria-current='page'] { color: #10244f; text-decoration-color: #3d6fd8; }
+
+/* the willow by day: cornflower, periwinkle and a little lavender, with white edges so each floret reads */
+:root[data-theme='light'] .willow .trunk { filter: drop-shadow(0 6px 14px rgb(40 80 170 / .18)); }
+:root[data-theme='light'] .willow #bark stop:nth-child(1) { stop-color: #8494bf; }
+:root[data-theme='light'] .willow #bark stop:nth-child(2) { stop-color: #5d6f9c; }
+:root[data-theme='light'] .willow #bark stop:nth-child(3) { stop-color: #3f4f7a; }
+:root[data-theme='light'] .willow .trunk-light { stroke: rgb(255 255 255 / .55); }
+:root[data-theme='light'] .willow .limb-arc { stroke: #5a6d9e; }
+:root[data-theme='light'] .willow .strand-line { stroke: rgb(70 100 170 / .4); }
+:root[data-theme='light'] .willow .layer-0 .strand-line { stroke: rgb(90 120 190 / .26); }
+:root[data-theme='light'] .willow .wleaf { fill: rgb(96 128 196 / .42); }
+:root[data-theme='light'] .willow .layer-0 .wleaf { fill: rgb(120 150 210 / .3); }
+:root[data-theme='light'] .willow #fl0 stop:first-child { stop-color: #2f62d6; } :root[data-theme='light'] .willow #fl0 stop:last-child { stop-color: #8fb3ff; }
+:root[data-theme='light'] .willow #fl1 stop:first-child { stop-color: #4f5ad4; } :root[data-theme='light'] .willow #fl1 stop:last-child { stop-color: #aab2ff; }
+:root[data-theme='light'] .willow #fl2 stop:first-child { stop-color: #2a6ae0; } :root[data-theme='light'] .willow #fl2 stop:last-child { stop-color: #86b0ff; }
+:root[data-theme='light'] .willow #fl3 stop:first-child { stop-color: #6a5fd2; } :root[data-theme='light'] .willow #fl3 stop:last-child { stop-color: #bdb5ff; }
+:root[data-theme='light'] .willow .floret path { stroke: rgb(255 255 255 / .75); stroke-width: .35; opacity: .95; }
+:root[data-theme='light'] .willow .floret .feye { fill: #fff6cf; }
+:root[data-theme='light'] .willow .fbud { fill: rgb(70 110 200 / .55); }
+:root[data-theme='light'] .willow .carpet .fbud { fill: rgb(70 110 200 / .4); }
+:root[data-theme='light'] .willow #pool stop { stop-color: #6f9cf2; }
+:root[data-theme='light'] .willow #moonhalo stop { stop-color: #ffffff; }
+:root[data-theme='light'] .willow #bGlow stop { stop-color: #8fb3ff; }
+:root[data-theme='light'] .willow #pWhite stop:first-child, :root[data-theme='light'] .willow #pMeaning stop:first-child { stop-color: #1f56d0; }
+:root[data-theme='light'] .willow #pMist stop:first-child { stop-color: #4450cf; }
+:root[data-theme='light'] .willow .blossom .petal { stroke: rgb(255 255 255 / .9); stroke-width: .5; }
+:root[data-theme='light'] .willow .blossom .tbud { fill: #3d6fd8; }
+:root[data-theme='light'] .willow .blossom .sel-ring { stroke: #1f4fbf; }
+:root[data-theme='light'] .willow .blossom.is-lit .petal { filter: drop-shadow(0 0 6px rgb(61 111 216 / .7)) drop-shadow(0 0 2px #fff); }
+:root[data-theme='light'] .willow .mk { fill: #1f4fbf; }
+:root[data-theme='light'] .willow .bud-draft path:first-child { fill: #3d6fd8; stroke: #fff; }
+:root[data-theme='light'] .willow .bud-sepal { stroke: #3d6fd8; }
+:root[data-theme='light'] .willow .thread { stroke: #2f5fcc; filter: none; }
+:root[data-theme='light'] .willow .drift-petal { fill: #6f9cf2; stroke: rgb(255 255 255 / .8); }
+:root[data-theme='light'] .garden.agent-searching .willow .strand-line { stroke: rgb(61 111 216 / .8); }
+:root[data-theme='light'] .willow .fireflies { display: block; }
+:root[data-theme='light'] .willow .fireflies circle { fill: #ffffff; filter: drop-shadow(0 0 3px #8fb3ff); }
+
+/* the floating + and the bloom */
+:root[data-theme='light'] .capture-fab { color: #fff; background: radial-gradient(circle at 35% 30%, #5d88ec, #1f4fbf); border-color: rgb(255 255 255 / .7); box-shadow: 0 12px 28px -10px rgb(31 79 191 / .55), 0 0 0 4px rgb(255 255 255 / .35); }
+:root[data-theme='light'] .capture-list button { background: rgb(255 255 255 / .7); border-color: rgb(61 111 216 / .12); color: var(--ink); }
+:root[data-theme='light'] .capture-icon { background: linear-gradient(160deg, #e7efff, #d3e2ff); color: #1f4fbf; border-color: transparent; }
+:root[data-theme='light'] .capture-hint { color: var(--ink-soft); }
+:root[data-theme='light'] .bloom-word { color: #142a5c; text-shadow: 0 1px 16px #fff; }
+
+/* the constellation stays a little window of night sky, set in white glass */
+:root[data-theme='light'] .cn-sky { background: radial-gradient(80% 70% at 50% 40%, #1a2b62, #0c1638); border-radius: 26px; border: 4px solid rgb(255 255 255 / .8); box-shadow: 0 30px 60px -36px rgb(20 42 92 / .6); }
+:root[data-theme='light'] .cn-cluster text { fill: #c9d6f5; }
+
+/* the map by day: pale blue sea, white land, cornflower marks */
+:root[data-theme='light'] .atlas { border-radius: 24px; overflow: hidden; }
+:root[data-theme='light'] .a-sea { fill: #dceaff; }
+:root[data-theme='light'] .a-grat { stroke: rgb(61 111 216 / .08); }
+:root[data-theme='light'] .a-land { fill: #ffffff; }
+:root[data-theme='light'] .a-border { stroke: rgb(61 111 216 / .2); }
+:root[data-theme='light'] .a-rim { stroke: rgb(61 111 216 / .25); }
+:root[data-theme='light'] .a-thread { stroke: #2f5fcc; }
+:root[data-theme='light'] .a-halo { fill: rgb(61 111 216 / .18); }
+:root[data-theme='light'] .a-dot { fill: #2f5fcc; stroke: #fff; }
+:root[data-theme='light'] .a-label { fill: #142a5c; stroke: rgb(255 255 255 / .9); }
+:root[data-theme='light'] .atlas-zoom button { background: rgb(255 255 255 / .85); border-color: rgb(61 111 216 / .2); color: var(--ink); }
+
+@media (prefers-reduced-motion: reduce) { html[data-theme='light'] body::before { animation: none; } }
+/* sky polish: solid enough glass that text never shows through; lighter limbs so the blossoms lead */
+:root[data-theme='light'] .tabbar, :root[data-theme='light'].scrolled .tabbar { background: linear-gradient(180deg, rgb(255 255 255 / .9), rgb(250 252 255 / .97)); }
+html[data-theme='light'] .garden form.say, :root[data-theme='light'] .garden .say { background: rgb(255 255 255 / .97); }
+:root[data-theme='light'] .willow .limb-arc { stroke: #8698c6; opacity: .75; }
+:root[data-theme='light'] .willow #bark stop:nth-child(1) { stop-color: #a3b1d6; }
+:root[data-theme='light'] .willow #bark stop:nth-child(2) { stop-color: #7586b3; }
+:root[data-theme='light'] .willow #bark stop:nth-child(3) { stop-color: #55669a; }
+@media (min-width: 761px) { .capture-fab.high { top: auto; width: 56px; height: 56px; } .capture-fab.high svg { width: 24px; height: 24px; } }
