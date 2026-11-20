@@ -161,7 +161,7 @@ const plant = async (c, m) => (await (await c.request.post(B + '/api/memories', 
     await p.goto(B + '/places');
     await p.waitForSelector('.a-land');
     const land = await p.$eval('.a-land', (e) => getComputedStyle(e).fill);
-    ok('map: white land on a pale blue sea', /rgb\(255, 255, 255\)/.test(land), land);
+    ok('map: porcelain land on a pale blue sea', /rgb\(250, 249, 246\)/.test(land), land);
 
     { const h418 = errs.filter((e) => /React error #418/.test(String(e))); errs = errs.filter((e) => !/React error #418/.test(String(e))); if (h418.length) T.push('NOTE recoverable hydration warnings (#418, known issue): ' + h418.length); }
 
