@@ -18,7 +18,7 @@ export function applyAppearance(v: Look) {
   } catch {
     /* storage unavailable */
   }
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#0b1430' : '#e3eefe');
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#0b1430' : '#ffffff');
 }
 
 /** Runs before React, from the root layout: sky unless this browser chose otherwise. */

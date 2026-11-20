@@ -23,8 +23,8 @@ async function whiteness(page) {
     for (let i = 0; i < d.length; i += 4 * 7) {
       const l = (0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2]) / 255;
       n++; if (l > 0.88) w++;
-      // pale and blue: light enough to read as sky, bluer than it is red
-      if (l > 0.72 && d[i + 2] >= d[i] + 6) sky++;
+      // light: white, or a pale blue wash
+      if (l > 0.85 && d[i + 2] >= d[i]) sky++;
     }
     return { w: w / n, sky: sky / n };
   }, png.toString('base64'));
@@ -68,7 +68,7 @@ async function whiteness(page) {
       const c = h ? getComputedStyle(h).color.match(/\d+/g).map(Number) : [0, 0, 0];
       return (0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]) / 255;
     });
-    ok(`${name}: light blue and white (${Math.round(sky * 100)}% pale blue), with deep headings (${ink.toFixed(2)})`, sky > 0.6 && ink < 0.25, `${sky} ${ink}`);
+    ok(`${name}: white with a little blue (${Math.round(sky * 100)}% light), with deep headings (${ink.toFixed(2)})`, sky > (name === 'constellation' ? 0.5 : 0.75) && ink < 0.25, `${sky} ${ink}`);
   }
 
   // no stray pinks anywhere in the styles of these rooms (the muted red #874d50 is allowed)
