@@ -2,6 +2,7 @@
 
 import { CSSProperties, memo, useEffect, useMemo, useRef } from 'react';
 import { growWillow, VIEW, type Floret } from '@/lib/willow';
+import { shapeFor } from '@/lib/growth';
 import type { Memory } from '@/lib/memory';
 
 type Mark = { photo?: boolean; place?: boolean; linked?: boolean };
@@ -19,7 +20,15 @@ type Props = {
   anchors?: (number | null)[];
   /** memories the agent just found or the person just revisited: gently lit */
   lit?: number[];
+  /** grow from a seed with the saved memories (the garden and Today); otherwise a grown willow is drawn */
+  grow?: boolean;
 };
+
+/** limbs in the order they grow: the crown's centre first, then outward, balanced left and right */
+const LIMB_ORDER = [3, 4, 2, 5, 8, 9, 1, 6, 0, 7];
+const ROOT = { x: 488, y: 694 };
+/** a slender willow leaf, drawn from its base */
+const LEAF = 'M0 0 C 5 -3.6, 15 -4.2, 26 0 C 15 4.2, 5 3.6, 0 0 Z';
 
 /** light drifting through the canopy: x, y, delay, duration */
 const FIREFLIES: [number, number, number, number][] = [
@@ -54,8 +63,21 @@ function floret(fl: Floret, k: number, open: boolean) {
   );
 }
 
-function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors, lit }: Props) {
+function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors, lit, grow = false }: Props) {
   const W = useMemo(() => growWillow(), []);
+  const m = memories.length;
+  const shape = useMemo(() => (grow ? shapeFor(m) : null), [grow, m]);
+  // which strands have grown: limbs in growing order, and on each limb a share of its strands
+  const shown = useMemo(() => {
+    if (!shape) return null;
+    const limbs = new Set(LIMB_ORDER.slice(0, shape.limbs));
+    return new Set(W.strands.filter((s) => limbs.has(s.limb) && hash(s.id * 7.3 + 2) < shape.reach).map((s) => s.id));
+  }, [shape, W]);
+  const hasTree = !shape || shape.tree;
+  // the water, the fallen blossoms and the trunk's girth grow with the crown
+  const grown = shape
+    ? ({ transformOrigin: `${ROOT.x}px ${ROOT.y}px`, transformBox: 'view-box', transform: `scale(${shape.scale.toFixed(3)})` } as CSSProperties)
+    : undefined;
   const svgRef = useRef<SVGSVGElement>(null);
 
   // memories saved before wait for the willow to unfold; new ones open right away
@@ -68,13 +90,24 @@ function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors,
   });
 
   // the garden fills as the archive grows: more of the tiny florets open with every memory
-  const opened = Math.min(W.total, 380 + memories.length * 40);
+  // florets open in their seeded order; on a growing tree only those on strands that have grown are counted
+  const opened = useMemo(() => {
+    if (!shape) return Math.min(W.total, 380 + memories.length * 40);
+    if (!shown || shape.florets <= 0) return 0;
+    const orders: number[] = [];
+    W.strands.forEach((s) => shown.has(s.id) && [...s.florets, ...s.cluster].forEach((fl) => orders.push(fl.order)));
+    if (shape.carpet) W.ground.forEach((fl) => orders.push(fl.order));
+    orders.sort((a, b) => a - b);
+    return orders.length ? orders[Math.min(orders.length, shape.florets) - 1] + 1 : 0;
+  }, [shape, shown, W, memories.length]);
 
   // which slot on which strand carries each memory; a memory tied to an earlier one hangs near it
   const anchorKey = (anchors ?? []).join(',');
   const { onStrand, budsOn } = useMemo(() => {
     const used = new Set<number>();
     const slotOf: number[] = [];
+    // only the strands that have grown can carry a memory
+    if (shown) W.slots.forEach((sl, k) => !shown.has(sl.strand) && used.add(k));
     const take = (near: number | null) => {
       let best = -1;
       if (near !== null) {
@@ -110,7 +143,7 @@ function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors,
     }
     return { onStrand: byStrand, budsOn: budMap };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [memories, W, anchorKey, buds]);
+  }, [memories, W, anchorKey, buds, shown]);
 
   // keep each red thread tied to its two blossoms while the strands sway
   useEffect(() => {
@@ -198,6 +231,45 @@ function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors,
     );
   }
 
+  /** the very beginning: a seed resting in the soil, a fine root, a drop of water beside it */
+  function seed() {
+    return (
+      <g className="seedling seed" aria-hidden="true">
+        <path className="soil" d="M424 697 Q 488 686 552 697" />
+        <path className="soil faint" d="M448 703 Q 488 697 528 703" />
+        <path className="root" d="M490 694 C 492 700, 486 704, 489 710" />
+        <g transform="translate(488 689) rotate(-24)">
+          <ellipse className="seed-coat" rx="9" ry="5.6" />
+          <path className="seed-line" d="M-6.5 -0.6 Q 0 -2.6 6.5 -0.6" />
+        </g>
+        <path className="dew" d="M512 680 C 512 680, 507 686, 507 689 A 5 5 0 0 0 517 689 C 517 686, 512 680, 512 680 Z" />
+      </g>
+    );
+  }
+
+  /** the first memories: a slender stem, its first leaves, and a blossom for each memory */
+  function sprout() {
+    const h = m === 1 ? 74 : 104;
+    const top = { x: ROOT.x + (m === 1 ? 2 : -3), y: ROOT.y - h };
+    const leaf = (x: number, y: number, a: number, sc: number, k: string) => (
+      <path key={k} className="sprout-leaf" d={LEAF} transform={`translate(${x} ${y}) rotate(${a}) scale(${sc})`} />
+    );
+    const tips = m === 1 ? [top] : [top, { x: ROOT.x + 30, y: ROOT.y - 70 }];
+    return (
+      <g className="seedling sprout" aria-hidden="false">
+        <path className="soil" d="M424 697 Q 488 686 552 697" />
+        <path className="sprout-stem" d={`M${ROOT.x} ${ROOT.y} C ${ROOT.x - 3} ${ROOT.y - h * 0.35}, ${top.x + 4} ${ROOT.y - h * 0.7}, ${top.x} ${top.y}`} />
+        {m >= 2 && <path className="sprout-stem fine" d={`M${ROOT.x - 1} ${ROOT.y - 48} C ${ROOT.x + 10} ${ROOT.y - 58}, ${ROOT.x + 22} ${ROOT.y - 62}, ${tips[1].x} ${tips[1].y}`} />}
+        {leaf(ROOT.x - 1, ROOT.y - h * 0.42, 200, 0.85, 'c1')}
+        {leaf(ROOT.x + 1, ROOT.y - h * 0.46, -18, 0.8, 'c2')}
+        {m >= 2 && leaf(ROOT.x - 2, ROOT.y - h * 0.74, 214, 0.7, 't1')}
+        {m >= 2 && leaf(ROOT.x + 14, ROOT.y - 60, 30, 0.6, 't2')}
+        {m >= 2 && <path className="sprout-stem fine drooping" d={`M${top.x} ${top.y + 6} C ${top.x - 14} ${top.y + 4}, ${top.x - 22} ${top.y + 18}, ${top.x - 24} ${top.y + 36}`} />}
+        {tips.map((t, i) => blossom(i, t.x, t.y))}
+      </g>
+    );
+  }
+
   /** a drafted memory waiting for review: a closed bud, breathing slowly */
   function bud(key: string, x: number, y: number) {
     return (
@@ -214,7 +286,8 @@ function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors,
       className="tree willow"
       viewBox={`0 0 ${VIEW.w} ${VIEW.h}`}
       role="img"
-      aria-label={`A willow with ${memories.length} ${memories.length === 1 ? 'blossom' : 'blossoms'}${buds ? `, and ${buds} ${buds === 1 ? 'bud' : 'buds'} waiting for review` : ''}`}
+      aria-label={`${shape ? (m === 0 ? 'A seed, waiting for its first memory' : m < 3 ? `A sprout with ${m} ${m === 1 ? 'blossom' : 'blossoms'}` : `A willow with ${m} blossoms`) : `A willow with ${m} ${m === 1 ? 'blossom' : 'blossoms'}`}${buds ? `, and ${buds} ${buds === 1 ? 'bud' : 'buds'} waiting for review` : ''}`}
+      data-stage={shape ? (m === 0 ? 'seed' : m < 3 ? 'sprout' : 'tree') : undefined}
     >
       <defs>
         {/* memory blossoms: luminous blue petals, paler at the edge */}
@@ -267,24 +340,38 @@ function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors,
         </linearGradient>
       </defs>
 
+      <g
+        className="growth-frame"
+        style={shape ? ({ transformOrigin: '488px 724px', transformBox: 'view-box', transform: `scale(${shape.zoom.toFixed(3)})` } as CSSProperties) : undefined}
+      >
       <ellipse className="halo" cx="488" cy="300" rx="430" ry="300" fill="url(#moonhalo)" />
       <ellipse className="ground" cx="488" cy="694" rx="360" ry="26" fill="url(#pool)" />
 
       {/* the strands at the back of the crown first, then the tree, then the front */}
-      <g id="willow-crown">
+      {shape && !shape.tree && (m === 0 ? seed() : sprout())}
+      {hasTree && (
+      <g
+        id="willow-crown"
+        className={shape ? `grown s-${Math.round(shape.scale * 100)}` : undefined}
+        style={shape ? ({ transformOrigin: `${ROOT.x}px ${ROOT.y}px`, transformBox: 'view-box', transform: `scale(${shape.scale.toFixed(3)})` } as CSSProperties) : undefined}
+      >
       {[0, 1].map((layer) => (
         <g key={layer} className={`strands layer-${layer}`}>
           {layer === 1 && (
             <g className="wood">
-              <path className="trunk" d={W.trunk} fill="url(#bark)" />
-              <path className="trunk-light" d={W.trunkLight} />
-              {W.limbs.map((l, k) => (
-                <path key={k} className="limb-arc" d={l.d} strokeWidth={l.w} style={{ animationDelay: `${0.2 + k * 0.08}s` }} />
-              ))}
+              <g className="girth" style={shape ? ({ transformOrigin: `${ROOT.x}px ${ROOT.y}px`, transformBox: 'view-box', transform: `scaleX(${shape.girth.toFixed(3)})` } as CSSProperties) : undefined}>
+                <path className="trunk" d={W.trunk} fill="url(#bark)" />
+                <path className="trunk-light" d={W.trunkLight} />
+              </g>
+              {W.limbs.map((l, k) =>
+                shape && !LIMB_ORDER.slice(0, shape.limbs).includes(k) ? null : (
+                  <path key={k} className="limb-arc" d={l.d} strokeWidth={l.w} style={{ animationDelay: `${0.2 + k * 0.08}s` }} />
+                ),
+              )}
             </g>
           )}
           {W.strands
-            .filter((s) => s.depth === layer)
+            .filter((s) => s.depth === layer && (!shown || shown.has(s.id)))
             .map((s) => (
               <g
                 key={s.id}
@@ -313,22 +400,29 @@ function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors,
       ))}
 
       </g>
+      )}
 
       {/* the willow, reflected and foreshortened in still water, with a few fine ripple lines */}
+      {hasTree && (
+      <>
       <g className="reflection" aria-hidden="true" mask="url(#reflMask)">
         <use href="#willow-crown" transform="matrix(1 0 0 -0.16 0 805.04)" />
       </g>
-      <g className="ripples" aria-hidden="true">
+      <g className="ripples" aria-hidden="true" style={grown}>
         <path d="M300 712 Q 488 704 676 712" />
         <path d="M352 728 Q 488 722 624 728" />
         <path d="M410 744 Q 488 740 566 744" />
         <path d="M236 702 Q 280 699 324 702" />
         <path d="M660 724 Q 700 721 740 724" />
       </g>
+      </>
+      )}
 
-      <g className="carpet" aria-hidden="true">
-        {W.ground.map((fl, k) => floret(fl, k, fl.order < opened))}
-      </g>
+      {(!shape || shape.carpet) && (
+        <g className="carpet" aria-hidden="true" style={grown}>
+          {W.ground.map((fl, k) => floret(fl, k, fl.order < opened))}
+        </g>
+      )}
 
       <g className="threads" aria-hidden="true">
         {threads.map(([a, b]) => (
@@ -341,13 +435,14 @@ function Tree({ memories, threads, selected, onSelect, buds = 0, marks, anchors,
           <circle key={k} cx={x} cy={y} r={1.3 + (k % 3) * 0.5} style={{ animationDelay: `${d}s`, animationDuration: `${dur}s` } as CSSProperties} />
         ))}
       </g>
-      {memories.length > 0 && (
+      {memories.length > 0 && hasTree && (
         <g className="drifting" aria-hidden="true">
           {DRIFT.map(([x, d, dur, s], k) => (
             <path key={k} className="drift-petal" d={PETAL} style={{ '--x': `${x}px`, '--s': s, animationDelay: `${d}s`, animationDuration: `${dur}s` } as CSSProperties} />
           ))}
         </g>
       )}
+      </g>
     </svg>
   );
 }

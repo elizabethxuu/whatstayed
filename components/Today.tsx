@@ -5,6 +5,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Masthead from './Masthead';
 import Tree from './Tree';
+import GrowthWidget from './Growth';
 import AddMemory from './AddMemory';
 import Revisits from './Revisits';
 import Rediscover from './Rediscover';
@@ -122,7 +123,7 @@ export default function Today() {
         </header>
 
         <div className="today-tree">
-          <Tree memories={snap.memories} threads={NONE} selected={null} onSelect={(i) => i !== null && snap.memories[i] && router.push(`/memory/${snap.memories[i].id}`)} />
+          <Tree grow memories={snap.memories} threads={NONE} selected={null} onSelect={(i) => i !== null && snap.memories[i] && router.push(`/memory/${snap.memories[i].id}`)} />
           <form className="today-ask" onSubmit={keep}>
             <label htmlFor="today-q" className="today-q">
               What would you like to remember today?
@@ -148,6 +149,8 @@ export default function Today() {
             </p>
           </form>
         </div>
+
+        <GrowthWidget />
 
         {back && (
           <section className="today-block today-back" aria-labelledby="tbT">

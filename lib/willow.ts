@@ -36,6 +36,7 @@ export type Strand = {
   dur: number; // seconds
   delay: number;
   depth: number; // 0 = back, 1 = front
+  limb: number; // which arching limb it hangs from
 };
 export type Willow = { trunk: string; trunkLight: string; limbs: { d: string; w: number }[]; strands: Strand[]; slots: Slot[]; ground: Floret[]; total: number };
 
@@ -136,6 +137,7 @@ export function growWillow(seed = 4127): Willow {
       }
       strands.push({
         id: strands.length,
+        limb: li,
         ox: o.x,
         oy: o.y,
         d: `M${f(o.x)} ${f(o.y)} C ${f(c1.x)} ${f(c1.y)}, ${f(c2.x)} ${f(c2.y)}, ${f(end.x)} ${f(end.y)}`,

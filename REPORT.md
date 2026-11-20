@@ -611,3 +611,23 @@ The default look is now **Porcelain**: porcelain and white pages, warm ivory rea
 **Reference:** Worn With Care (`elizabethxuu/wornwith-app`): cream page, white cards, thin warm lines, Cormorant display, tracked Inter eyebrows, restraint. What Stayed borrows those and adds sapphire and botanical colour.
 
 The Sky/Iris glass layers remain earlier in `globals.css`, overridden by the Porcelain layer; removing them is a safe later clean-up.
+
+## Seed to willow: the growth system
+
+The willow now grows from a seed with the memories actually saved in the database (`lib/growth.ts`, `components/Tree.tsx`, `components/Growth.tsx`).
+
+**Stages** (by memories saved): seed (0), sprout (1–2), young willow (3–7), growing willow (8–19), mature willow (20–49), perennial willow (50+). The drawing is one continuous curve, not a set of pictures: each memory slightly grows the crown's size, the number of limbs (from the centre outward), the share of strands that have grown, the trunk's girth and the number of open florets, while the view draws back from a close-up of the seed. Changes ease over about two seconds. The seed and sprout are drawn as fine botanical illustrations; from the third memory the willow appears.
+
+**What counts:** only saved memories. Drafts and AI suggestions waiting for review never change the tree (tested). If a memory is deleted, the tree is drawn without it. There is no decay, no streak and nothing lost for time away.
+
+**Growth points** = 3 × memories preserved + 2 × distinct places remembered + 1 × connections discovered (red threads, and a person linked to a memory). "Moments revisited" is not included: revisits are not stored on the server, and the score is not built on browser storage. Water/energy is used only as an image (the droplet), never as a claimed saving.
+
+**Where it appears**
+- Today: the growing tree and a small growth card (memories gathered, growth points with a water droplet, progress to the next stage, the stage's line, and "How it grew").
+- Garden: the full tree as the centrepiece, captioned like a plate ("Fig. 12 · A growing willow · How it grew").
+- Archives: a quiet line of totals (pages · memories · places · connections), no widget.
+- How it grew: the six stages with the current one marked, and a dated journey read from saved data: when the account was created (the seed was planted), the first memory, the first blossom, each stage reached, the first red thread. Also explains the points formula.
+
+The Welcome and onboarding screens still show a grown willow as decoration.
+
+**Tests:** `tests/e2e/growth.js` checks the tree at 0, 1, 2, 3, 8, 20 and 50 memories (stage, size, limbs, strands, florets and blossoms only ever rise), that a draft changes nothing, the widget's numbers against the formula, the journey, the archive totals, deletion, and iPhone SE fit.

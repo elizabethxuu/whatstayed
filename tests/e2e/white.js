@@ -1,4 +1,4 @@
-// The sky garden: a lush willow that flowers as the archive grows, light blue and white rooms with deep-navy words, the phone tab bar, reduced motion.
+// The porcelain garden: a willow that grows from a seed as the archive grows, porcelain rooms with deep words, the phone tab bar, reduced motion.
 const { chromium, devices } = require('playwright');
 const A = require('./auth.js');
 const B = 'http://localhost:3100';
@@ -44,9 +44,7 @@ async function whiteness(page) {
   await p.waitForTimeout(3500);
   ok('desktop: room links in the masthead, no tab bar', (await p.isVisible('.top .rooms')) && !(await p.isVisible('.tabbar')));
   const open0 = await p.$$eval('.willow .floret', (x) => x.length);
-  const buds0 = await p.$$eval('.willow .fbud', (x) => x.length);
-  ok('an empty garden is already a lush willow, with buds still waiting', open0 > 300 && buds0 > 50, `${open0} open, ${buds0} buds`);
-  ok('the willow has long cascading strands', (await p.$$('.willow .strand')).length >= 60);
+  ok('an empty garden begins as a seed', (await p.getAttribute('.willow', 'data-stage')) === 'seed' && open0 === 0, `${open0}`);
 
   for (const [place, moment, weight] of [['Kyoto', 'Rain on the temple roof', 'tender'], ['Lisbon', 'Bells on the tram', 'light'], ['Jiangmen', 'She braided my hair', 'heavy'], ['Paris', 'Crêpes in the rain', 'light'], ['Oslo', 'The fjord was still', 'tender'], ['Taipei', 'Steam off the dumplings', 'light']]) {
     await post(c, '/api/memories', { place, moment, feeling: 'held', weight });
@@ -54,7 +52,7 @@ async function whiteness(page) {
   await p.reload();
   await p.waitForTimeout(4000);
   const open6 = await p.$$eval('.willow .floret', (x) => x.length);
-  ok('the willow flowers more fully as memories are added', open6 > open0 + 150, `${open0} → ${open6}`);
+  ok('six memories: a young willow with cascading strands, flowering', (await p.getAttribute('.willow', 'data-stage')) === 'tree' && open6 > 60 && (await p.$$('.willow .strand')).length >= 10, `${open6} open`);
   ok('each memory is its own blossom on the willow', (await p.$$('.willow .blossom')).length === 6);
   ok('blossoms use the same flower language; a memory marked as mattering more is a fuller cluster, not a different colour', (await p.$$eval('.blossom.w-heavy .petal', (x) => x.length)) === 15 && (await p.$$eval('.blossom.w-light .petal', (x) => x.length)) === 15 && (await p.$$eval('.blossom .petal', (ps) => ps.every((x) => /url\(#p(White|Mist|Meaning)\)/.test(x.getAttribute('fill'))))));
 

@@ -57,6 +57,8 @@ export type Snapshot = {
   talks: TalkSummary[];
   profile: Profile;
   handDrafts: StoredDraft[];
+  /** when the account was created (the seed was planted) */
+  plantedAt?: number;
 };
 
 export type ReviewItem = {

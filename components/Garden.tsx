@@ -10,6 +10,8 @@ import Conversations from './Conversations';
 import AddMemory from './AddMemory';
 import { confirmSheet } from '@/lib/confirm';
 import Tree from './Tree';
+import { GrowthJourney } from './Growth';
+import { stageOf } from '@/lib/growth';
 import Flower from './Flower';
 import Masthead from './Masthead';
 import { PREFILL_KEY } from '@/lib/archive';
@@ -69,6 +71,7 @@ export default function Garden({ open }: { open: Open }) {
   const [draft, setDraft] = useState('');
   const [snap, store] = useStore();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [journeyOpen, setJourney] = useState(false);
   const [showLog, setShowLog] = useState(false);
   const [showTalks, setShowTalks] = useState(false);
   const [reviewing, setReviewing] = useState(false);
@@ -373,12 +376,14 @@ export default function Garden({ open }: { open: Open }) {
       </Masthead>
 
       <section className="stage">
-        <Tree memories={memories} threads={threads} selected={selected >= 0 ? selected : null} onSelect={setSelected} buds={pending.length} marks={marks} anchors={anchors} lit={lit} />
-        {memories.length > 0 && (
-          <p className="fig" aria-hidden="true">
-            Fig. {memories.length} · {memories.length === 1 ? 'one memory, kept' : `${memories.length} memories, kept`}
-          </p>
-        )}
+        <Tree grow memories={memories} threads={threads} selected={selected >= 0 ? selected : null} onSelect={setSelected} buds={pending.length} marks={marks} anchors={anchors} lit={lit} />
+        <p className="fig growth-fig">
+          <span>Fig. {memories.length}</span> · <span>{stageOf(memories.length).name}</span> ·{' '}
+          <button type="button" className="quiet" onClick={() => setJourney(true)}>
+            How it grew
+          </button>
+        </p>
+        {journeyOpen && <GrowthJourney onClose={() => setJourney(false)} />}
         {memories.length > 0 && (
           <div className="drift" aria-hidden="true">
             {Array.from({ length: Math.min(6, memories.length + 2) }).map((_, i) => {

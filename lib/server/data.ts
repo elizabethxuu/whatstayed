@@ -268,6 +268,8 @@ export async function state(user: string, tz?: string) {
        from media where user_id=$1 order by created_at`, [user]),
   ]);
   const life = await lifeState(user, tz);
+  // when the garden was planted: the account's creation, for the growth journey
+  const [acct] = await q<{ at: number }>(`select ${ms('created_at')} as "at" from users where id=$1`, [user]);
   const { listTalks, listDrafts } = await import('./talk');
   const { getProfile } = await import('./profile');
   return {
@@ -276,6 +278,7 @@ export async function state(user: string, tz?: string) {
     profile: await getProfile(user),
     handDrafts: await listDrafts(user, 'by-hand'),
     memories,
+    ...(acct?.at ? { plantedAt: Number(acct.at) } : {}),
     entries: entries.map((e) => {
       const loc = typeof e.location === 'string' ? JSON.parse(e.location) : e.location;
       const meta = typeof e.meta === 'string' ? JSON.parse(e.meta) : e.meta;
