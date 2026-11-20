@@ -83,7 +83,7 @@ const PL = ['Paris', 'Lisbon', 'Kyoto', 'Paris', 'Oslo', 'Rome', 'Seoul', 'Lima'
     ok('journey: planted, first memory, stages and the first thread, from saved dates', /seed was planted/.test(j[0]) && j.some((t) => /first memory: Paris/.test(t)) && j.some((t) => /A perennial willow, with memory number 50/.test(t)) && j.some((t) => /first red thread/.test(t)), j.join(' | '));
     await p.keyboard.press('Escape');
 
-    await p.goto(B + '/archives');
+    await p.goto(B + '/archive');
     await p.waitForSelector('.arc-counts');
     ok('archives: totals without the widget', /50 memories · 9 places · 2 connections/.test(await p.textContent('.arc-counts')) && !(await p.isVisible('.growth')), await p.textContent('.arc-counts'));
 
